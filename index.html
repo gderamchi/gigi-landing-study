@@ -99,6 +99,7 @@
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
+            <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
             <button class="product-nav-item" type="button" data-product-view="intros">Intros</button>
           </nav>
@@ -145,6 +146,7 @@
                 <strong>5 relevant VCs</strong>
                 <p>Your calendar has second-degree context for seed funds in SF.</p>
               </div>
+              <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
           </section>
@@ -166,6 +168,20 @@
             <div class="search-grid">
               <div class="person-results" data-person-results></div>
               <aside class="person-detail" data-person-detail></aside>
+            </div>
+          </section>
+
+          <section class="product-screen product-screen-graph" data-product-screen="graph" aria-label="Trust graph">
+            <div class="section-heading">
+              <div>
+                <span class="product-kicker">Calendar truth layer</span>
+                <h3>Map the people you actually know.</h3>
+              </div>
+              <button type="button" data-refresh-graph>Refresh signals</button>
+            </div>
+            <div class="graph-layout">
+              <div class="trust-graph" data-trust-graph></div>
+              <aside class="graph-detail" data-graph-detail></aside>
             </div>
           </section>
 
@@ -200,6 +216,24 @@
             <article data-claim-profile></article>
             <p>It will be displayed in the feed of your private circle.</p>
             <button type="button" data-approve-claim>Approve and share</button>
+          </div>
+        </div>
+
+        <div class="link-preview-modal" data-link-preview-modal hidden>
+          <div class="link-preview-card" role="dialog" aria-modal="true" aria-label="Smart link preview">
+            <button class="modal-close" type="button" data-close-link-preview aria-label="Close">×</button>
+            <span class="product-kicker">Recipient lens</span>
+            <h3 data-link-preview-title></h3>
+            <div class="lens-switcher" aria-label="Preview lens">
+              <button class="is-active" type="button" data-preview-lens="founder">Founder</button>
+              <button type="button" data-preview-lens="investor">Investor</button>
+              <button type="button" data-preview-lens="hiring">Hiring</button>
+            </div>
+            <div class="link-preview-body" data-link-preview-body></div>
+            <div class="composer-actions">
+              <button type="button" data-copy-preview-link>Copy private link</button>
+              <button type="button" data-request-list-intros>Request selected intros</button>
+            </div>
           </div>
         </div>
 

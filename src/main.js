@@ -18,6 +18,8 @@ const people = [
     lastSignal: "Met with Clara yesterday",
     path: "You -> Clara Gold -> Adrian Vega",
     useCase: "fundraising",
+    meetings: 3,
+    projects: ["robotics infra", "seed round", "SF founder dinners"],
   },
   {
     id: "maya",
@@ -32,6 +34,8 @@ const people = [
     lastSignal: "Nina had a partner meeting with Maya on Tuesday",
     path: "You -> Nina Patel -> Maya Chen",
     useCase: "fundraising",
+    meetings: 2,
+    projects: ["AI productivity", "seed investing", "founder references"],
   },
   {
     id: "lucas",
@@ -46,6 +50,8 @@ const people = [
     lastSignal: "Shared a dinner table with Clara last week",
     path: "You -> Clara Gold -> Lucas Moretti",
     useCase: "hiring",
+    meetings: 4,
+    projects: ["marketplace launches", "growth ops", "LATAM hiring"],
   },
   {
     id: "priya",
@@ -60,6 +66,8 @@ const people = [
     lastSignal: "Maxime worked with Priya on a launch review",
     path: "You -> Maxime Durand -> Priya Raman",
     useCase: "hiring",
+    meetings: 2,
+    projects: ["trust surfaces", "design systems", "AI product review"],
   },
   {
     id: "david",
@@ -74,6 +82,8 @@ const people = [
     lastSignal: "Clara is building a dinner list with David",
     path: "You -> Clara Gold -> David Kim",
     useCase: "sales",
+    meetings: 5,
+    projects: ["private dinners", "founder community", "sales intros"],
   },
   {
     id: "sofia",
@@ -88,6 +98,8 @@ const people = [
     lastSignal: "Amelie met Sofia twice this month",
     path: "You -> Amelie Laurent -> Sofia Alvarez",
     useCase: "hiring",
+    meetings: 2,
+    projects: ["AI recruiting", "Europe talent", "engineering leads"],
   },
 ];
 
@@ -136,6 +148,9 @@ const state = {
     calendar: false,
     gmail: false,
   },
+  previewListIndex: 0,
+  previewLens: "founder",
+  graphRefreshes: 0,
   socialCapital: 248,
   claimApproved: false,
   intros: [
@@ -251,14 +266,14 @@ function setProductView(view) {
   });
   const title = document.querySelector("[data-product-title]");
   if (title) {
-    title.textContent =
-      view === "feed"
-        ? "Private circle"
-        : view === "search"
-          ? "Network search"
-          : view === "lists"
-            ? "Smart links"
-            : "Warm introductions";
+    const titles = {
+      feed: "Private circle",
+      search: "Network search",
+      graph: "Trust graph",
+      lists: "Smart links",
+      intros: "Warm introductions",
+    };
+    title.textContent = titles[view] ?? "Private circle";
   }
   renderAll();
 }
@@ -372,29 +387,135 @@ function renderLists() {
           <h4>${escapeHtml(list.title)}</h4>
           <p>${escapeHtml(list.context)}</p>
           <div class="mini-avatars">${featured.map((person) => avatar(person.name)).join("")}</div>
-          <button type="button" data-copy-list="${index}">Share private link</button>
+          <button type="button" data-preview-list="${index}">Preview private link</button>
         </article>
       `;
     })
     .join("");
 }
 
+function renderSourceHealth() {
+  const container = document.querySelector("[data-source-health]");
+  if (!container) return;
+  const calendar = state.connected.calendar;
+  const gmail = state.connected.gmail;
+  container.innerHTML = `
+    <span>Sources</span>
+    <strong>${calendar ? "Calendar live" : "Calendar pending"}</strong>
+    <p>${calendar ? "34 meetings reviewed. 12 recurring relationships found." : "Connect Calendar to ground recommendations in actual meetings."}</p>
+    <strong>${gmail ? "Gmail drafts enabled" : "Gmail pending"}</strong>
+    <p>${gmail ? "Drafts stay blocked until you approve send." : "Connect Gmail to draft intros with explicit approval."}</p>
+  `;
+}
+
+function renderGraph() {
+  const graph = document.querySelector("[data-trust-graph]");
+  const detail = document.querySelector("[data-graph-detail]");
+  if (!graph || !detail) return;
+  const selected = personById(state.selectedPersonId);
+  graph.innerHTML = `
+    <div class="graph-orbit" aria-hidden="true"></div>
+    <button class="graph-node graph-node-user" type="button" data-graph-person="self">
+      <span>You</span>
+      <small>Context</small>
+    </button>
+    ${people
+      .map((person, index) => {
+        const angle = (index / people.length) * Math.PI * 2 - Math.PI / 2;
+        const x = 50 + Math.cos(angle) * 34;
+        const y = 50 + Math.sin(angle) * 34;
+        return `
+          <button
+            class="graph-node ${person.id === state.selectedPersonId ? "is-selected" : ""}"
+            style="--x: ${x}%; --y: ${y}%;"
+            type="button"
+            data-graph-person="${person.id}"
+          >
+            <span>${escapeHtml(initials(person.name))}</span>
+            <small>${person.trust}%</small>
+          </button>
+        `;
+      })
+      .join("")}
+  `;
+  detail.innerHTML = `
+    <span class="product-kicker">Strongest path</span>
+    <h3>${escapeHtml(selected.name)}</h3>
+    <p>${escapeHtml(selected.role)} · ${escapeHtml(selected.location)}</p>
+    <div class="path-box">
+      <strong>${escapeHtml(selected.path)}</strong>
+      <p>${escapeHtml(selected.lastSignal)}. ${selected.meetings} calendar signals and ${selected.projects.length} project signals support this path.</p>
+    </div>
+    <div class="graph-signal-grid">
+      <div><span>Trust</span><strong>${selected.trust}%</strong></div>
+      <div><span>Meetings</span><strong>${selected.meetings}</strong></div>
+      <div><span>Capital</span><strong>+${selected.capital}</strong></div>
+    </div>
+    <div class="tag-row">${selected.projects.map((project) => `<span>${escapeHtml(project)}</span>`).join("")}</div>
+    <button type="button" data-request-intro="${selected.id}">Request warm intro</button>
+  `;
+}
+
+function renderLinkPreview() {
+  const title = document.querySelector("[data-link-preview-title]");
+  const body = document.querySelector("[data-link-preview-body]");
+  if (!title || !body) return;
+  const list = smartLists[state.previewListIndex] ?? smartLists[0];
+  const listPeople = list.people.map(personById);
+  title.textContent = list.title;
+  const lensCopy = {
+    founder: "Gigi prioritizes people who can help this founder raise, hire, or unlock a credible warm path.",
+    investor: "Gigi highlights founder quality, mutual trust, and why this person is worth meeting now.",
+    hiring: "Gigi surfaces operators and talent-adjacent context first, with private notes hidden until approved.",
+  };
+  body.innerHTML = `
+    <p>${escapeHtml(lensCopy[state.previewLens])}</p>
+    <div class="preview-people">
+      ${listPeople
+        .map(
+          (person) => `
+            <article>
+              ${avatar(person.name)}
+              <div>
+                <h4>${escapeHtml(person.name)}</h4>
+                <span>${escapeHtml(person.role)}</span>
+                <p>${escapeHtml(person.path)} · ${person.trust}% trust</p>
+              </div>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+  document.querySelectorAll("[data-preview-lens]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.previewLens === state.previewLens);
+  });
+}
+
 function renderIntros() {
   const board = document.querySelector("[data-intro-board]");
   if (!board) return;
   board.innerHTML = state.intros
-    .map(
-      (intro) => `
+    .map((intro, index) => {
+      const needsApproval = intro.status === "Draft ready" || intro.status === "Waiting opt-in";
+      return `
         <article class="intro-row">
           <div>
             <strong>${escapeHtml(intro.target)}</strong>
             <span>via ${escapeHtml(intro.connector)}</span>
           </div>
           <span>${escapeHtml(intro.reason)}</span>
-          <span class="intro-status ${intro.status.toLowerCase().replaceAll(" ", "-")}">${escapeHtml(intro.status)}</span>
+          <div class="intro-actions">
+            <span class="intro-status ${intro.status.toLowerCase().replaceAll(" ", "-")}">${escapeHtml(intro.status)}</span>
+            ${
+              needsApproval
+                ? `<button type="button" data-approve-intro="${index}">Approve</button>`
+                : ""
+            }
+          </div>
         </article>
-      `,
-    )
+      `;
+    })
     .join("");
 }
 
@@ -426,9 +547,12 @@ function renderAll() {
     document.createTextNode(String(state.socialCapital)),
   );
   renderConnectedSources();
+  renderSourceHealth();
   renderFeed();
   renderPeople();
+  renderGraph();
   renderLists();
+  renderLinkPreview();
   renderIntros();
   renderClaimProfile();
 }
@@ -510,8 +634,21 @@ document.addEventListener("click", async (event) => {
 
   const sourceButton = target.closest("[data-connect-source]");
   if (sourceButton) {
-    state.connected[sourceButton.dataset.connectSource] = true;
+    const source = sourceButton.dataset.connectSource;
+    state.connected[source] = true;
+    state.feed.unshift({
+      person: source === "gmail" ? "Gmail" : "Calendar",
+      actor: "Gigi",
+      text:
+        source === "gmail"
+          ? "enabled Gmail drafting. Messages still require explicit approval before sending."
+          : "reviewed meeting history and found recurring relationships that can support warm paths.",
+      time: "Just now",
+      capital: source === "gmail" ? 3 : 6,
+    });
     renderConnectedSources();
+    renderSourceHealth();
+    renderFeed();
     return;
   }
 
@@ -541,6 +678,29 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  const graphPerson = target.closest("[data-graph-person]");
+  if (graphPerson) {
+    if (graphPerson.dataset.graphPerson !== "self") {
+      state.selectedPersonId = graphPerson.dataset.graphPerson;
+      renderGraph();
+    }
+    return;
+  }
+
+  if (target.closest("[data-refresh-graph]")) {
+    state.graphRefreshes += 1;
+    state.feed.unshift({
+      person: "Trust graph",
+      actor: "Gigi",
+      text: `refreshed calendar and project signals across ${people.length} strong paths.`,
+      time: "Just now",
+      capital: 5,
+    });
+    renderFeed();
+    renderGraph();
+    return;
+  }
+
   if (target.closest("[data-ask-gigi]")) {
     const question = document.querySelector("[data-gigi-question]")?.value ?? "";
     const person = personById(state.selectedPersonId);
@@ -555,11 +715,48 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  const copyButton = target.closest("[data-copy-list]");
-  if (copyButton) {
-    const list = smartLists[Number(copyButton.dataset.copyList)];
+  const previewListButton = target.closest("[data-preview-list]");
+  if (previewListButton) {
+    state.previewListIndex = Number(previewListButton.dataset.previewList);
+    state.previewLens = "founder";
+    renderLinkPreview();
+    document.querySelector("[data-link-preview-modal]").hidden = false;
+    return;
+  }
+
+  const lensButton = target.closest("[data-preview-lens]");
+  if (lensButton) {
+    state.previewLens = lensButton.dataset.previewLens;
+    renderLinkPreview();
+    return;
+  }
+
+  if (target.closest("[data-close-link-preview]")) {
+    document.querySelector("[data-link-preview-modal]").hidden = true;
+    return;
+  }
+
+  if (target.closest("[data-copy-preview-link]")) {
+    const list = smartLists[state.previewListIndex] ?? smartLists[0];
     await copyText(`https://gigi.co/share/${list.title.toLowerCase().replace(/\W+/g, "-")}`);
-    copyButton.textContent = "Private link copied";
+    target.closest("[data-copy-preview-link]").textContent = "Private link copied";
+    return;
+  }
+
+  if (target.closest("[data-request-list-intros]")) {
+    const list = smartLists[state.previewListIndex] ?? smartLists[0];
+    list.people.map(personById).forEach((person) => {
+      if (!state.intros.some((intro) => intro.target === person.name)) {
+        state.intros.unshift({
+          target: person.name,
+          connector: person.connector,
+          reason: `Requested from ${list.title}`,
+          status: "Waiting opt-in",
+        });
+      }
+    });
+    document.querySelector("[data-link-preview-modal]").hidden = true;
+    setProductView("intros");
     return;
   }
 
@@ -608,6 +805,23 @@ document.addEventListener("click", async (event) => {
 
   if (target.closest("[data-send-intro]")) {
     saveIntro("Sent");
+    return;
+  }
+
+  const approveIntroButton = target.closest("[data-approve-intro]");
+  if (approveIntroButton) {
+    const intro = state.intros[Number(approveIntroButton.dataset.approveIntro)];
+    if (intro) {
+      intro.status = "Approved";
+      state.feed.unshift({
+        person: intro.target,
+        actor: "You",
+        text: `approved the double opt-in intro to ${intro.target} via ${intro.connector}.`,
+        time: "Just now",
+        capital: 4,
+      });
+      renderAll();
+    }
   }
 });
 
