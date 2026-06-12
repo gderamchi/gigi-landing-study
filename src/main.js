@@ -820,6 +820,77 @@ const setupSources = [
   },
 ];
 
+const opportunityMoves = [
+  {
+    id: "role-whisper",
+    label: "Hidden role",
+    title: "Product trust lead before the role is posted",
+    targetId: "priya",
+    connector: "Maxime Durand",
+    trigger: "Maxime heard a trust-heavy AI product team will open a senior lead search next week.",
+    intent: "You are trying to meet senior AI product and design systems operators.",
+    reason:
+      "The opportunity is private right now. Gigi can route a reference-safe intro before it turns into a public job post.",
+    move: "Ask Maxime for a double opt-in intro to Priya and attach the private product-review context.",
+    window: "48h",
+    score: 96,
+    capital: 7,
+    listIndex: 3,
+    signals: ["ex-colleague whisper", "hiring intent", "close-circle proof"],
+  },
+  {
+    id: "round-mentor",
+    label: "Round path",
+    title: "Mentor intro that can change the seed round",
+    targetId: "maya",
+    connector: "Nina Patel",
+    trigger: "Nina has a fresh partner meeting with Maya and your seed round brief matches her current thesis.",
+    intent: "You need founder-friendly VCs for an AI infrastructure round in San Francisco.",
+    reason:
+      "The round is easier to move while the investor context is fresh and before the ask becomes a cold pitch.",
+    move: "Prepare a tight forwardable fundraising note and ask Nina to validate the angle first.",
+    window: "24h",
+    score: 93,
+    capital: 8,
+    listIndex: 4,
+    signals: ["mentor path", "fundraising intent", "fresh calendar context"],
+  },
+  {
+    id: "cap-table",
+    label: "Cap table",
+    title: "Friend raising before the room knows",
+    targetId: "adrian",
+    connector: "Clara Gold",
+    trigger: "Clara heard Adrian is opening a small operator allocation before the public fundraise.",
+    intent: "You want early access to technical founders and private investor rooms.",
+    reason:
+      "Gigi sees the private context before it appears in public channels, so the useful move is a scoped ask, not a blast.",
+    move: "Build a private smart link with the three strongest operator-investor paths, then request one intro.",
+    window: "72h",
+    score: 89,
+    capital: 6,
+    listIndex: 0,
+    signals: ["friend raising", "cap table edge", "founder room"],
+  },
+  {
+    id: "hot-deck",
+    label: "Hot deck",
+    title: "A deck moving before Twitter knows",
+    targetId: "david",
+    connector: "Clara Gold",
+    trigger: "David is curating a founder dinner where a technical deck is circulating quietly.",
+    intent: "You want rooms where technical founders and seed investors trade useful context early.",
+    reason:
+      "The deck is only useful if the ask stays narrow and arrives through the person already trusted in the room.",
+    move: "Ask Clara to approve a dinner-specific smart list before any intro request leaves the local queue.",
+    window: "Tonight",
+    score: 84,
+    capital: 5,
+    listIndex: 2,
+    signals: ["private dinner", "early deck", "trusted room"],
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -858,6 +929,9 @@ const state = {
   },
   activeSetupSourceId: "calendar",
   setupMapped: false,
+  activeMoveId: "role-whisper",
+  scannedMoves: [],
+  movedMoves: [],
   previewListIndex: 0,
   previewLens: "founder",
   shareListIndex: 0,
@@ -977,6 +1051,10 @@ function setupSourceById(id) {
   return setupSources.find((source) => source.id === id) ?? setupSources[0];
 }
 
+function opportunityMoveById(id) {
+  return opportunityMoves.find((move) => move.id === id) ?? opportunityMoves[0];
+}
+
 function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
@@ -1080,6 +1158,7 @@ function setProductView(view) {
     const titles = {
       feed: "Private circle",
       setup: "Trust setup",
+      moves: "Opportunity moves",
       score: "Social Capital Score",
       matches: "Match reports",
       nudges: "Connector nudges",
@@ -1210,6 +1289,82 @@ function renderSetup() {
           `,
         )
         .join("")}
+    </div>
+  `;
+}
+
+function renderMoves() {
+  const list = document.querySelector("[data-move-list]");
+  const preview = document.querySelector("[data-move-preview]");
+  const status = document.querySelector("[data-move-status]");
+  if (!list || !preview || !status) return;
+
+  const move = opportunityMoveById(state.activeMoveId);
+  const person = personById(move.targetId);
+  const scanned = state.scannedMoves.includes(move.id);
+  const moved = state.movedMoves.includes(move.id);
+  const scannedCount = state.scannedMoves.length;
+  const movedCount = state.movedMoves.length;
+
+  list.innerHTML = opportunityMoves
+    .map((item) => {
+      const itemPerson = personById(item.targetId);
+      const itemScanned = state.scannedMoves.includes(item.id);
+      const itemMoved = state.movedMoves.includes(item.id);
+      return `
+        <button class="move-list-item ${item.id === move.id ? "is-selected" : ""} ${itemMoved ? "is-moved" : ""}" type="button" data-select-move="${item.id}">
+          <span>${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(itemMoved ? "Moved" : itemScanned ? `${item.score}% fit · ${item.window}` : `${itemPerson.connector} · hidden`)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  preview.innerHTML = `
+    <span class="product-kicker">Gigi move</span>
+    <div class="move-preview-header">
+      ${avatar(person.name)}
+      <div>
+        <h3>${escapeHtml(scanned ? person.name : "Opportunity locked")}</h3>
+        <p>${escapeHtml(scanned ? person.role : "Run the scan to reveal the person and the timing window.")}</p>
+      </div>
+      <strong>${escapeHtml(scanned ? `${move.score}%` : "--")}</strong>
+    </div>
+    <div class="move-brief ${moved ? "is-moved" : ""}">
+      <span>${escapeHtml(scanned ? "Why now" : "Hidden signal")}</span>
+      <p>${escapeHtml(scanned ? move.reason : "Gigi is waiting for permission to combine private context with your active intent.")}</p>
+    </div>
+    <div class="move-brief">
+      <span>${escapeHtml(moved ? "Queued move" : scanned ? "Suggested move" : "Next step")}</span>
+      <p>${escapeHtml(moved ? `Queued locally through ${move.connector}. Nothing external was sent.` : scanned ? move.move : "Scan hidden opportunities first.")}</p>
+    </div>
+    <div class="tag-row">
+      ${move.signals.map((signal) => `<span>${escapeHtml(signal)}</span>`).join("")}
+    </div>
+  `;
+
+  status.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(moved ? "Opportunity moved" : scanned ? "Opportunity detected" : "Intent scan")}</span>
+      <strong>${escapeHtml(moved ? "Queued" : scanned ? `${move.window} window` : "Waiting")}</strong>
+    </div>
+    <div class="move-status-grid">
+      <article>
+        <span>Intent match</span>
+        <h4>${escapeHtml(scanned ? move.intent : "Connect intent to private context")}</h4>
+        <p>${escapeHtml(scanned ? move.trigger : "Gigi checks goals, asks, calendar context, and close-circle signals.")}</p>
+      </article>
+      <article>
+        <span>Safe action</span>
+        <h4>${escapeHtml(moved ? "Waiting opt-in" : scanned ? "Approval required" : "Not scanned")}</h4>
+        <p>${escapeHtml(moved ? "The move sits in Warm introductions until you approve it." : "The local prototype drafts the move without contacting anyone.")}</p>
+      </article>
+      <article>
+        <span>Pipeline</span>
+        <h4>${escapeHtml(`${scannedCount}/${opportunityMoves.length} detected · ${movedCount} moved`)}</h4>
+        <p>${escapeHtml(`Top path: ${person.path}. Window: ${move.window}.`)}</p>
+      </article>
     </div>
   `;
 }
@@ -2476,6 +2631,7 @@ function renderAll() {
   renderConnectedSources();
   renderSourceHealth();
   renderSetup();
+  renderMoves();
   renderScore();
   renderMatches();
   renderNudges();
@@ -2634,6 +2790,74 @@ document.addEventListener("click", async (event) => {
 
   if (target.closest("[data-open-setup-context]")) {
     setProductView("context");
+    return;
+  }
+
+  const moveButton = target.closest("[data-select-move]");
+  if (moveButton) {
+    const move = opportunityMoveById(moveButton.dataset.selectMove);
+    state.activeMoveId = move.id;
+    renderMoves();
+    return;
+  }
+
+  if (target.closest("[data-scan-moves]")) {
+    const newlyScanned = opportunityMoves.filter((move) => !state.scannedMoves.includes(move.id));
+    newlyScanned.forEach((move) => {
+      state.scannedMoves.push(move.id);
+    });
+    state.connected.calendar = true;
+    state.connected.contacts = true;
+    if (newlyScanned.length > 0) {
+      state.socialCapital += 5;
+      state.feed.unshift({
+        person: "Opportunity scan",
+        actor: "Gigi",
+        text: `detected ${newlyScanned.length} hidden opportunities by matching private signals to active intent.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-move-opportunity]")) {
+    const move = opportunityMoveById(state.activeMoveId);
+    const person = personById(move.targetId);
+    if (!state.scannedMoves.includes(move.id)) {
+      state.scannedMoves.push(move.id);
+    }
+    if (!state.movedMoves.includes(move.id)) {
+      state.movedMoves.push(move.id);
+      state.connected.gmail = true;
+      state.socialCapital += move.capital;
+      const existing = state.intros.find(
+        (intro) => intro.target === person.name && intro.reason === `Opportunity: ${move.label}`,
+      );
+      if (!existing) {
+        state.intros.unshift({
+          target: person.name,
+          connector: move.connector,
+          reason: `Opportunity: ${move.label}`,
+          status: "Waiting opt-in",
+        });
+      }
+      state.previewListIndex = move.listIndex;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `moved a private ${move.label.toLowerCase()} opportunity through ${move.connector}. It is queued locally for opt-in approval.`,
+        time: "Just now",
+        capital: move.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-move-intros]")) {
+    setProductView("intros");
     return;
   }
 
