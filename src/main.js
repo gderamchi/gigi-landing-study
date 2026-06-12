@@ -197,6 +197,63 @@ const messageThreads = [
   },
 ];
 
+const introEmailDrafts = [
+  {
+    id: "julien-priya-email",
+    label: "Product review",
+    requester: "Julien Renard",
+    connector: "Maxime Durand",
+    targetId: "priya",
+    accessId: "julien-priya",
+    subject: "Intro: Julien <> Priya for a trust-heavy product review",
+    ask: "Julien wants a senior design-systems operator to pressure-test an AI product surface before launch.",
+    privateContext:
+      "Maxime worked with Priya on a launch review and can vouch for her product judgment without exposing unrelated private notes.",
+    forwardable:
+      "Priya, Julien is looking for a sharp trust-heavy product review before his team ships. Maxime thought your design-systems perspective would make the review materially better.",
+    boundary: "Share the product-review scope only. Do not include Maxime's private launch notes unless he approves.",
+    score: 91,
+    capital: 6,
+    signals: ["Gmail draft", "Calendar proof", "double opt-in"],
+  },
+  {
+    id: "claire-maya-email",
+    label: "Seed investor",
+    requester: "Claire Moreau",
+    connector: "Nina Patel",
+    targetId: "maya",
+    accessId: "claire-maya",
+    subject: "Intro: Claire <> Maya on AI infra seed round",
+    ask: "Claire needs a founder-friendly investor path for an AI infrastructure seed round in San Francisco.",
+    privateContext:
+      "Nina met Maya twice in the last 30 days and can validate whether the seed-round angle is relevant before any broader context is shared.",
+    forwardable:
+      "Maya, Claire is building AI infrastructure and has a specific seed-round question that maps to your AI productivity thesis. Nina can keep this scoped if useful.",
+    boundary: "Keep round details and founder references hidden until Nina approves the forwardable note.",
+    score: 88,
+    capital: 5,
+    signals: ["investor thesis", "recent meeting", "forwardable note"],
+  },
+  {
+    id: "david-adrian-email",
+    label: "Founder room",
+    requester: "David Kim",
+    connector: "Clara Gold",
+    targetId: "adrian",
+    accessId: "david-adrian",
+    subject: "Intro: David <> Adrian for private founder dinner",
+    ask: "David is curating a small founder room and wants one technical founder with real AI infra context.",
+    privateContext:
+      "Clara has fresh dinner-list context and can introduce Adrian without revealing the rest of the attendee graph.",
+    forwardable:
+      "Adrian, David is hosting a small technical founder dinner and Clara thinks your robotics infra perspective would make the table sharper.",
+    boundary: "Do not expose the full dinner list. Adrian only sees the theme and can opt in before any further context expands.",
+    score: 84,
+    capital: 4,
+    signals: ["private room", "connector consent", "recipient opt-in"],
+  },
+];
+
 const matchReports = [
   {
     id: "buckhouse-belsky",
@@ -1146,6 +1203,10 @@ const state = {
   activeMessageThreadId: "andrea-seed",
   builtMessageLinks: [],
   sentMessageLinks: [],
+  activeEmailId: "julien-priya-email",
+  generatedEmailDrafts: [],
+  approvedEmailDrafts: [],
+  sentEmailDrafts: [],
   goalBrief:
     "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
@@ -1266,6 +1327,10 @@ function scoreProfileById(id) {
 
 function messageThreadById(id) {
   return messageThreads.find((thread) => thread.id === id) ?? messageThreads[0];
+}
+
+function introEmailById(id) {
+  return introEmailDrafts.find((draft) => draft.id === id) ?? introEmailDrafts[0];
 }
 
 function matchReportById(id) {
@@ -1416,6 +1481,7 @@ function setProductView(view) {
       strength: "Relationship strength",
       access: "Permissioned access",
       lists: "Smart links",
+      email: "Warm intro email",
       messages: "Message delivery",
       intros: "Warm introductions",
     };
@@ -2645,6 +2711,96 @@ function renderLists() {
     .join("");
 }
 
+function renderIntroEmail() {
+  const list = document.querySelector("[data-intro-email-list]");
+  const draftPanel = document.querySelector("[data-intro-email-draft]");
+  const ledger = document.querySelector("[data-intro-email-ledger]");
+  if (!list || !draftPanel || !ledger) return;
+
+  const active = introEmailById(state.activeEmailId);
+  const person = personById(active.targetId);
+  const generated = state.generatedEmailDrafts.includes(active.id);
+  const approved = state.approvedEmailDrafts.includes(active.id);
+  const sent = state.sentEmailDrafts.includes(active.id);
+  const generateButton = document.querySelector("[data-generate-intro-email]");
+  const approveButton = document.querySelector("[data-approve-intro-email]");
+  const sendButton = document.querySelector("[data-send-intro-email]");
+
+  if (generateButton) {
+    generateButton.textContent = generated || approved || sent ? "Draft ready" : "Generate email";
+    generateButton.disabled = generated || approved || sent;
+  }
+  if (approveButton) {
+    approveButton.textContent = approved || sent ? "Consent approved" : "Approve consent";
+    approveButton.disabled = (!generated && !approved && !sent) || approved || sent;
+  }
+  if (sendButton) {
+    sendButton.textContent = sent ? "Open intro queue" : "Send locally";
+    sendButton.disabled = !approved && !sent;
+  }
+
+  list.innerHTML = introEmailDrafts
+    .map((draft) => {
+      const target = personById(draft.targetId);
+      const draftGenerated = state.generatedEmailDrafts.includes(draft.id);
+      const draftApproved = state.approvedEmailDrafts.includes(draft.id);
+      const draftSent = state.sentEmailDrafts.includes(draft.id);
+      return `
+        <button class="intro-email-card ${draft.id === active.id ? "is-selected" : ""} ${draftSent ? "is-sent" : draftApproved ? "is-approved" : draftGenerated ? "is-generated" : ""}" type="button" data-select-intro-email="${draft.id}">
+          <span>${escapeHtml(draft.label)}</span>
+          <strong>${escapeHtml(draft.requester)} → ${escapeHtml(target.name)}</strong>
+          <small>${escapeHtml(draftSent ? "Sent locally" : draftApproved ? "Consent approved" : draftGenerated ? `${draft.score}% ready` : `via ${draft.connector}`)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  draftPanel.innerHTML = `
+    <span class="product-kicker">Approval-gated draft</span>
+    <h3>${escapeHtml(active.subject)}</h3>
+    <p>${escapeHtml(generated ? active.ask : "Generate the Gmail draft from the strongest warm path before exposing any private context.")}</p>
+    <div class="intro-email-score">
+      <strong>${escapeHtml(generated ? `${active.score}%` : "--")}</strong>
+      <span>${escapeHtml(sent ? "sent locally" : approved ? "approved" : generated ? "ready" : "drafting")}</span>
+    </div>
+    <div class="intro-email-note">
+      <span>Private connector context</span>
+      <p>${escapeHtml(generated ? active.privateContext : "Hidden until the draft is generated from approved source context.")}</p>
+    </div>
+    <div class="intro-email-note">
+      <span>Forwardable note</span>
+      <p>${escapeHtml(generated ? active.forwardable : "Gigi will write a short note the connector can approve before anything is sent.")}</p>
+    </div>
+    <div class="tag-row">
+      ${active.signals.map((signal) => `<span>${escapeHtml(signal)}</span>`).join("")}
+    </div>
+  `;
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(sent ? "Email queued" : approved ? "Consent approved" : generated ? "Draft ready" : "Gmail automation")}</span>
+      <strong>${escapeHtml(sent ? "Open intros" : approved ? "Ready to send" : generated ? "Needs approval" : "Local only")}</strong>
+    </div>
+    <div class="intro-email-ledger-grid">
+      <article class="${generated ? "is-live" : ""}">
+        <span>Source mix</span>
+        <h4>${escapeHtml(generated ? "Gmail + Calendar" : "Waiting for source approval")}</h4>
+        <p>${escapeHtml(generated ? `Gigi uses ${active.connector}'s relationship context and the scoped Access route, not the whole graph.` : "No external account is connected here; this prototype simulates local source approval.")}</p>
+      </article>
+      <article class="${approved ? "is-live" : ""}">
+        <span>Consent gate</span>
+        <h4>${escapeHtml(approved ? "Connector + recipient scoped" : "Human approval required")}</h4>
+        <p>${escapeHtml(approved ? active.boundary : "The connector must approve the forwardable note before the recipient sees the ask.")}</p>
+      </article>
+      <article class="${sent ? "is-live" : ""}">
+        <span>Delivery</span>
+        <h4>${escapeHtml(sent ? "Intro board updated" : "Blocked by default")}</h4>
+        <p>${escapeHtml(sent ? "The local intro queue now records the email as a double opt-in warm introduction." : "Nothing leaves the local prototype until the send action is approved.")}</p>
+      </article>
+    </div>
+  `;
+}
+
 function renderMessages() {
   const threads = document.querySelector("[data-message-threads]");
   const phone = document.querySelector("[data-message-phone]");
@@ -3185,6 +3341,7 @@ function renderAll() {
   renderStrength();
   renderAccess();
   renderLists();
+  renderIntroEmail();
   renderMessages();
   renderLinkPreview();
   renderShareView();
@@ -4308,6 +4465,107 @@ document.addEventListener("click", async (event) => {
       });
     }
     renderAll();
+    return;
+  }
+
+  const introEmailButton = target.closest("[data-select-intro-email]");
+  if (introEmailButton) {
+    const draft = introEmailById(introEmailButton.dataset.selectIntroEmail);
+    state.activeEmailId = draft.id;
+    renderIntroEmail();
+    return;
+  }
+
+  if (target.closest("[data-generate-intro-email]")) {
+    const draft = introEmailById(state.activeEmailId);
+    const person = personById(draft.targetId);
+    if (!state.generatedEmailDrafts.includes(draft.id)) {
+      state.generatedEmailDrafts.push(draft.id);
+      state.connected.gmail = true;
+      state.connected.calendar = true;
+      state.connected.contacts = true;
+      state.socialCapital += draft.capital;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `generated an approval-gated Gmail intro draft from ${draft.connector} to ${person.name}.`,
+        time: "Just now",
+        capital: draft.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-approve-intro-email]")) {
+    const draft = introEmailById(state.activeEmailId);
+    const person = personById(draft.targetId);
+    const accessRequest = accessRequestById(draft.accessId);
+    if (!state.generatedEmailDrafts.includes(draft.id)) {
+      state.generatedEmailDrafts.push(draft.id);
+      state.connected.gmail = true;
+      state.connected.calendar = true;
+      state.connected.contacts = true;
+      state.socialCapital += draft.capital;
+    }
+    if (!state.approvedEmailDrafts.includes(draft.id)) {
+      state.approvedEmailDrafts.push(draft.id);
+      if (!state.checkedAccess.includes(accessRequest.id)) {
+        state.checkedAccess.push(accessRequest.id);
+      }
+      state.feed.unshift({
+        person: draft.connector,
+        actor: "Gigi",
+        text: `approved consent boundaries for the warm intro email to ${person.name}.`,
+        time: "Just now",
+        capital: 3,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-send-intro-email]")) {
+    const draft = introEmailById(state.activeEmailId);
+    const person = personById(draft.targetId);
+    const accessRequest = accessRequestById(draft.accessId);
+    if (state.sentEmailDrafts.includes(draft.id)) {
+      setProductView("intros");
+      return;
+    }
+    if (!state.generatedEmailDrafts.includes(draft.id)) {
+      state.generatedEmailDrafts.push(draft.id);
+      state.socialCapital += draft.capital;
+    }
+    if (!state.approvedEmailDrafts.includes(draft.id)) {
+      state.approvedEmailDrafts.push(draft.id);
+    }
+    if (!state.checkedAccess.includes(accessRequest.id)) {
+      state.checkedAccess.push(accessRequest.id);
+    }
+    if (!state.approvedAccess.includes(accessRequest.id)) {
+      state.approvedAccess.push(accessRequest.id);
+    }
+    state.sentEmailDrafts.push(draft.id);
+    state.connected.gmail = true;
+    state.connected.calendar = true;
+    state.connected.contacts = true;
+    if (!state.intros.some((intro) => intro.target === person.name && intro.reason === "Gmail warm intro")) {
+      state.intros.unshift({
+        target: person.name,
+        connector: draft.connector,
+        reason: "Gmail warm intro",
+        status: "Sent",
+      });
+    }
+    state.feed.unshift({
+      person: person.name,
+      actor: "You",
+      text: `sent the local warm intro email to ${person.name} through ${draft.connector}. Nothing external was transmitted.`,
+      time: "Just now",
+      capital: 4,
+    });
+    setProductView("intros");
     return;
   }
 

@@ -115,6 +115,7 @@
             <button class="product-nav-item" type="button" data-product-view="strength">Strength</button>
             <button class="product-nav-item" type="button" data-product-view="access">Access</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
+            <button class="product-nav-item" type="button" data-product-view="email">Email</button>
             <button class="product-nav-item" type="button" data-product-view="messages">DMs</button>
             <button class="product-nav-item" type="button" data-product-view="intros">Intros</button>
           </nav>
@@ -444,6 +445,23 @@
               <button type="button" data-create-list>Create list</button>
             </div>
             <div class="smart-list-grid" data-smart-lists></div>
+          </section>
+
+          <section class="product-screen product-screen-email" data-product-screen="email" aria-label="Warm introduction email">
+            <div class="intro-email-layout">
+              <section class="intro-email-command">
+                <span class="product-kicker">Gmail warm intro</span>
+                <h3>Turn a warm path into an approval-gated email.</h3>
+                <div class="intro-email-actions">
+                  <button type="button" data-generate-intro-email>Generate email</button>
+                  <button type="button" data-approve-intro-email>Approve consent</button>
+                  <button type="button" data-send-intro-email>Send locally</button>
+                </div>
+                <div class="intro-email-list" data-intro-email-list></div>
+              </section>
+              <aside class="intro-email-draft" data-intro-email-draft></aside>
+            </div>
+            <section class="intro-email-ledger" data-intro-email-ledger></section>
           </section>
 
           <section class="product-screen product-screen-messages" data-product-screen="messages" aria-label="Gigi message delivery">

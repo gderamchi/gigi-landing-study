@@ -52,6 +52,7 @@ Implemented flows:
 - reconnect workflow that plans the right revival angle for a known contact and queues a local DM draft
 - permissioned-access workflow where agents check a route, preserve private context, and queue a double opt-in intro
 - warm-intro composer with private context, draft, save, and approve states
+- warm-intro email workflow that generates Gmail-style drafts, checks consent boundaries, and sends only to the local intro queue
 - smart network lists with shareable private-link preview and recipient lens behavior
 - DM delivery flow that turns a text ask into a Gigi smart-link card and local message preview
 - professional match reports with preloaded research, fit scores, compliments, and double opt-in intro handling
