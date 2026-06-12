@@ -1005,6 +1005,9 @@ body[data-share-active="true"] #app {
 .setup-source-card,
 .setup-consent-actions button,
 .setup-consent-export,
+.approval-actions button,
+.approval-card,
+.approval-panel button,
 .os-actions button,
 .people-os-scenario,
 .move-actions button,
@@ -1113,6 +1116,9 @@ body[data-share-active="true"] #app {
 .setup-audit,
 .setup-results,
 .setup-consent,
+.approval-command,
+.approval-panel,
+.approval-ledger,
 .move-command,
 .move-preview,
 .move-status,
@@ -1217,6 +1223,9 @@ body[data-share-active="true"] #app {
 .setup-audit p,
 .setup-results-grid p,
 .setup-consent-list p,
+.approval-command p,
+.approval-panel p,
+.approval-ledger-grid p,
 .move-command p,
 .move-preview p,
 .move-status-grid p,
@@ -2302,6 +2311,9 @@ body[data-share-active="true"] #app {
 .setup-results-grid span,
 .setup-consent-list span,
 .setup-consent-list small,
+.approval-card span,
+.approval-card small,
+.approval-ledger-grid span,
 .setup-progress span {
   color: rgb(255 255 255 / 0.5);
   font-size: 11px;
@@ -2498,6 +2510,199 @@ body[data-share-active="true"] #app {
   min-height: 42px;
   margin: 14px;
   color: #d7ff73;
+}
+
+.approval-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+}
+
+.approval-command {
+  min-height: 560px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 16%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 16% 84%, rgb(92 225 255 / 0.12), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.approval-command h3 {
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(44px, 5vw, 76px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.approval-command p {
+  max-width: 620px;
+  margin-top: 18px;
+  font-size: 16px;
+}
+
+.approval-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.approval-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.approval-actions button:first-child {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.approval-actions button:not(:first-child) {
+  color: #fff;
+}
+
+.approval-actions button[disabled] {
+  cursor: default;
+  opacity: 0.52;
+}
+
+.approval-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.approval-card {
+  min-height: 146px;
+  align-content: start;
+  padding: 15px;
+  text-align: left;
+}
+
+.approval-card.is-selected {
+  border-color: rgb(198 255 91 / 0.36);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.approval-card.is-approved {
+  border-color: rgb(198 255 91 / 0.42);
+}
+
+.approval-card.is-blocked {
+  opacity: 0.58;
+}
+
+.approval-card span,
+.approval-card strong,
+.approval-card small {
+  display: block;
+}
+
+.approval-card strong {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.08;
+}
+
+.approval-card small {
+  margin-top: 18px;
+  color: #d7ff73;
+}
+
+.approval-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 72% 18%, rgb(92 225 255 / 0.14), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.approval-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.approval-state {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  border: 1px solid rgb(198 255 91 / 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgb(198 255 91 / 0.08);
+}
+
+.approval-state strong {
+  color: #d7ff73;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.approval-state span {
+  color: rgb(255 255 255 / 0.54);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.approval-panel button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  color: #d7ff73;
+}
+
+.approval-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.approval-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.approval-ledger-grid article {
+  min-height: 164px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.approval-ledger-grid article.is-scanned {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.approval-ledger-grid article.is-approved {
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.1), rgb(5 5 5 / 0.72));
+}
+
+.approval-ledger-grid article.is-blocked {
+  opacity: 0.7;
+}
+
+.approval-ledger-grid h4 {
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
 }
 
 .move-layout {
@@ -3973,6 +4178,37 @@ body[data-share-active="true"] #app {
 
   .setup-consent-list article {
     min-height: 188px;
+    padding: 14px;
+  }
+
+  .approval-command {
+    min-height: 430px;
+    padding: 22px;
+  }
+
+  .approval-command h3 {
+    font-size: 50px;
+  }
+
+  .approval-list {
+    margin-top: 18px;
+  }
+
+  .approval-card {
+    min-height: 124px;
+    padding: 12px;
+  }
+
+  .approval-card strong {
+    font-size: 17px;
+  }
+
+  .approval-panel {
+    padding: 18px;
+  }
+
+  .approval-ledger-grid article {
+    min-height: 134px;
     padding: 14px;
   }
 
@@ -7613,6 +7849,9 @@ body[data-share-active="true"] #app {
   .setup-source-list,
   .setup-results-grid,
   .setup-consent-list,
+  .approval-layout,
+  .approval-list,
+  .approval-ledger-grid,
   .move-layout,
   .move-list,
   .move-status-grid,
@@ -7819,6 +8058,33 @@ body[data-share-active="true"] #app {
 
   .setup-consent-list article {
     min-height: auto;
+  }
+
+  .approval-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .approval-command h3 {
+    font-size: 52px;
+  }
+
+  .approval-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .approval-actions button {
+    width: 100%;
+  }
+
+  .approval-card,
+  .approval-ledger-grid article {
+    min-height: auto;
+  }
+
+  .approval-panel {
+    position: static;
   }
 
   .move-command {

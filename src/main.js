@@ -1125,6 +1125,61 @@ const setupSources = [
   },
 ];
 
+const approvalActions = [
+  {
+    id: "gmail-priya-approval",
+    label: "Gmail warm intro",
+    source: "Gmail",
+    view: "email",
+    linkedId: "julien-priya-email",
+    target: "Priya Raman",
+    action: "Send a warm intro draft from your Gmail account.",
+    detail: "Julien's ask is scoped to a trust-heavy product review and Maxime's private notes stay outside the forwardable email.",
+    boundary: "You review the subject, recipients, body, and timing before anything is sent.",
+    next: "Approve consent boundaries in Email.",
+    capital: 4,
+  },
+  {
+    id: "maya-access-approval",
+    label: "Double opt-in intro",
+    source: "Access",
+    view: "access",
+    linkedId: "claire-maya",
+    target: "Maya Chen",
+    action: "Queue a permissioned founder-to-investor intro.",
+    detail: "Claire gets the seed-round path, Nina can redact connector context, and Maya only receives the scoped ask.",
+    boundary: "Connector approval and recipient opt-in are required before the intro becomes visible.",
+    next: "Open the permission route in Access.",
+    capital: 5,
+  },
+  {
+    id: "smart-link-approval",
+    label: "Share graph slice",
+    source: "Smart link",
+    view: "lists",
+    linkedId: "Seed investors I like and can intro",
+    target: "Private list recipient",
+    action: "Share one searchable shortlist instead of the whole network.",
+    detail: "The recipient can request intros from a scoped list while private relationship context remains gated.",
+    boundary: "Only selected profiles and approved intro requests leave the private graph.",
+    next: "Review the recipient lens in Lists.",
+    capital: 3,
+  },
+  {
+    id: "signal-approval",
+    label: "Close-circle signal",
+    source: "Signals",
+    view: "signals",
+    linkedId: "reputation",
+    target: "Close circle",
+    action: "Publish a reputation signal into the trusted circle.",
+    detail: "Private proof can strengthen a person's profile, but only within the visibility boundary chosen by you.",
+    boundary: "No public reputation score is created; the signal is contextual and scoped.",
+    next: "Open the close-circle composer in Signals.",
+    capital: 2,
+  },
+];
+
 const intakeCall = {
   objective:
     "Raise a seed round for an AI infrastructure company while hiring one trust-heavy product advisor.",
@@ -1473,6 +1528,10 @@ const state = {
   activePeopleOsId: "nina-maya-agent",
   ranPeopleOs: [],
   promptedPeopleOs: [],
+  activeApprovalId: "gmail-priya-approval",
+  scannedApprovals: [],
+  approvedApprovals: [],
+  blockedApprovals: [],
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
@@ -1732,6 +1791,10 @@ function setupSourceById(id) {
   return setupSources.find((source) => source.id === id) ?? setupSources[0];
 }
 
+function approvalActionById(id) {
+  return approvalActions.find((action) => action.id === id) ?? approvalActions[0];
+}
+
 function opportunityMoveById(id) {
   return opportunityMoves.find((move) => move.id === id) ?? opportunityMoves[0];
 }
@@ -1846,6 +1909,7 @@ function setProductView(view) {
       radar: "Proactive radar",
       call: "Intake call",
       setup: "Trust setup",
+      approvals: "Approval queue",
       moves: "Opportunity moves",
       score: "Social Capital Score",
       matches: "Match reports",
@@ -2084,6 +2148,115 @@ function renderSetup() {
         .join("")}
     </div>
     <button class="setup-consent-export" type="button" data-export-consent>${escapeHtml(state.consentReceiptExported ? "Receipt exported" : "Export local receipt")}</button>
+  `;
+}
+
+function approvalActionState(action) {
+  if (state.blockedApprovals.includes(action.id)) return "Blocked";
+  if (state.approvedApprovals.includes(action.id)) return "Approved";
+  if (state.scannedApprovals.includes(action.id)) return "Needs approval";
+  return "Pending scan";
+}
+
+function renderApprovals() {
+  const list = document.querySelector("[data-approval-list]");
+  const panel = document.querySelector("[data-approval-panel]");
+  const ledger = document.querySelector("[data-approval-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = approvalActionById(state.activeApprovalId);
+  const activeState = approvalActionState(active);
+  const scanned = state.scannedApprovals.includes(active.id);
+  const approved = state.approvedApprovals.includes(active.id);
+  const blocked = state.blockedApprovals.includes(active.id);
+  const scanButton = document.querySelector("[data-scan-approval]");
+  const approveButton = document.querySelector("[data-approve-action]");
+  const blockButton = document.querySelector("[data-block-action]");
+  const approvedCount = state.approvedApprovals.length;
+  const blockedCount = state.blockedApprovals.length;
+
+  if (scanButton) {
+    scanButton.textContent = scanned || approved || blocked ? "Action scanned" : "Scan action";
+    scanButton.disabled = scanned || approved || blocked;
+  }
+  if (approveButton) {
+    approveButton.textContent = approved ? "Approved" : "Approve selected";
+    approveButton.disabled = blocked || approved;
+  }
+  if (blockButton) {
+    blockButton.textContent = blocked ? "Blocked" : "Block action";
+    blockButton.disabled = approved || blocked;
+  }
+
+  list.innerHTML = approvalActions
+    .map((action) => {
+      const actionState = approvalActionState(action);
+      return `
+        <button class="approval-card ${action.id === active.id ? "is-selected" : ""} is-${actionState.toLowerCase().replaceAll(" ", "-")}" type="button" data-select-approval="${action.id}">
+          <span>${escapeHtml(action.source)}</span>
+          <strong>${escapeHtml(action.label)}</strong>
+          <small>${escapeHtml(actionState)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Selected action</span>
+    <h3>${escapeHtml(active.action)}</h3>
+    <p>${escapeHtml(active.detail)}</p>
+    <div class="approval-state">
+      <strong>${escapeHtml(activeState)}</strong>
+      <span>${escapeHtml(active.source)}</span>
+    </div>
+    <div class="path-box">
+      <strong>Human boundary</strong>
+      <p>${escapeHtml(active.boundary)}</p>
+    </div>
+    <button type="button" data-open-approval-source>${escapeHtml(active.next)}</button>
+  `;
+
+  const ledgerRows = [
+    {
+      label: "Recommendation",
+      value: scanned || approved ? "Prepared" : "Unscanned",
+      detail: "Gigi can suggest a useful next move from context, but it stays draft-only.",
+    },
+    {
+      label: "Review",
+      value: scanned || approved ? "Visible" : "Locked",
+      detail: "The user sees the source, target, boundary, and possible consequence before acting.",
+    },
+    {
+      label: "User action",
+      value: approved ? "Approved" : blocked ? "Blocked" : "Required",
+      detail: "Sending, sharing, publishing, and intro-routing require explicit user action.",
+    },
+    {
+      label: "Autonomy",
+      value: "No auto-send",
+      detail: "This local prototype never sends messages, exposes a graph, or decides outcomes for the user.",
+    },
+  ];
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>Approval ledger</span>
+      <strong>${escapeHtml(`${approvedCount} approved · ${blockedCount} blocked`)}</strong>
+    </div>
+    <div class="approval-ledger-grid">
+      ${ledgerRows
+        .map(
+          (row) => `
+            <article class="${approved ? "is-approved" : blocked ? "is-blocked" : scanned ? "is-scanned" : ""}">
+              <span>${escapeHtml(row.label)}</span>
+              <h4>${escapeHtml(row.value)}</h4>
+              <p>${escapeHtml(row.detail)}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
   `;
 }
 
@@ -4105,6 +4278,7 @@ function renderAll() {
   renderSourceHealth();
   renderPeopleOs();
   renderSetup();
+  renderApprovals();
   renderMoves();
   renderScore();
   renderMatches();
@@ -4286,6 +4460,136 @@ document.addEventListener("click", async (event) => {
       capital: 1,
     });
     renderAll();
+    return;
+  }
+
+  const approvalButton = target.closest("[data-select-approval]");
+  if (approvalButton) {
+    state.activeApprovalId = approvalButton.dataset.selectApproval;
+    renderApprovals();
+    return;
+  }
+
+  if (target.closest("[data-scan-approval]")) {
+    const action = approvalActionById(state.activeApprovalId);
+    if (!state.scannedApprovals.includes(action.id)) {
+      state.scannedApprovals.push(action.id);
+      state.feed.unshift({
+        person: action.target,
+        actor: "Gigi",
+        text: `prepared an approval review for ${action.label}. ${action.boundary}`,
+        time: "Just now",
+        capital: 1,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-approve-action]")) {
+    const action = approvalActionById(state.activeApprovalId);
+    if (state.blockedApprovals.includes(action.id)) return;
+    if (!state.scannedApprovals.includes(action.id)) {
+      state.scannedApprovals.push(action.id);
+    }
+    if (!state.approvedApprovals.includes(action.id)) {
+      state.approvedApprovals.push(action.id);
+      state.socialCapital += action.capital;
+
+      if (action.id === "gmail-priya-approval") {
+        const draft = introEmailById(action.linkedId);
+        const accessRequest = accessRequestById(draft.accessId);
+        state.activeEmailId = draft.id;
+        state.connected.gmail = true;
+        state.connected.calendar = true;
+        state.connected.contacts = true;
+        if (!state.generatedEmailDrafts.includes(draft.id)) state.generatedEmailDrafts.push(draft.id);
+        if (!state.approvedEmailDrafts.includes(draft.id)) state.approvedEmailDrafts.push(draft.id);
+        if (!state.checkedAccess.includes(accessRequest.id)) state.checkedAccess.push(accessRequest.id);
+      }
+
+      if (action.id === "maya-access-approval") {
+        const accessRequest = accessRequestById(action.linkedId);
+        const targetPerson = personById(accessRequest.targetId);
+        state.activeAccessId = accessRequest.id;
+        state.connected.calendar = true;
+        state.connected.contacts = true;
+        if (!state.checkedAccess.includes(accessRequest.id)) state.checkedAccess.push(accessRequest.id);
+        if (!state.handshakenAccess.includes(accessRequest.id)) state.handshakenAccess.push(accessRequest.id);
+        if (!state.approvedAccess.includes(accessRequest.id)) state.approvedAccess.push(accessRequest.id);
+        if (!state.intros.some((intro) => intro.target === targetPerson.name && intro.reason === "Approval queue")) {
+          state.intros.unshift({
+            target: targetPerson.name,
+            connector: accessRequest.connector,
+            reason: "Approval queue",
+            status: "Waiting opt-in",
+          });
+        }
+      }
+
+      if (action.id === "smart-link-approval") {
+        state.previewListIndex = 1;
+        state.shareListIndex = 1;
+        state.shareUnlocked = true;
+      }
+
+      if (action.id === "signal-approval") {
+        const person = personById("priya");
+        const exists = state.circleSignals.some(
+          (signal) => signal.id === "approval-priya-close-circle",
+        );
+        if (!exists) {
+          state.circleSignals.unshift({
+            id: "approval-priya-close-circle",
+            direction: "written",
+            actor: "You",
+            subject: person.name,
+            personId: person.id,
+            pillar: "Reputation",
+            title: `Reputation signal for ${person.name}`,
+            text: "Priya made the launch review sharper by catching the parts that would make users hesitate.",
+            privacy: "Close circle",
+            score: 6,
+            time: "Just now",
+          });
+        }
+      }
+
+      state.feed.unshift({
+        person: action.target,
+        actor: "You",
+        text: `approved ${action.label}. Gigi updated the local workflow but did not send or expose anything externally.`,
+        time: "Just now",
+        capital: action.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-block-action]")) {
+    const action = approvalActionById(state.activeApprovalId);
+    if (!state.approvedApprovals.includes(action.id) && !state.blockedApprovals.includes(action.id)) {
+      state.blockedApprovals.push(action.id);
+      state.feed.unshift({
+        person: action.target,
+        actor: "You",
+        text: `blocked ${action.label}. The related workflow stays draft-only until you approve a new action.`,
+        time: "Just now",
+        capital: 0,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-approval-source]")) {
+    const action = approvalActionById(state.activeApprovalId);
+    if (action.id === "gmail-priya-approval") state.activeEmailId = action.linkedId;
+    if (action.id === "maya-access-approval") state.activeAccessId = action.linkedId;
+    if (action.id === "smart-link-approval") state.previewListIndex = 1;
+    if (action.id === "signal-approval") state.signalRecipientId = "priya";
+    setProductView(action.view);
     return;
   }
 

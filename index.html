@@ -112,6 +112,7 @@
             <button class="product-nav-item" type="button" data-product-view="radar">Radar</button>
             <button class="product-nav-item" type="button" data-product-view="call">Call</button>
             <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
+            <button class="product-nav-item" type="button" data-product-view="approvals">Approvals</button>
             <button class="product-nav-item" type="button" data-product-view="moves">Moves</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="matches">Matches</button>
@@ -248,6 +249,24 @@
             </div>
             <section class="setup-results" data-setup-results></section>
             <section class="setup-consent" data-setup-consent></section>
+          </section>
+
+          <section class="product-screen product-screen-approvals" data-product-screen="approvals" aria-label="Approval queue">
+            <div class="approval-layout">
+              <section class="approval-command">
+                <span class="product-kicker">Human approval layer</span>
+                <h3>Review every action before Gigi moves.</h3>
+                <p>Recommendations can be fast. Sending, sharing, and publishing still wait for explicit user approval.</p>
+                <div class="approval-actions">
+                  <button type="button" data-scan-approval>Scan action</button>
+                  <button type="button" data-approve-action>Approve selected</button>
+                  <button type="button" data-block-action>Block action</button>
+                </div>
+                <div class="approval-list" data-approval-list></div>
+              </section>
+              <aside class="approval-panel" data-approval-panel></aside>
+            </div>
+            <section class="approval-ledger" data-approval-ledger></section>
           </section>
 
           <section class="product-screen product-screen-moves" data-product-screen="moves" aria-label="Opportunity moves">
