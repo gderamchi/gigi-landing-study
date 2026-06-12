@@ -885,6 +885,59 @@ const setupSources = [
   },
 ];
 
+const intakeCall = {
+  objective:
+    "Raise a seed round for an AI infrastructure company while hiring one trust-heavy product advisor.",
+  transcript: [
+    {
+      speaker: "Gigi",
+      text: "What are you trying to unlock this month: funding, hiring, customers, or a room you need access to?",
+    },
+    {
+      speaker: "You",
+      text: "Seed investors first, but I also need a sharp product advisor who understands trust-heavy AI surfaces.",
+    },
+    {
+      speaker: "Gigi",
+      text: "Who already knows enough context to make that ask warm instead of performative?",
+    },
+    {
+      speaker: "You",
+      text: "Nina has investor context, Maxime knows Priya, and Clara has the founder dinner graph.",
+    },
+    {
+      speaker: "Gigi",
+      text: "What should stay private unless someone opts in?",
+    },
+    {
+      speaker: "You",
+      text: "Round details, launch-review notes, and the full dinner list. Keep everything scoped.",
+    },
+  ],
+  insights: [
+    {
+      label: "Primary goal",
+      title: "Seed round warm paths",
+      detail: "Prioritize Maya through Nina, then Adrian through Clara for founder references.",
+    },
+    {
+      label: "Secondary goal",
+      title: "Trust-heavy product advisor",
+      detail: "Route Priya through Maxime with a narrow product-review ask.",
+    },
+    {
+      label: "Privacy boundary",
+      title: "Scoped context only",
+      detail: "Hide round details, launch notes, and room membership until connector approval.",
+    },
+  ],
+  plan: [
+    "Run Radar for useful people before a search.",
+    "Score relationship strength before drafting any intro.",
+    "Use Access and Gmail drafts so each route stays double opt-in.",
+  ],
+};
+
 const radarPredictions = [
   {
     id: "trust-review",
@@ -1172,6 +1225,9 @@ const state = {
   filter: "all",
   selectedPersonId: "adrian",
   answer: "",
+  callStarted: false,
+  callExtracted: false,
+  callActivated: false,
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
@@ -1464,6 +1520,7 @@ function setProductView(view) {
     const titles = {
       feed: "Private circle",
       radar: "Proactive radar",
+      call: "Intake call",
       setup: "Trust setup",
       moves: "Opportunity moves",
       score: "Social Capital Score",
@@ -2622,6 +2679,86 @@ function renderRadar() {
   `;
 }
 
+function renderCall() {
+  const transcript = document.querySelector("[data-call-transcript]");
+  const panel = document.querySelector("[data-call-panel]");
+  const summary = document.querySelector("[data-call-summary]");
+  if (!transcript || !panel || !summary) return;
+
+  const started = state.callStarted;
+  const extracted = state.callExtracted;
+  const activated = state.callActivated;
+  const startButton = document.querySelector("[data-start-call]");
+  const extractButton = document.querySelector("[data-extract-call]");
+  const activateButton = document.querySelector("[data-activate-call-plan]");
+
+  if (startButton) {
+    startButton.textContent = started ? "Call recorded" : "Start call";
+    startButton.disabled = started;
+  }
+  if (extractButton) {
+    extractButton.textContent = extracted ? "Intent extracted" : "Extract intent";
+    extractButton.disabled = !started || extracted;
+  }
+  if (activateButton) {
+    activateButton.textContent = activated ? "Open Goals" : "Activate plan";
+    activateButton.disabled = !extracted && !activated;
+  }
+
+  transcript.innerHTML = started
+    ? intakeCall.transcript
+        .map(
+          (line) => `
+            <article class="call-line ${line.speaker === "Gigi" ? "is-gigi" : "is-user"}">
+              <span>${escapeHtml(line.speaker)}</span>
+              <p>${escapeHtml(line.text)}</p>
+            </article>
+          `,
+        )
+        .join("")
+    : `
+      <article class="call-line is-empty">
+        <span>Waiting</span>
+        <p>Start the intake call so Gigi can learn the real objective before using your network.</p>
+      </article>
+    `;
+
+  panel.innerHTML = `
+    <span class="product-kicker">Agent memory</span>
+    <h3>${escapeHtml(extracted ? intakeCall.objective : "No static form fields.")}</h3>
+    <p>${escapeHtml(extracted ? "Gigi has enough context to turn the conversation into ranked paths, privacy boundaries, and next actions." : "The call captures what matters, who already has context, and what must stay private.")}</p>
+    <div class="call-meter">
+      <strong>${escapeHtml(activated ? "Live" : extracted ? "3" : started ? "6" : "--")}</strong>
+      <span>${escapeHtml(activated ? "plan active" : extracted ? "insights" : started ? "turns captured" : "waiting")}</span>
+    </div>
+    <div class="call-plan-list">
+      ${(extracted ? intakeCall.plan : ["Ask the right questions", "Capture privacy boundaries", "Activate warm-path goals"])
+        .map((step, index) => `<div><span>${index + 1}</span><p>${escapeHtml(step)}</p></div>`)
+        .join("")}
+    </div>
+  `;
+
+  summary.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(activated ? "Plan activated" : extracted ? "Intent extracted" : started ? "Call recorded" : "Voice intake")}</span>
+      <strong>${escapeHtml(activated ? "Goals ready" : extracted ? "Ready to activate" : started ? "Needs extraction" : "Start call")}</strong>
+    </div>
+    <div class="call-summary-grid">
+      ${intakeCall.insights
+        .map(
+          (insight) => `
+            <article class="${activated ? "is-live" : extracted ? "is-ready" : ""}">
+              <span>${escapeHtml(insight.label)}</span>
+              <h4>${escapeHtml(extracted ? insight.title : "Hidden until intent extraction")}</h4>
+              <p>${escapeHtml(extracted ? insight.detail : "Gigi waits for the conversation before creating network actions.")}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderPeople() {
   const results = document.querySelector("[data-person-results]");
   if (!results) return;
@@ -3336,6 +3473,7 @@ function renderAll() {
   renderReferences();
   renderFeed();
   renderRadar();
+  renderCall();
   renderPeople();
   renderGraph();
   renderStrength();
@@ -3500,6 +3638,67 @@ document.addEventListener("click", async (event) => {
     state.connected.publicProfile = true;
     state.activeAccessId = accessRequest.id;
     setProductView("access");
+    return;
+  }
+
+  if (target.closest("[data-start-call]")) {
+    if (!state.callStarted) {
+      state.callStarted = true;
+      state.socialCapital += 2;
+      state.feed.unshift({
+        person: "Intake call",
+        actor: "Gigi",
+        text: "recorded a local voice intake and captured the user's network objective.",
+        time: "Just now",
+        capital: 2,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-extract-call]")) {
+    if (!state.callStarted) {
+      state.callStarted = true;
+    }
+    if (!state.callExtracted) {
+      state.callExtracted = true;
+      state.socialCapital += 4;
+      state.feed.unshift({
+        person: "Intake call",
+        actor: "Gigi",
+        text: "extracted seed-round, product-advisor, and privacy-boundary signals from the call.",
+        time: "Just now",
+        capital: 4,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-activate-call-plan]")) {
+    if (state.callActivated) {
+      setProductView("goals");
+      return;
+    }
+    state.callStarted = true;
+    state.callExtracted = true;
+    state.callActivated = true;
+    state.connected.calendar = true;
+    state.connected.gmail = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    state.goalBrief =
+      "I am raising a seed round for an AI infrastructure company and need a trust-heavy product advisor before launch.";
+    state.activeGoalId = "raise-seed";
+    state.feed.unshift({
+      person: "Intake call",
+      actor: "Gigi",
+      text: "activated the call plan into Goals, Radar, and approval-gated intro workflows.",
+      time: "Just now",
+      capital: 5,
+    });
+    setProductView("goals");
     return;
   }
 

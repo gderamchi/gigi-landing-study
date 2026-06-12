@@ -98,6 +98,7 @@
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="radar">Radar</button>
+            <button class="product-nav-item" type="button" data-product-view="call">Call</button>
             <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
             <button class="product-nav-item" type="button" data-product-view="moves">Moves</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
@@ -181,6 +182,23 @@
               <aside class="radar-prediction" data-radar-prediction></aside>
             </div>
             <section class="radar-evidence" data-radar-evidence></section>
+          </section>
+
+          <section class="product-screen product-screen-call" data-product-screen="call" aria-label="Gigi intake call">
+            <div class="call-layout">
+              <section class="call-command">
+                <span class="product-kicker">Voice intake</span>
+                <h3>Let Gigi learn the ask before she moves.</h3>
+                <div class="call-actions">
+                  <button type="button" data-start-call>Start call</button>
+                  <button type="button" data-extract-call>Extract intent</button>
+                  <button type="button" data-activate-call-plan>Activate plan</button>
+                </div>
+                <div class="call-transcript" data-call-transcript></div>
+              </section>
+              <aside class="call-panel" data-call-panel></aside>
+            </div>
+            <section class="call-summary" data-call-summary></section>
           </section>
 
           <section class="product-screen product-screen-setup" data-product-screen="setup" aria-label="Trust setup">
