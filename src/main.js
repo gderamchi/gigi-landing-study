@@ -3,6 +3,7 @@ import "./styles.css";
 const root = document.documentElement;
 const body = document.body;
 const productApp = document.querySelector(".product-app");
+const shareApp = document.querySelector(".share-app");
 
 const people = [
   {
@@ -150,6 +151,10 @@ const state = {
   },
   previewListIndex: 0,
   previewLens: "founder",
+  shareListIndex: 0,
+  shareLens: "founder",
+  shareUnlocked: false,
+  shareRequested: [],
   graphRefreshes: 0,
   socialCapital: 248,
   claimApproved: false,
@@ -235,17 +240,37 @@ function personById(id) {
   return people.find((person) => person.id === id) ?? people[0];
 }
 
+function listSlug(list) {
+  return list.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function listIndexBySlug(slug) {
+  const normalized = String(slug ?? "").replace(/\/$/, "");
+  const index = smartLists.findIndex((list) => listSlug(list) === normalized);
+  return index >= 0 ? index : 0;
+}
+
+function shareUrl(index) {
+  const list = smartLists[index] ?? smartLists[0];
+  return `${window.location.origin}/share/${listSlug(list)}`;
+}
+
 function avatar(name) {
   return `<span class="avatar" aria-hidden="true">${escapeHtml(initials(name))}</span>`;
 }
 
 function openProduct(view = state.view) {
   if (!productApp) return;
+  if (shareApp) shareApp.hidden = true;
   productApp.hidden = false;
+  delete body.dataset.shareActive;
   body.dataset.productActive = "true";
   setProductView(view);
   if (!new URLSearchParams(window.location.search).has("app")) {
-    window.history.replaceState(null, "", "?app=1");
+    window.history.replaceState(null, "", "/?app=1");
   }
 }
 
@@ -253,7 +278,29 @@ function closeProduct() {
   if (!productApp) return;
   productApp.hidden = true;
   delete body.dataset.productActive;
-  window.history.replaceState(null, "", window.location.pathname);
+  window.history.replaceState(null, "", "/");
+}
+
+function openSharedList(index = state.shareListIndex, shouldPushState = true) {
+  if (!shareApp) return;
+  state.shareListIndex = Number.isFinite(index) ? index : 0;
+  state.shareLens = state.shareLens || "founder";
+  if (productApp) productApp.hidden = true;
+  shareApp.hidden = false;
+  delete body.dataset.productActive;
+  body.dataset.shareActive = "true";
+  document.querySelector("[data-link-preview-modal]")?.setAttribute("hidden", "");
+  renderShareView();
+  if (shouldPushState) {
+    window.history.replaceState(null, "", `/share/${listSlug(smartLists[state.shareListIndex])}`);
+  }
+}
+
+function closeShare() {
+  if (!shareApp) return;
+  shareApp.hidden = true;
+  delete body.dataset.shareActive;
+  window.history.replaceState(null, "", "/");
 }
 
 function setProductView(view) {
@@ -492,6 +539,98 @@ function renderLinkPreview() {
   });
 }
 
+function renderShareView() {
+  const hero = document.querySelector("[data-share-hero]");
+  const unlock = document.querySelector("[data-share-unlock-card]");
+  const results = document.querySelector("[data-share-results]");
+  if (!hero || !unlock || !results) return;
+
+  const list = smartLists[state.shareListIndex] ?? smartLists[0];
+  const listPeople = list.people.map(personById);
+  const lensCopy = {
+    founder: {
+      label: "Founder lens",
+      headline: "People who can unlock this ask",
+      detail: "Gigi ranks warm paths by intent, mutual trust, and recent calendar context.",
+    },
+    investor: {
+      label: "Investor lens",
+      headline: "Why these founders are worth attention",
+      detail: "Gigi shows the signal behind each recommendation without exposing private notes.",
+    },
+    hiring: {
+      label: "Hiring lens",
+      headline: "Trusted operators and talent context",
+      detail: "Gigi surfaces people who are vouched for by active relationships, not public followers.",
+    },
+  };
+  const copy = lensCopy[state.shareLens] ?? lensCopy.founder;
+  const visiblePeople = state.shareUnlocked ? listPeople : listPeople.slice(0, 2);
+
+  hero.innerHTML = `
+    <span class="share-pill">created by ${escapeHtml(list.creator)}</span>
+    <h1>${escapeHtml(list.title)}</h1>
+    <p>${escapeHtml(list.context)} ${escapeHtml(copy.detail)}</p>
+    <div class="share-metrics" aria-label="Shared list metrics">
+      <div><strong>${list.count}</strong><span>trusted profiles</span></div>
+      <div><strong>${listPeople.length}</strong><span>warm paths previewed</span></div>
+      <div><strong>${state.shareUnlocked ? "Live" : "Gated"}</strong><span>private access</span></div>
+    </div>
+  `;
+
+  unlock.innerHTML = state.shareUnlocked
+    ? `
+      <span class="product-kicker">Trusted access unlocked</span>
+      <h2>${escapeHtml(copy.headline)}</h2>
+      <p>Calendar context is simulated locally. Private notes stay hidden until the recipient asks for an intro and the connector approves.</p>
+      <button type="button" data-open-product-from-share>Open in Gigi</button>
+    `
+    : `
+      <span class="product-kicker">Private link</span>
+      <h2>Unlock trusted access with your context.</h2>
+      <p>This list is shared as a private asset. Connect to reveal why each profile is relevant to your ask and request gated introductions.</p>
+      <button type="button" data-unlock-share>Continue with Gmail</button>
+    `;
+
+  results.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(copy.label)}</span>
+      <strong>${state.shareUnlocked ? "Dynamic profiles" : "Preview locked"}</strong>
+    </div>
+    <div class="share-person-grid ${state.shareUnlocked ? "" : "is-locked"}">
+      ${visiblePeople
+        .map((person) => {
+          const requested = state.shareRequested.includes(person.id);
+          return `
+            <article class="share-person-card">
+              <div class="share-person-art">
+                ${avatar(person.name)}
+                <span>${person.trust}%</span>
+              </div>
+              <div>
+                <h3>${escapeHtml(state.shareUnlocked ? person.name : `${initials(person.name)} · hidden`)}</h3>
+                <p>${escapeHtml(state.shareUnlocked ? `${person.role} · ${person.location}` : "Sign in to reveal the profile and private context.")}</p>
+              </div>
+              <div class="path-box">
+                <strong>${escapeHtml(state.shareUnlocked ? person.path : "Warm path hidden")}</strong>
+                <p>${escapeHtml(state.shareUnlocked ? `${person.lastSignal}. Intent: ${person.intent}.` : "Gigi only reveals relationship context after trusted access is unlocked.")}</p>
+              </div>
+              <div class="tag-row">${person.tags.slice(0, 4).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
+              <button type="button" data-request-shared-intro="${person.id}" ${state.shareUnlocked ? "" : "disabled"}>
+                ${requested ? "Intro requested" : "Request gated intro"}
+              </button>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+
+  document.querySelectorAll("[data-share-lens]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.shareLens === state.shareLens);
+  });
+}
+
 function renderIntros() {
   const board = document.querySelector("[data-intro-board]");
   if (!board) return;
@@ -553,6 +692,7 @@ function renderAll() {
   renderGraph();
   renderLists();
   renderLinkPreview();
+  renderShareView();
   renderIntros();
   renderClaimProfile();
 }
@@ -737,9 +877,13 @@ document.addEventListener("click", async (event) => {
   }
 
   if (target.closest("[data-copy-preview-link]")) {
-    const list = smartLists[state.previewListIndex] ?? smartLists[0];
-    await copyText(`https://gigi.co/share/${list.title.toLowerCase().replace(/\W+/g, "-")}`);
+    await copyText(shareUrl(state.previewListIndex));
     target.closest("[data-copy-preview-link]").textContent = "Private link copied";
+    return;
+  }
+
+  if (target.closest("[data-open-private-link]")) {
+    openSharedList(state.previewListIndex);
     return;
   }
 
@@ -757,6 +901,55 @@ document.addEventListener("click", async (event) => {
     });
     document.querySelector("[data-link-preview-modal]").hidden = true;
     setProductView("intros");
+    return;
+  }
+
+  const shareLensButton = target.closest("[data-share-lens]");
+  if (shareLensButton) {
+    state.shareLens = shareLensButton.dataset.shareLens;
+    renderShareView();
+    return;
+  }
+
+  if (target.closest("[data-unlock-share]")) {
+    state.shareUnlocked = true;
+    state.connected.gmail = true;
+    renderShareView();
+    return;
+  }
+
+  if (target.closest("[data-open-product-from-share]")) {
+    openProduct("search");
+    return;
+  }
+
+  if (target.closest("[data-close-share]")) {
+    closeShare();
+    return;
+  }
+
+  const sharedIntroButton = target.closest("[data-request-shared-intro]");
+  if (sharedIntroButton) {
+    const person = personById(sharedIntroButton.dataset.requestSharedIntro);
+    if (!state.shareRequested.includes(person.id)) {
+      state.shareRequested.push(person.id);
+    }
+    if (!state.intros.some((intro) => intro.target === person.name)) {
+      state.intros.unshift({
+        target: person.name,
+        connector: person.connector,
+        reason: `Requested from shared list`,
+        status: "Waiting opt-in",
+      });
+    }
+    state.feed.unshift({
+      person: person.name,
+      actor: "Shared link recipient",
+      text: `requested a gated intro to ${person.name} through ${person.connector}.`,
+      time: "Just now",
+      capital: 4,
+    });
+    renderShareView();
     return;
   }
 
@@ -841,6 +1034,10 @@ updatePlaceholder();
 renderAll();
 
 const params = new URLSearchParams(window.location.search);
-if (params.get("app") === "1" || window.location.hash === "#product") {
+const sharePath = window.location.pathname.match(/^\/share\/([^/]+)/);
+const sharedSlug = sharePath?.[1] || params.get("share");
+if (sharedSlug) {
+  openSharedList(listIndexBySlug(sharedSlug), false);
+} else if (params.get("app") === "1" || window.location.hash === "#product") {
   openProduct("feed");
 }

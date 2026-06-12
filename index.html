@@ -232,6 +232,7 @@
             <div class="link-preview-body" data-link-preview-body></div>
             <div class="composer-actions">
               <button type="button" data-copy-preview-link>Copy private link</button>
+              <button type="button" data-open-private-link>Open private link</button>
               <button type="button" data-request-list-intros>Request selected intros</button>
             </div>
           </div>
@@ -256,6 +257,25 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="share-app" aria-label="Gigi shared private list" hidden>
+        <header class="share-topbar">
+          <button class="product-logo-button" type="button" data-close-share aria-label="Back to Gigi">
+            <img src="https://gigi.co/assets/gigi-logo.webp" alt="" width="26" height="26" />
+          </button>
+          <div class="share-topbar-actions" aria-label="Recipient lens">
+            <button type="button" data-share-lens="founder">Founder</button>
+            <button type="button" data-share-lens="investor">Investor</button>
+            <button type="button" data-share-lens="hiring">Hiring</button>
+          </div>
+        </header>
+
+        <main class="share-shell">
+          <section class="share-hero" data-share-hero></section>
+          <section class="share-unlock-card" data-share-unlock-card></section>
+          <section class="share-results" data-share-results></section>
+        </main>
       </section>
     </div>
     <script type="module" src="/src/main.js"></script>
