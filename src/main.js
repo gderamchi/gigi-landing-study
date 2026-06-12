@@ -701,6 +701,75 @@ const meetingBriefings = [
   },
 ];
 
+const profileDossiers = [
+  {
+    id: "maya-investor-dossier",
+    label: "Investor lookup",
+    targetId: "maya",
+    requester: "Claire Moreau",
+    connector: "Nina Patel",
+    briefingId: "sequoia-pitch",
+    accessId: "claire-maya",
+    meeting: "Tomorrow 9:30 AM",
+    objective: "Walk into Maya's seed pitch with a precise AI infra angle and a warm path through Nina.",
+    opener: "Your AI-native productivity thesis came up while we were mapping which infra founders still feel too horizontal.",
+    commonGround: ["Japan trip", "AI productivity thesis", "founder references"],
+    angle:
+      "Frame Claire's company as connective tissue for teams drowning in AI tooling, then ask which founder pattern Maya has not seen solved.",
+    whyNow:
+      "Nina has recent partner-meeting context and Claire's seed-round ask is specific enough to avoid cold outreach.",
+    privateBoundary:
+      "Hide round details and founder references until Nina approves the forwardable note.",
+    score: 93,
+    capital: 6,
+    sources: ["calendar", "public profile", "private context"],
+  },
+  {
+    id: "priya-product-dossier",
+    label: "Advisor lookup",
+    targetId: "priya",
+    requester: "Julien Renard",
+    connector: "Maxime Durand",
+    briefingId: "cofounder-coffee",
+    accessId: "julien-priya",
+    meeting: "Today 4:00 PM",
+    objective: "Understand whether Priya is the right product reviewer before asking for a trust-heavy AI critique.",
+    opener: "Your design-systems critique came up while we were checking where users hesitate before sharing private context.",
+    commonGround: ["design systems", "trust-heavy AI", "launch reviews"],
+    angle:
+      "Ask Priya to pressure-test whether Social Capital feels earned, not gamified, and which profile signal should stay private by default.",
+    whyNow:
+      "Maxime just worked with Priya on a launch review, so the ask can start from proof instead of vague proximity.",
+    privateBoundary:
+      "Keep Maxime's launch-review notes hidden until Priya opts into the reference loop.",
+    score: 91,
+    capital: 5,
+    sources: ["project history", "calendar", "connector vouch"],
+  },
+  {
+    id: "adrian-dinner-dossier",
+    label: "Founder-room lookup",
+    targetId: "adrian",
+    requester: "David Kim",
+    connector: "Clara Gold",
+    briefingId: "dinner-host-sync",
+    accessId: "david-adrian",
+    meeting: "Friday 7:15 PM",
+    objective: "Prepare a founder-room sync without leaking Clara's broader dinner graph.",
+    opener: "Your robotics infra angle feels useful for a small technical founder room, not a broader status dinner.",
+    commonGround: ["robotics infra", "private founder dinners", "seed investors"],
+    angle:
+      "Position the Gigi smart link as a way to share just enough context for opt-in intros before expanding the attendee graph.",
+    whyNow:
+      "Clara met Adrian recently and David is still curating the table, so the invite can stay narrow and timely.",
+    privateBoundary:
+      "Expose the dinner theme only. Do not reveal the full attendee list before David unlocks the private link.",
+    score: 87,
+    capital: 4,
+    sources: ["recent meeting", "private list", "public founder profile"],
+  },
+];
+
 const networkAsks = [
   {
     id: "seed-angels",
@@ -1247,6 +1316,10 @@ const state = {
   activeBriefingId: "sequoia-pitch",
   generatedBriefings: [],
   sentBriefings: [],
+  activeDossierId: "maya-investor-dossier",
+  loadedDossiers: [],
+  builtDossiers: [],
+  sentDossiers: [],
   activeMatchId: "buckhouse-belsky",
   revealedMatches: [],
   handledMatches: [],
@@ -1433,6 +1506,10 @@ function briefingById(id) {
   return meetingBriefings.find((briefing) => briefing.id === id) ?? meetingBriefings[0];
 }
 
+function profileDossierById(id) {
+  return profileDossiers.find((dossier) => dossier.id === id) ?? profileDossiers[0];
+}
+
 function referenceRequestKey(checkId, candidateName) {
   return `${checkId}:${candidateName}`;
 }
@@ -1534,6 +1611,7 @@ function setProductView(view) {
       goals: "Goals",
       asks: "Network asks",
       search: "Network search",
+      dossier: "Profile dossier",
       graph: "Trust graph",
       strength: "Relationship strength",
       access: "Permissioned access",
@@ -2284,9 +2362,20 @@ function renderBriefings() {
   const person = personById(briefing.personId);
   const generated = state.generatedBriefings.includes(briefing.id);
   const sent = state.sentBriefings.includes(briefing.id);
+  const generateButton = document.querySelector("[data-generate-briefing]");
+  const sendButton = document.querySelector("[data-send-briefing]");
   const signals = briefing.signalIds
     .map((id) => contextSignals.find((signal) => signal.id === id))
     .filter(Boolean);
+
+  if (generateButton) {
+    generateButton.textContent = generated || sent ? "Briefing ready" : "Generate briefing";
+    generateButton.disabled = generated || sent;
+  }
+  if (sendButton) {
+    sendButton.textContent = sent ? "Delivered to DM" : "Send to DM";
+    sendButton.disabled = (!generated && !sent) || sent;
+  }
 
   agenda.innerHTML = meetingBriefings
     .map((item) => {
@@ -2343,6 +2432,117 @@ function renderBriefings() {
       <article class="briefing-dossier-card is-questions">
         <span>Smart questions</span>
         ${briefing.questions.map((question) => `<p>${escapeHtml(question)}</p>`).join("")}
+      </article>
+    </div>
+  `;
+}
+
+function renderDossier() {
+  const list = document.querySelector("[data-dossier-list]");
+  const panel = document.querySelector("[data-dossier-panel]");
+  const evidence = document.querySelector("[data-dossier-evidence]");
+  if (!list || !panel || !evidence) return;
+
+  const active = profileDossierById(state.activeDossierId);
+  const person = personById(active.targetId);
+  const briefing = briefingById(active.briefingId);
+  const loaded = state.loadedDossiers.includes(active.id);
+  const built = state.builtDossiers.includes(active.id);
+  const sent = state.sentDossiers.includes(active.id);
+  const loadButton = document.querySelector("[data-load-dossier]");
+  const buildButton = document.querySelector("[data-build-dossier]");
+  const sendButton = document.querySelector("[data-send-dossier]");
+
+  if (loadButton) {
+    loadButton.textContent = loaded || built || sent ? "Profile loaded" : "Load profile";
+    loadButton.disabled = loaded || built || sent;
+  }
+  if (buildButton) {
+    buildButton.textContent = built || sent ? "Briefing ready" : "Build briefing";
+    buildButton.disabled = (!loaded && !built && !sent) || built || sent;
+  }
+  if (sendButton) {
+    sendButton.textContent = sent ? "Open Briefs" : "Send to Briefs";
+    sendButton.disabled = !built && !sent;
+  }
+
+  list.innerHTML = profileDossiers
+    .map((dossier) => {
+      const target = personById(dossier.targetId);
+      const dossierLoaded = state.loadedDossiers.includes(dossier.id);
+      const dossierBuilt = state.builtDossiers.includes(dossier.id);
+      const dossierSent = state.sentDossiers.includes(dossier.id);
+      return `
+        <button class="dossier-card ${dossier.id === active.id ? "is-selected" : ""} ${dossierSent ? "is-sent" : dossierBuilt ? "is-built" : dossierLoaded ? "is-loaded" : ""}" type="button" data-select-dossier="${dossier.id}">
+          <span>${escapeHtml(dossier.label)}</span>
+          <strong>${escapeHtml(target.name)}</strong>
+          <small>${escapeHtml(dossierSent ? "Sent to Briefs" : dossierBuilt ? "Briefing ready" : dossierLoaded ? `${dossier.score}% profile` : `via ${dossier.connector}`)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = loaded || built || sent
+    ? `
+      <span class="product-kicker">Person dossier</span>
+      <div class="dossier-person">
+        ${avatar(person.name)}
+        <div>
+          <h3>${escapeHtml(person.name)}</h3>
+          <p>${escapeHtml(person.role)} · ${escapeHtml(person.location)}</p>
+        </div>
+        <strong>${active.score}%</strong>
+      </div>
+      <div class="dossier-note ${built || sent ? "is-live" : ""}">
+        <span>${escapeHtml(built || sent ? "Opening line" : "Profile loaded")}</span>
+        <p>${escapeHtml(active.opener)}</p>
+      </div>
+      <div class="dossier-note">
+        <span>Why now</span>
+        <p>${escapeHtml(active.whyNow)}</p>
+      </div>
+      <div class="dossier-note">
+        <span>${escapeHtml(sent ? "Sent to Briefs" : built ? "Briefing ready" : "Build next")}</span>
+        <p>${escapeHtml(sent ? `${briefing.title} is now the active delivered briefing.` : built ? active.angle : "Build the briefing to turn this profile into a meeting-ready opener, angle, and questions.")}</p>
+      </div>
+      <div class="tag-row">
+        ${active.commonGround.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
+      </div>
+    `
+    : `
+      <span class="product-kicker">Profile locked</span>
+      <h3>Profile hidden until lookup.</h3>
+      <p>Choose a person and load the dossier before Gigi combines public profile context with private relationship memory.</p>
+      <div class="dossier-locked">
+        <strong>${escapeHtml(person.name)}</strong>
+        <span>${escapeHtml(active.meeting)}</span>
+      </div>
+      <div class="path-box">
+        <strong>${escapeHtml(active.connector)} can open the warm path.</strong>
+        <p>Private context, opener, and common ground stay hidden until you run the local lookup.</p>
+      </div>
+    `;
+
+  evidence.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(sent ? "Briefing delivered" : built ? "Profile turned into brief" : loaded ? "Profile intelligence" : "Lookup waiting")}</span>
+      <strong>${escapeHtml(sent ? "Open Briefs" : built ? "Ready" : loaded ? "Loaded" : "Private")}</strong>
+    </div>
+    <div class="dossier-evidence-grid">
+      <article class="${loaded || built || sent ? "is-live" : ""}">
+        <span>Profile</span>
+        <h4>${escapeHtml(loaded || built || sent ? `${person.name} · ${person.role}` : "Not loaded")}</h4>
+        <p>${escapeHtml(loaded || built || sent ? `Sources: ${active.sources.join(", ")}. ${person.lastSignal}.` : "The dossier waits for a local lookup before showing profile intelligence.")}</p>
+      </article>
+      <article class="${loaded || built || sent ? "is-live" : ""}">
+        <span>Common ground</span>
+        <h4>${escapeHtml(loaded || built || sent ? active.commonGround.join(" / ") : "Hidden")}</h4>
+        <p>${escapeHtml(loaded || built || sent ? active.objective : "Gigi only exposes common ground after the person is looked up.")}</p>
+      </article>
+      <article class="${sent ? "is-live" : built ? "is-ready" : ""}">
+        <span>Briefing</span>
+        <h4>${escapeHtml(sent ? "Delivered briefing" : built ? "Meeting brief ready" : "No brief yet")}</h4>
+        <p>${escapeHtml(built || sent ? active.privateBoundary : "Build the briefing before any opener, angle, or private boundary is routed to Briefs.")}</p>
       </article>
     </div>
   `;
@@ -3468,6 +3668,7 @@ function renderAll() {
   renderSignals();
   renderContext();
   renderBriefings();
+  renderDossier();
   renderGoals();
   renderAsks();
   renderReferences();
@@ -4158,6 +4359,106 @@ document.addEventListener("click", async (event) => {
       });
       renderAll();
     }
+    return;
+  }
+
+  const dossierButton = target.closest("[data-select-dossier]");
+  if (dossierButton) {
+    const dossier = profileDossierById(dossierButton.dataset.selectDossier);
+    state.activeDossierId = dossier.id;
+    renderDossier();
+    return;
+  }
+
+  if (target.closest("[data-load-dossier]")) {
+    const dossier = profileDossierById(state.activeDossierId);
+    const person = personById(dossier.targetId);
+    const wasLoaded = state.loadedDossiers.includes(dossier.id);
+    state.connected.calendar = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    state.selectedPersonId = person.id;
+    if (!wasLoaded) {
+      state.loadedDossiers.push(dossier.id);
+      state.socialCapital += dossier.capital;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi Dossier",
+        text: `loaded a profile dossier for ${person.name} using ${dossier.sources.join(", ")} and ${dossier.connector}'s warm path.`,
+        time: "Just now",
+        capital: dossier.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-build-dossier]")) {
+    const dossier = profileDossierById(state.activeDossierId);
+    const person = personById(dossier.targetId);
+    if (!state.loadedDossiers.includes(dossier.id)) {
+      state.loadedDossiers.push(dossier.id);
+      state.socialCapital += dossier.capital;
+    }
+    if (!state.builtDossiers.includes(dossier.id)) {
+      state.builtDossiers.push(dossier.id);
+      if (!state.generatedBriefings.includes(dossier.briefingId)) {
+        state.generatedBriefings.push(dossier.briefingId);
+      }
+      state.connected.calendar = true;
+      state.connected.publicProfile = true;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi Dossier",
+        text: `built a meeting briefing for ${person.name} with opener, common ground, why-now angle, and privacy boundary.`,
+        time: "Just now",
+        capital: 3,
+      });
+      state.socialCapital += 3;
+    }
+    state.activeBriefingId = dossier.briefingId;
+    state.selectedPersonId = person.id;
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-send-dossier]")) {
+    const dossier = profileDossierById(state.activeDossierId);
+    const person = personById(dossier.targetId);
+    if (state.sentDossiers.includes(dossier.id)) {
+      state.activeBriefingId = dossier.briefingId;
+      setProductView("briefings");
+      return;
+    }
+    if (!state.loadedDossiers.includes(dossier.id)) {
+      state.loadedDossiers.push(dossier.id);
+      state.socialCapital += dossier.capital;
+    }
+    if (!state.builtDossiers.includes(dossier.id)) {
+      state.builtDossiers.push(dossier.id);
+    }
+    if (!state.generatedBriefings.includes(dossier.briefingId)) {
+      state.generatedBriefings.push(dossier.briefingId);
+    }
+    if (!state.sentBriefings.includes(dossier.briefingId)) {
+      state.sentBriefings.push(dossier.briefingId);
+    }
+    state.sentDossiers.push(dossier.id);
+    state.connected.calendar = true;
+    state.connected.gmail = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    state.activeBriefingId = dossier.briefingId;
+    state.selectedPersonId = person.id;
+    state.feed.unshift({
+      person: person.name,
+      actor: "Gigi Dossier",
+      text: `sent ${person.name}'s profile dossier into Meeting briefings. Nothing external was sent from this local prototype.`,
+      time: "Just now",
+      capital: 2,
+    });
+    state.socialCapital += 2;
+    setProductView("briefings");
     return;
   }
 

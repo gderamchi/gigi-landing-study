@@ -112,6 +112,7 @@
             <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
+            <button class="product-nav-item" type="button" data-product-view="dossier">Dossier</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
             <button class="product-nav-item" type="button" data-product-view="strength">Strength</button>
             <button class="product-nav-item" type="button" data-product-view="access">Access</button>
@@ -406,6 +407,24 @@
               <div class="person-results" data-person-results></div>
               <aside class="person-detail" data-person-detail></aside>
             </div>
+          </section>
+
+          <section class="product-screen product-screen-dossier" data-product-screen="dossier" aria-label="Profile dossier">
+            <div class="dossier-layout">
+              <section class="dossier-command">
+                <span class="product-kicker">Profile intelligence</span>
+                <h3>Look up anyone before the meeting.</h3>
+                <p>Gigi combines public profile context, calendar memory, common ground, and a privacy boundary into one meeting-ready profile.</p>
+                <div class="dossier-actions">
+                  <button type="button" data-load-dossier>Load profile</button>
+                  <button type="button" data-build-dossier>Build briefing</button>
+                  <button type="button" data-send-dossier>Send to Briefs</button>
+                </div>
+                <div class="dossier-list" data-dossier-list></div>
+              </section>
+              <aside class="dossier-panel" data-dossier-panel></aside>
+            </div>
+            <section class="dossier-evidence" data-dossier-evidence></section>
           </section>
 
           <section class="product-screen product-screen-graph" data-product-screen="graph" aria-label="Trust graph">

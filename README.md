@@ -45,6 +45,7 @@ Implemented flows:
 - reference-check workflow that ranks real vouch paths before requesting gated reputation proof
 - context engine for reviewing calendar, project, mention, and connector signals before they power recommendations
 - pre-meeting briefings with opener, common ground, pitch angle, smart questions, and private DM delivery
+- profile-dossier workflow that looks up a person, surfaces common ground, opener, angle, and privacy boundary, then sends the result into Briefs
 - goal-oriented networking agent that turns a project objective into ranked warm paths
 - incoming network asks that turn "do you know someone?" into a scoped shortlist, private link, and intro queue
 - network search with filters for fundraising, hiring, and sales
