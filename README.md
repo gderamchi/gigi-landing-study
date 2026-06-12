@@ -35,6 +35,7 @@ You can also submit any email on the landing page to enter the product flow.
 Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
+- trust setup workflow that connects simulated Calendar, Gmail, Contacts, and public-profile sources before agent actions unlock
 - Social Capital Score reveal with name search, private graph signal, point unlock, and score breakdown
 - Social Capital profile with built/network/reputation breakdown and private signals
 - close-circle signal writing with reciprocal reputation requests and a living social-capital feed

@@ -777,6 +777,49 @@ const referenceChecks = [
   },
 ];
 
+const setupSources = [
+  {
+    id: "calendar",
+    label: "Calendar",
+    metric: "34 meetings",
+    role: "Relationship truth",
+    detail: "Maps recurring meetings, fresh connector moments, and who you actually spend time with.",
+    unlock: "Warm paths, nudges, and meeting briefings",
+    privacy: "Private until a signal or intro is approved",
+    capital: 8,
+  },
+  {
+    id: "gmail",
+    label: "Gmail",
+    metric: "11 asks",
+    role: "Inbox intent",
+    detail: "Finds concrete asks, drafts scoped replies, and keeps every outbound message approval-gated.",
+    unlock: "Smart links, DM drafts, and double opt-in intros",
+    privacy: "Draft-only in this local prototype",
+    capital: 5,
+  },
+  {
+    id: "contacts",
+    label: "Contacts",
+    metric: "248 people",
+    role: "Known graph",
+    detail: "Deduplicates people across lists, circles, and close contacts before Gigi ranks a path.",
+    unlock: "Search, smart lists, and reference checks",
+    privacy: "Only scoped profiles are shared",
+    capital: 4,
+  },
+  {
+    id: "publicProfile",
+    label: "Public profile",
+    metric: "19 signals",
+    role: "Project context",
+    detail: "Adds public work, current projects, and social proof so an intro has a reason to exist.",
+    unlock: "Match reports, Social Capital, and goal routing",
+    privacy: "Combined with private signals only after approval",
+    capital: 6,
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -810,7 +853,11 @@ const state = {
   connected: {
     calendar: false,
     gmail: false,
+    contacts: false,
+    publicProfile: false,
   },
+  activeSetupSourceId: "calendar",
+  setupMapped: false,
   previewListIndex: 0,
   previewLens: "founder",
   shareListIndex: 0,
@@ -926,6 +973,10 @@ function connectorNudgeById(id) {
   return connectorNudges.find((nudge) => nudge.id === id) ?? connectorNudges[0];
 }
 
+function setupSourceById(id) {
+  return setupSources.find((source) => source.id === id) ?? setupSources[0];
+}
+
 function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
@@ -1028,6 +1079,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      setup: "Trust setup",
       score: "Social Capital Score",
       matches: "Match reports",
       nudges: "Connector nudges",
@@ -1067,6 +1119,99 @@ function filteredPeople() {
     const matchesFilter = state.filter === "all" || person.useCase === state.filter;
     return matchesQuery && matchesFilter;
   });
+}
+
+function renderSetup() {
+  const sourceList = document.querySelector("[data-setup-source-list]");
+  const audit = document.querySelector("[data-setup-audit]");
+  const results = document.querySelector("[data-setup-results]");
+  if (!sourceList || !audit || !results) return;
+
+  const activeSource = setupSourceById(state.activeSetupSourceId);
+  const connectedSources = setupSources.filter((source) => state.connected[source.id]);
+  const connectedCount = connectedSources.length;
+  const progressDegrees = Math.round((connectedCount / setupSources.length) * 360);
+  const setupReady = state.setupMapped || connectedCount >= 3;
+
+  sourceList.innerHTML = setupSources
+    .map((source) => {
+      const connected = Boolean(state.connected[source.id]);
+      const selected = source.id === activeSource.id;
+      return `
+        <button class="setup-source-card ${connected ? "is-connected" : ""} ${selected ? "is-selected" : ""}" type="button" data-setup-source="${source.id}">
+          <span>${escapeHtml(source.label)}</span>
+          <strong>${escapeHtml(connected ? source.metric : "Connect source")}</strong>
+          <p>${escapeHtml(source.detail)}</p>
+          <small>${escapeHtml(connected ? "Connected" : source.role)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  audit.innerHTML = `
+    <span class="product-kicker">Source map</span>
+    <div class="setup-progress" style="--setup-progress: ${progressDegrees}deg">
+      <div>
+        <strong>${connectedCount}/${setupSources.length}</strong>
+        <span>${escapeHtml(setupReady ? "ready" : "sources")}</span>
+      </div>
+    </div>
+    <h3>${escapeHtml(setupReady ? "Gigi has enough context to act." : "Gigi needs permission before it can be useful.")}</h3>
+    <p>${escapeHtml(activeSource.detail)}</p>
+    <div class="path-box">
+      <strong>${escapeHtml(activeSource.unlock)}</strong>
+      <p>${escapeHtml(activeSource.privacy)}</p>
+    </div>
+    <div class="goal-score">
+      <div><strong>${connectedSources.reduce((sum, source) => sum + source.capital, 0)}</strong><span>setup capital</span></div>
+      <div><strong>${state.setupMapped ? "Mapped" : "Draft"}</strong><span>graph state</span></div>
+      <div><strong>${contextSignals.length}</strong><span>signals</span></div>
+    </div>
+  `;
+
+  const resultCards = [
+    {
+      label: "Relationship truth",
+      value: state.connected.calendar ? "Live" : "Pending",
+      detail: state.connected.calendar
+        ? "Recent meetings can now power warm paths and connector nudges."
+        : "Calendar is the first source Gigi needs to know who you actually meet.",
+    },
+    {
+      label: "Intent router",
+      value: state.connected.gmail ? "Live" : "Draft",
+      detail: state.connected.gmail
+        ? "Incoming asks can become scoped lists, private links, and intro drafts."
+        : "Inbox context stays locked until you connect Gmail or run the source map.",
+    },
+    {
+      label: "Action boundary",
+      value: setupReady ? "Approval-gated" : "Waiting",
+      detail: setupReady
+        ? "Gigi can recommend, draft, and queue locally, but sharing still requires explicit approval."
+        : "Connect at least three sources before recommendations are treated as ready.",
+    },
+  ];
+
+  results.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(setupReady ? "Agent ready" : "Permission layer")}</span>
+      <strong>${escapeHtml(setupReady ? "Context live" : `${connectedCount} connected`)}</strong>
+    </div>
+    <div class="setup-results-grid">
+      ${resultCards
+        .map(
+          (card) => `
+            <article>
+              <span>${escapeHtml(card.label)}</span>
+              <h4>${escapeHtml(card.value)}</h4>
+              <p>${escapeHtml(card.detail)}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function renderScore() {
@@ -2330,6 +2475,7 @@ function renderAll() {
   );
   renderConnectedSources();
   renderSourceHealth();
+  renderSetup();
   renderScore();
   renderMatches();
   renderNudges();
@@ -2443,6 +2589,51 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const setupSourceButton = target.closest("[data-setup-source]");
+  if (setupSourceButton) {
+    const source = setupSourceById(setupSourceButton.dataset.setupSource);
+    const wasConnected = Boolean(state.connected[source.id]);
+    state.activeSetupSourceId = source.id;
+    state.connected[source.id] = true;
+    if (!wasConnected) {
+      state.socialCapital += source.capital;
+      state.feed.unshift({
+        person: source.label,
+        actor: "Gigi",
+        text: `connected ${source.label.toLowerCase()} context for ${source.unlock.toLowerCase()}.`,
+        time: "Just now",
+        capital: source.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-run-setup]")) {
+    const missingSources = setupSources.filter((source) => !state.connected[source.id]);
+    setupSources.forEach((source) => {
+      state.connected[source.id] = true;
+    });
+    state.setupMapped = true;
+    if (missingSources.length > 0) {
+      state.socialCapital += missingSources.reduce((sum, source) => sum + source.capital, 0);
+      state.feed.unshift({
+        person: "Source map",
+        actor: "Gigi",
+        text: `mapped ${setupSources.length} sources into a permissioned trust graph. Recommendations, briefs, and intros can now use approved context.`,
+        time: "Just now",
+        capital: missingSources.reduce((sum, source) => sum + source.capital, 0),
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-setup-context]")) {
+    setProductView("context");
     return;
   }
 

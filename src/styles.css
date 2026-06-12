@@ -838,6 +838,8 @@ body[data-share-active="true"] #app {
 }
 
 .integration-controls button,
+.setup-actions button,
+.setup-source-card,
 .match-selector-item,
 .match-panel-actions button,
 .nudge-command button,
@@ -923,6 +925,9 @@ body[data-share-active="true"] #app {
 
 .feed-column,
 .agent-panel,
+.setup-command,
+.setup-audit,
+.setup-results,
 .match-report,
 .match-panel,
 .match-evidence,
@@ -998,6 +1003,9 @@ body[data-share-active="true"] #app {
 
 .feed-hero-card p,
 .agent-signal p,
+.setup-command p,
+.setup-audit p,
+.setup-results-grid p,
 .score-reveal-card p,
 .score-meter-card p,
 .score-activity-grid p,
@@ -1042,6 +1050,7 @@ body[data-share-active="true"] #app {
 }
 
 .feed-hero-card button,
+.setup-actions button:first-child,
 .match-panel-actions button:first-child,
 .nudge-actions button:first-child,
 .score-search-bar button,
@@ -1164,6 +1173,208 @@ body[data-share-active="true"] #app {
 .agent-panel button {
   width: 100%;
   margin-top: 18px;
+}
+
+.setup-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.setup-command {
+  min-height: 520px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 16%, rgb(198 255 91 / 0.2), transparent 30%),
+    radial-gradient(circle at 18% 86%, rgb(124 75 255 / 0.18), transparent 34%),
+    linear-gradient(135deg, rgb(255 255 255 / 0.08), transparent 42%),
+    rgb(255 255 255 / 0.045);
+}
+
+.setup-command h3 {
+  max-width: 860px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(46px, 5.4vw, 78px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.setup-command p {
+  max-width: 680px;
+  margin-top: 18px;
+  font-size: 17px;
+}
+
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.setup-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.setup-actions button:not(:first-child) {
+  color: rgb(255 255 255 / 0.72);
+}
+
+.setup-source-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.setup-source-card {
+  position: relative;
+  display: grid;
+  min-height: 150px;
+  align-content: start;
+  overflow: hidden;
+  padding: 16px;
+  text-align: left;
+}
+
+.setup-source-card::after {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.2);
+  content: "";
+}
+
+.setup-source-card.is-selected {
+  border-color: rgb(255 255 255 / 0.24);
+  background: rgb(255 255 255 / 0.1);
+}
+
+.setup-source-card.is-connected {
+  border-color: rgb(198 255 91 / 0.3);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.setup-source-card.is-connected::after {
+  background: #d7ff73;
+  box-shadow: 0 0 18px rgb(198 255 91 / 0.52);
+}
+
+.setup-source-card span,
+.setup-source-card small,
+.setup-results-grid span,
+.setup-progress span {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.setup-source-card strong {
+  display: block;
+  max-width: calc(100% - 24px);
+  margin-top: 8px;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.setup-source-card small {
+  display: block;
+  margin-top: 12px;
+  color: rgb(215 255 115 / 0.72);
+}
+
+.setup-audit {
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 50% 22%, rgb(198 255 91 / 0.16), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.setup-progress {
+  position: relative;
+  display: grid;
+  width: 210px;
+  height: 210px;
+  place-items: center;
+  margin: 22px auto;
+  border-radius: 50%;
+  background: conic-gradient(#d7ff73 var(--setup-progress), rgb(255 255 255 / 0.08) 0deg);
+  box-shadow: 0 24px 70px rgb(198 255 91 / 0.14);
+}
+
+.setup-progress::before {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: inherit;
+  background: rgb(2 2 2 / 0.94);
+  content: "";
+}
+
+.setup-progress > div {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+
+.setup-progress strong {
+  color: #fff;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 58px;
+  font-weight: 300;
+  line-height: 0.9;
+}
+
+.setup-audit h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 23px;
+  line-height: 1.08;
+}
+
+.setup-audit .path-box,
+.setup-audit .goal-score {
+  margin-top: 18px;
+}
+
+.setup-results {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+.setup-results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.setup-results-grid article {
+  min-height: 150px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.setup-results-grid h4 {
+  margin: 8px 0 0;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.1;
 }
 
 .score-layout {
@@ -2259,6 +2470,71 @@ body[data-share-active="true"] #app {
 
   .product-screen {
     margin-top: 18px;
+  }
+
+  .setup-command {
+    min-height: 430px;
+    padding: 22px;
+  }
+
+  .setup-command h3 {
+    font-size: 50px;
+  }
+
+  .setup-command p {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .setup-actions,
+  .setup-source-list {
+    margin-top: 18px;
+  }
+
+  .setup-source-card {
+    min-height: 118px;
+    padding: 12px;
+  }
+
+  .setup-source-card strong {
+    font-size: 18px;
+  }
+
+  .setup-source-card p {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.32;
+  }
+
+  .setup-source-card small {
+    margin-top: 8px;
+  }
+
+  .setup-audit {
+    padding: 18px;
+  }
+
+  .setup-progress {
+    width: 172px;
+    height: 172px;
+    margin: 16px auto;
+  }
+
+  .setup-progress strong {
+    font-size: 46px;
+  }
+
+  .setup-results {
+    margin-top: 14px;
+  }
+
+  .setup-results .share-results-heading {
+    padding: 12px 20px;
+  }
+
+  .setup-results-grid article {
+    min-height: 126px;
+    padding: 14px;
   }
 
   .message-command {
@@ -5049,6 +5325,9 @@ body[data-share-active="true"] #app {
   }
 
   .product-screen-feed.is-active,
+  .setup-layout,
+  .setup-source-list,
+  .setup-results-grid,
   .score-layout,
   .score-suggestions,
   .score-activity-grid,
@@ -5105,6 +5384,49 @@ body[data-share-active="true"] #app {
 
   .agent-panel {
     position: static;
+  }
+
+  .setup-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .setup-command h3 {
+    font-size: 52px;
+  }
+
+  .setup-command p {
+    font-size: 16px;
+  }
+
+  .setup-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .setup-actions button {
+    width: 100%;
+  }
+
+  .setup-source-card {
+    min-height: auto;
+  }
+
+  .setup-audit {
+    position: static;
+  }
+
+  .setup-progress {
+    width: 190px;
+    height: 190px;
+  }
+
+  .setup-progress strong {
+    font-size: 52px;
+  }
+
+  .setup-results-grid article {
+    min-height: auto;
   }
 
   .score-reveal-card {

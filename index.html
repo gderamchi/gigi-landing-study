@@ -104,6 +104,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="matches">Matches</button>
             <button class="product-nav-item" type="button" data-product-view="nudges">Nudges</button>
@@ -166,6 +167,23 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-setup" data-product-screen="setup" aria-label="Trust setup">
+            <div class="setup-layout">
+              <section class="setup-command">
+                <span class="product-kicker">Trust setup</span>
+                <h3>Connect the context before Gigi starts moving opportunities.</h3>
+                <p>Calendar, contacts, inbox, and public profile context stay simulated locally here. Gigi only uses the signals you approve.</p>
+                <div class="setup-actions">
+                  <button type="button" data-run-setup>Run source map</button>
+                  <button type="button" data-open-setup-context>Review context</button>
+                </div>
+                <div class="setup-source-list" data-setup-source-list></div>
+              </section>
+              <aside class="setup-audit" data-setup-audit></aside>
+            </div>
+            <section class="setup-results" data-setup-results></section>
           </section>
 
           <section class="product-screen product-screen-score" data-product-screen="score" aria-label="Social Capital score reveal">
