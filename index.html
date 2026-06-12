@@ -97,6 +97,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="radar">Radar</button>
             <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
             <button class="product-nav-item" type="button" data-product-view="moves">Moves</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
@@ -162,6 +163,22 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-radar" data-product-screen="radar" aria-label="Proactive radar">
+            <div class="radar-layout">
+              <section class="radar-command">
+                <span class="product-kicker">Proactive search</span>
+                <h3>Find the next person before you ask.</h3>
+                <div class="radar-actions">
+                  <button type="button" data-run-radar>Run radar</button>
+                  <button type="button" data-activate-radar>Activate match</button>
+                </div>
+                <div class="radar-list" data-radar-list></div>
+              </section>
+              <aside class="radar-prediction" data-radar-prediction></aside>
+            </div>
+            <section class="radar-evidence" data-radar-evidence></section>
           </section>
 
           <section class="product-screen product-screen-setup" data-product-screen="setup" aria-label="Trust setup">

@@ -828,6 +828,51 @@ const setupSources = [
   },
 ];
 
+const radarPredictions = [
+  {
+    id: "trust-review",
+    label: "Before you ask",
+    need: "Your next useful person is a trust-heavy product reviewer.",
+    targetId: "priya",
+    connector: "Maxime Durand",
+    accessId: "julien-priya",
+    hiddenSignal: "Julien is staffing an AI product sprint and Maxime just worked with Priya on a launch review.",
+    whyNow: "The role is still private. Gigi can route a narrow product-review ask before it becomes a public search.",
+    action: "Check the permissioned route through Maxime and queue a double opt-in intro only if the context stays scoped.",
+    score: 96,
+    capital: 7,
+    signals: ["hiring intent", "recent project", "trusted connector"],
+  },
+  {
+    id: "seed-path",
+    label: "Network memory",
+    need: "Your next fundraising path is already in Nina's fresh investor context.",
+    targetId: "maya",
+    connector: "Nina Patel",
+    accessId: "claire-maya",
+    hiddenSignal: "Claire needs founder-friendly AI infra investors while Nina has a fresh partner meeting with Maya.",
+    whyNow: "The seed ask is precise enough for trust to transfer before it turns into broad cold outreach.",
+    action: "Let Gigi verify the route, preserve the forwardable note, and ask Nina to approve the connector step.",
+    score: 94,
+    capital: 8,
+    signals: ["fundraising intent", "fresh calendar", "investor thesis"],
+  },
+  {
+    id: "dinner-density",
+    label: "Invisible room",
+    need: "Your next high-density room is a private founder dinner.",
+    targetId: "adrian",
+    connector: "Clara Gold",
+    accessId: "david-adrian",
+    hiddenSignal: "David needs one technical founder and Clara met Adrian before the dinner list was public.",
+    whyNow: "The dinner context loses value if the full attendee graph leaks or the invite becomes generic.",
+    action: "Build the scoped access route and expose only the dinner theme to Adrian's side.",
+    score: 89,
+    capital: 6,
+    signals: ["offline room", "technical founder", "private access"],
+  },
+];
+
 const opportunityMoves = [
   {
     id: "role-whisper",
@@ -1019,6 +1064,9 @@ const state = {
   filter: "all",
   selectedPersonId: "adrian",
   answer: "",
+  activeRadarId: "trust-review",
+  scannedRadar: [],
+  activatedRadar: [],
   scoreQuery: "",
   activeScoreId: "clara",
   scoreRevealed: false,
@@ -1174,6 +1222,10 @@ function connectorNudgeById(id) {
   return connectorNudges.find((nudge) => nudge.id === id) ?? connectorNudges[0];
 }
 
+function radarById(id) {
+  return radarPredictions.find((prediction) => prediction.id === id) ?? radarPredictions[0];
+}
+
 function accessRequestById(id) {
   return accessRequests.find((request) => request.id === id) ?? accessRequests[0];
 }
@@ -1288,6 +1340,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      radar: "Proactive radar",
       setup: "Trust setup",
       moves: "Opportunity moves",
       score: "Social Capital Score",
@@ -2360,6 +2413,90 @@ function renderFeed() {
     .join("");
 }
 
+function renderRadar() {
+  const list = document.querySelector("[data-radar-list]");
+  const predictionPanel = document.querySelector("[data-radar-prediction]");
+  const evidence = document.querySelector("[data-radar-evidence]");
+  if (!list || !predictionPanel || !evidence) return;
+
+  const active = radarById(state.activeRadarId);
+  const person = personById(active.targetId);
+  const scanned = state.scannedRadar.includes(active.id);
+  const activated = state.activatedRadar.includes(active.id);
+  const runButton = document.querySelector("[data-run-radar]");
+  const activateButton = document.querySelector("[data-activate-radar]");
+
+  if (runButton) {
+    runButton.textContent = scanned || activated ? "Radar live" : "Run radar";
+    runButton.disabled = scanned || activated;
+  }
+  if (activateButton) {
+    activateButton.textContent = activated ? "Open Access route" : "Activate match";
+  }
+
+  list.innerHTML = radarPredictions
+    .map((prediction) => {
+      const predictionPerson = personById(prediction.targetId);
+      const predictionScanned = state.scannedRadar.includes(prediction.id);
+      const predictionActivated = state.activatedRadar.includes(prediction.id);
+      return `
+        <button class="radar-card ${prediction.id === active.id ? "is-selected" : ""} ${predictionActivated ? "is-activated" : predictionScanned ? "is-scanned" : ""}" type="button" data-select-radar="${prediction.id}">
+          <span>${escapeHtml(prediction.label)}</span>
+          <strong>${escapeHtml(predictionPerson.name)}</strong>
+          <small>${escapeHtml(predictionActivated ? "Activated" : predictionScanned ? `${prediction.score}% fit` : prediction.connector)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  predictionPanel.innerHTML = `
+    <span class="product-kicker">Next person</span>
+    <div class="radar-person">
+      ${avatar(person.name)}
+      <div>
+        <h3>${escapeHtml(scanned ? person.name : "Hidden until scan")}</h3>
+        <p>${escapeHtml(scanned ? person.role : "Run Radar to combine intent, memory, and fresh context.")}</p>
+      </div>
+      <strong>${escapeHtml(scanned ? `${active.score}%` : "--")}</strong>
+    </div>
+    <div class="radar-brief ${activated ? "is-activated" : ""}">
+      <span>${escapeHtml(scanned ? "Why now" : "Network memory")}</span>
+      <p>${escapeHtml(scanned ? active.whyNow : "The next useful person is already in a trusted path, but Gigi has not activated the graph yet.")}</p>
+    </div>
+    <div class="radar-brief">
+      <span>${escapeHtml(activated ? "Activated route" : scanned ? "Suggested action" : "Next step")}</span>
+      <p>${escapeHtml(activated ? `Sent to Access through ${active.connector}. Nothing external was sent.` : scanned ? active.action : "Run the proactive search first.")}</p>
+    </div>
+    <div class="tag-row">
+      ${active.signals.map((signal) => `<span>${escapeHtml(signal)}</span>`).join("")}
+    </div>
+  `;
+
+  evidence.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(activated ? "Match activated" : scanned ? "Prediction ready" : "Proactive radar")}</span>
+      <strong>${escapeHtml(activated ? "Sent to Access" : scanned ? "Before you ask" : "Waiting")}</strong>
+    </div>
+    <div class="radar-evidence-grid">
+      <article>
+        <span>Need</span>
+        <h4>${escapeHtml(scanned ? active.need : "Infer the need before it becomes a query")}</h4>
+        <p>${escapeHtml(scanned ? active.hiddenSignal : "Gigi watches goals, asks, calendar memory, and close-circle signals for useful next people.")}</p>
+      </article>
+      <article>
+        <span>Trusted path</span>
+        <h4>${escapeHtml(scanned ? `${active.connector} → ${person.name}` : "Private until scan")}</h4>
+        <p>${escapeHtml(scanned ? `Connector: ${active.connector}. Strongest action: ${active.action}` : "The local prototype keeps people and private context hidden until Radar runs.")}</p>
+      </article>
+      <article>
+        <span>Safety</span>
+        <h4>${escapeHtml(activated ? "Approval route queued" : scanned ? "Access required" : "No action yet")}</h4>
+        <p>${escapeHtml(activated ? "The match opens in Access for a permissioned check before any intro leaves the local queue." : "Predictions can only draft or route locally. Sharing still requires approval.")}</p>
+      </article>
+    </div>
+  `;
+}
+
 function renderPeople() {
   const results = document.querySelector("[data-person-results]");
   if (!results) return;
@@ -2900,6 +3037,7 @@ function renderAll() {
   renderAsks();
   renderReferences();
   renderFeed();
+  renderRadar();
   renderPeople();
   renderGraph();
   renderAccess();
@@ -3003,6 +3141,65 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const radarButton = target.closest("[data-select-radar]");
+  if (radarButton) {
+    const prediction = radarById(radarButton.dataset.selectRadar);
+    state.activeRadarId = prediction.id;
+    renderRadar();
+    return;
+  }
+
+  if (target.closest("[data-run-radar]")) {
+    const prediction = radarById(state.activeRadarId);
+    const person = personById(prediction.targetId);
+    const wasScanned = state.scannedRadar.includes(prediction.id);
+    state.connected.calendar = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    if (!wasScanned) {
+      state.scannedRadar.push(prediction.id);
+      state.socialCapital += prediction.capital;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi Radar",
+        text: `found ${person.name} before a direct search by matching ${prediction.need.toLowerCase()} to ${prediction.connector}'s trusted path.`,
+        time: "Just now",
+        capital: prediction.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-activate-radar]")) {
+    const prediction = radarById(state.activeRadarId);
+    const person = personById(prediction.targetId);
+    const accessRequest = accessRequestById(prediction.accessId);
+    if (!state.scannedRadar.includes(prediction.id)) {
+      state.scannedRadar.push(prediction.id);
+      state.socialCapital += prediction.capital;
+    }
+    if (!state.activatedRadar.includes(prediction.id)) {
+      state.activatedRadar.push(prediction.id);
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi Radar",
+        text: `activated Radar match to ${person.name} and opened the permissioned access route through ${prediction.connector}.`,
+        time: "Just now",
+        capital: 4,
+      });
+    }
+    if (!state.checkedAccess.includes(accessRequest.id)) {
+      state.checkedAccess.push(accessRequest.id);
+    }
+    state.connected.calendar = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    state.activeAccessId = accessRequest.id;
+    setProductView("access");
     return;
   }
 

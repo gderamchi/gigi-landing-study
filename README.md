@@ -37,6 +37,7 @@ Implemented flows:
 - private-circle feed with meeting activity and Social Capital claims
 - trust setup workflow that connects simulated Calendar, Gmail, Contacts, and public-profile sources before agent actions unlock
 - opportunity-move queue that detects hidden roles, rounds, cap-table edges, and hot decks before they become public
+- proactive Radar workflow that surfaces a useful person before a direct search and routes the match into permissioned Access
 - Social Capital Score reveal with name search, private graph signal, point unlock, and score breakdown
 - Social Capital profile with built/network/reputation breakdown and private signals
 - close-circle signal writing with reciprocal reputation requests and a living social-capital feed

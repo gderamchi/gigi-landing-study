@@ -849,6 +849,8 @@ body[data-share-active="true"] #app {
 .score-search-bar button,
 .score-suggestion,
 .feed-hero-card button,
+.radar-actions button,
+.radar-card,
 .agent-panel button,
 .profile-signal-panel button,
 .profile-signal-row button,
@@ -975,7 +977,10 @@ body[data-share-active="true"] #app {
 .search-command,
 .smart-list-card,
 .feed-card,
-.feed-hero-card {
+.feed-hero-card,
+.radar-command,
+.radar-prediction,
+.radar-evidence {
   border: 1px solid rgb(255 255 255 / 0.08);
   background: rgb(255 255 255 / 0.045);
   box-shadow: 0 24px 90px rgb(0 0 0 / 0.28);
@@ -1024,6 +1029,8 @@ body[data-share-active="true"] #app {
 .score-meter-card p,
 .score-activity-grid p,
 .feed-card p,
+.radar-prediction p,
+.radar-evidence-grid p,
 .match-report p,
 .match-panel p,
 .match-evidence-grid p,
@@ -1073,6 +1080,7 @@ body[data-share-active="true"] #app {
 .nudge-actions button:first-child,
 .score-search-bar button,
 .agent-panel button,
+.radar-actions button:first-child,
 .profile-signal-panel .section-heading button,
 .signal-primary-action,
 .signal-insight-panel button,
@@ -1192,6 +1200,189 @@ body[data-share-active="true"] #app {
 .agent-panel button {
   width: 100%;
   margin-top: 18px;
+}
+
+.radar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+}
+
+.radar-command {
+  min-height: 520px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 80% 18%, rgb(198 255 91 / 0.2), transparent 31%),
+    radial-gradient(circle at 16% 86%, rgb(92 225 255 / 0.12), transparent 34%),
+    linear-gradient(135deg, rgb(255 255 255 / 0.08), transparent 45%),
+    rgb(255 255 255 / 0.045);
+}
+
+.radar-command h3 {
+  max-width: 780px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(46px, 5.3vw, 76px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.radar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.radar-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.radar-actions button:not(:first-child) {
+  color: rgb(255 255 255 / 0.72);
+}
+
+.radar-actions button[disabled] {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.radar-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.radar-card {
+  display: grid;
+  min-height: 142px;
+  align-content: start;
+  padding: 16px;
+  text-align: left;
+}
+
+.radar-card.is-selected {
+  border-color: rgb(198 255 91 / 0.34);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.radar-card.is-scanned {
+  border-color: rgb(92 225 255 / 0.28);
+}
+
+.radar-card.is-activated {
+  border-color: rgb(198 255 91 / 0.42);
+  background: rgb(198 255 91 / 0.14);
+}
+
+.radar-card span,
+.radar-card strong,
+.radar-card small {
+  display: block;
+}
+
+.radar-card span,
+.radar-brief span,
+.radar-evidence-grid span {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.radar-card strong {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.radar-card small {
+  margin-top: 18px;
+  color: rgb(255 255 255 / 0.48);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.radar-prediction {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.radar-person {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.radar-person h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 21px;
+  line-height: 1.05;
+}
+
+.radar-person p {
+  margin-top: 4px;
+}
+
+.radar-person > strong {
+  color: #d7ff73;
+  font-size: 22px;
+}
+
+.radar-brief {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.24);
+}
+
+.radar-brief.is-activated {
+  border-color: rgb(198 255 91 / 0.24);
+  background: rgb(198 255 91 / 0.08);
+}
+
+.radar-prediction .tag-row {
+  margin-top: 16px;
+}
+
+.radar-evidence {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.radar-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.08);
+}
+
+.radar-evidence-grid article {
+  min-height: 176px;
+  padding: 20px;
+  background: rgb(8 8 8 / 0.92);
+}
+
+.radar-evidence-grid h4 {
+  margin: 10px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.08;
 }
 
 .setup-layout {
@@ -5842,6 +6033,9 @@ body[data-share-active="true"] #app {
   }
 
   .product-screen-feed.is-active,
+  .radar-layout,
+  .radar-list,
+  .radar-evidence-grid,
   .setup-layout,
   .setup-source-list,
   .setup-results-grid,
@@ -5889,6 +6083,10 @@ body[data-share-active="true"] #app {
 
   .trust-graph {
     min-height: 420px;
+  }
+
+  .radar-prediction {
+    position: static;
   }
 
   .graph-node {
