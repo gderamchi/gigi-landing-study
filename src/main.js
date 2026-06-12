@@ -139,12 +139,51 @@ const smartLists = [
   },
 ];
 
+const goals = [
+  {
+    id: "raise-seed",
+    title: "Raise a seed round",
+    brief: "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
+    useCase: "fundraising",
+    people: ["adrian", "maya", "priya"],
+    listIndex: 0,
+    signal: "Clara and Nina both have live investor context this week.",
+    project: "AI infra seed round",
+    nextStep: "Ask Clara to validate the fundraising angle before requesting investor intros.",
+  },
+  {
+    id: "hire-ai",
+    title: "Hire senior AI operators",
+    brief: "I need trusted operators who can help us hire senior AI engineers and product leads.",
+    useCase: "hiring",
+    people: ["lucas", "priya", "sofia"],
+    listIndex: 3,
+    signal: "Three recent meetings mention AI hiring, launch operations, or trusted design leads.",
+    project: "Founding team buildout",
+    nextStep: "Start with Lucas for marketplace launch context, then ask Priya for product trust references.",
+  },
+  {
+    id: "dinner",
+    title: "Build a founder dinner",
+    brief: "I want a private founder dinner list with high-trust technical founders and investors in SF.",
+    useCase: "sales",
+    people: ["david", "adrian", "maya"],
+    listIndex: 2,
+    signal: "David is already curating dinners and Clara has two direct founder signals.",
+    project: "Private circle dinner",
+    nextStep: "Share the dinner smart link first, then request opt-in intros for the three strongest paths.",
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
   filter: "all",
   selectedPersonId: "adrian",
   answer: "",
+  activeGoalId: "raise-seed",
+  goalBrief:
+    "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
     calendar: false,
     gmail: false,
@@ -240,6 +279,10 @@ function personById(id) {
   return people.find((person) => person.id === id) ?? people[0];
 }
 
+function goalById(id) {
+  return goals.find((goal) => goal.id === id) ?? goals[0];
+}
+
 function listSlug(list) {
   return list.title
     .toLowerCase()
@@ -315,6 +358,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      goals: "Goals",
       search: "Network search",
       graph: "Trust graph",
       lists: "Smart links",
@@ -345,6 +389,73 @@ function filteredPeople() {
   });
 }
 
+function renderGoals() {
+  const list = document.querySelector("[data-goal-list]");
+  const plan = document.querySelector("[data-goal-plan]");
+  const brief = document.querySelector("[data-goal-brief]");
+  if (!list || !plan) return;
+
+  const goal = goalById(state.activeGoalId);
+  const recommendedPeople = goal.people.map(personById);
+  const smartList = smartLists[goal.listIndex] ?? smartLists[0];
+  if (brief && brief.value !== state.goalBrief) {
+    brief.value = state.goalBrief;
+  }
+
+  list.innerHTML = `
+    <div class="goal-card-grid">
+      ${goals
+        .map(
+          (item) => `
+            <button class="goal-card ${item.id === state.activeGoalId ? "is-selected" : ""}" type="button" data-select-goal="${item.id}">
+              <span>${escapeHtml(item.project)}</span>
+              <strong>${escapeHtml(item.title)}</strong>
+              <p>${escapeHtml(item.signal)}</p>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+    <div class="goal-recommendations">
+      ${recommendedPeople
+        .map(
+          (person) => `
+            <article>
+              ${avatar(person.name)}
+              <div>
+                <h4>${escapeHtml(person.name)}</h4>
+                <p>${escapeHtml(person.intent)}</p>
+                <span>${escapeHtml(person.path)} · ${person.trust}% trust</span>
+              </div>
+              <button type="button" data-goal-intro="${person.id}">Intro</button>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+
+  plan.innerHTML = `
+    <span class="product-kicker">Gigi plan</span>
+    <h3>${escapeHtml(goal.title)}</h3>
+    <p>${escapeHtml(goal.signal)}</p>
+    <div class="goal-score">
+      <div><strong>${recommendedPeople.length}</strong><span>ranked paths</span></div>
+      <div><strong>${recommendedPeople.reduce((sum, person) => sum + person.meetings, 0)}</strong><span>calendar signals</span></div>
+      <div><strong>${Math.round(recommendedPeople.reduce((sum, person) => sum + person.trust, 0) / recommendedPeople.length)}%</strong><span>avg trust</span></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(smartList.title)}</strong>
+      <p>${escapeHtml(goal.nextStep)}</p>
+    </div>
+    <div class="goal-actions">
+      <button type="button" data-search-goal>Search this goal</button>
+      <button type="button" data-share-goal-list>Build smart link</button>
+      <button type="button" data-run-goal-intros>Request top intros</button>
+    </div>
+  `;
+}
+
 function renderFeed() {
   const list = document.querySelector("[data-feed-list]");
   if (!list) return;
@@ -368,6 +479,9 @@ function renderFeed() {
 function renderPeople() {
   const results = document.querySelector("[data-person-results]");
   if (!results) return;
+  document.querySelectorAll("[data-search-filter]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.searchFilter === state.filter);
+  });
   const matches = filteredPeople();
   if (!matches.some((person) => person.id === state.selectedPersonId)) {
     state.selectedPersonId = matches[0]?.id ?? people[0].id;
@@ -687,6 +801,7 @@ function renderAll() {
   );
   renderConnectedSources();
   renderSourceHealth();
+  renderGoals();
   renderFeed();
   renderPeople();
   renderGraph();
@@ -789,6 +904,80 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const goalButton = target.closest("[data-select-goal]");
+  if (goalButton) {
+    const goal = goalById(goalButton.dataset.selectGoal);
+    state.activeGoalId = goal.id;
+    state.goalBrief = goal.brief;
+    state.filter = goal.useCase;
+    state.query = goal.brief;
+    state.selectedPersonId = goal.people[0];
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-run-goal]")) {
+    const brief = document.querySelector("[data-goal-brief]")?.value.trim();
+    if (brief) {
+      state.goalBrief = brief;
+    }
+    const goal = goalById(state.activeGoalId);
+    state.connected.calendar = true;
+    state.query = state.goalBrief;
+    state.filter = goal.useCase;
+    state.selectedPersonId = goal.people[0];
+    state.feed.unshift({
+      person: "Goal",
+      actor: "Gigi",
+      text: `converted "${goal.title}" into ${goal.people.length} ranked warm paths using calendar and project context.`,
+      time: "Just now",
+      capital: 7,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-search-goal]")) {
+    const goal = goalById(state.activeGoalId);
+    state.query = state.goalBrief || goal.brief;
+    state.filter = goal.useCase;
+    state.selectedPersonId = goal.people[0];
+    setProductView("search");
+    return;
+  }
+
+  if (target.closest("[data-share-goal-list]")) {
+    const goal = goalById(state.activeGoalId);
+    state.previewListIndex = goal.listIndex;
+    state.previewLens = goal.useCase === "hiring" ? "hiring" : "founder";
+    setProductView("lists");
+    renderLinkPreview();
+    document.querySelector("[data-link-preview-modal]").hidden = false;
+    return;
+  }
+
+  if (target.closest("[data-run-goal-intros]")) {
+    const goal = goalById(state.activeGoalId);
+    goal.people.map(personById).forEach((person) => {
+      if (!state.intros.some((intro) => intro.target === person.name)) {
+        state.intros.unshift({
+          target: person.name,
+          connector: person.connector,
+          reason: `Goal: ${goal.title}`,
+          status: "Waiting opt-in",
+        });
+      }
+    });
+    setProductView("intros");
+    return;
+  }
+
+  const goalIntroButton = target.closest("[data-goal-intro]");
+  if (goalIntroButton) {
+    openComposer(goalIntroButton.dataset.goalIntro);
     return;
   }
 
@@ -1024,6 +1213,10 @@ document.querySelector("#network-search")?.addEventListener("keydown", (event) =
     state.answer = "";
     renderPeople();
   }
+});
+
+document.querySelector("[data-goal-brief]")?.addEventListener("input", (event) => {
+  state.goalBrief = event.currentTarget.value;
 });
 
 window.addEventListener("resize", () => {

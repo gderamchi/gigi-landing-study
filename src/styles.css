@@ -65,7 +65,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -839,6 +840,10 @@ body[data-share-active="true"] #app {
 .integration-controls button,
 .feed-hero-card button,
 .agent-panel button,
+.goal-command button,
+.goal-card,
+.goal-recommendations button,
+.goal-actions button,
 .search-command button,
 .search-filters button,
 .section-heading button,
@@ -894,6 +899,8 @@ body[data-share-active="true"] #app {
 .agent-panel,
 .person-detail,
 .intro-board,
+.goal-command,
+.goal-plan,
 .search-command,
 .smart-list-card,
 .feed-card,
@@ -937,6 +944,10 @@ body[data-share-active="true"] #app {
 .feed-hero-card p,
 .agent-signal p,
 .feed-card p,
+.goal-command p,
+.goal-card p,
+.goal-plan p,
+.goal-recommendations p,
 .person-card p,
 .person-detail p,
 .smart-list-card p {
@@ -949,6 +960,8 @@ body[data-share-active="true"] #app {
 
 .feed-hero-card button,
 .agent-panel button,
+.goal-command button,
+.goal-actions button:first-child,
 .section-heading button,
 .claim-card button[data-approve-claim] {
   min-height: 42px;
@@ -1055,6 +1068,202 @@ body[data-share-active="true"] #app {
 .agent-panel button {
   width: 100%;
   margin-top: 18px;
+}
+
+.goal-command {
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 74% 16%, rgb(198 255 91 / 0.18), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.goal-command h3 {
+  max-width: 720px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(34px, 4vw, 58px);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+}
+
+.goal-command > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 138px;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.goal-command textarea {
+  min-height: 78px;
+  resize: vertical;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
+  outline: none;
+  background: rgb(0 0 0 / 0.38);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.goal-command button {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.goal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.goal-list {
+  display: grid;
+  gap: 14px;
+}
+
+.goal-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.goal-card {
+  min-height: 168px;
+  padding: 16px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.045);
+  text-align: left;
+}
+
+.goal-card.is-selected {
+  border-color: rgb(198 255 91 / 0.35);
+  background:
+    radial-gradient(circle at 84% 18%, rgb(198 255 91 / 0.18), transparent 34%),
+    rgb(198 255 91 / 0.08);
+}
+
+.goal-card span {
+  color: rgb(255 255 255 / 0.44);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.goal-card strong {
+  display: block;
+  margin-top: 18px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.goal-recommendations {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.goal-recommendations article {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 74px;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  background: rgb(8 8 8 / 0.94);
+}
+
+.goal-recommendations h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.goal-recommendations span {
+  display: block;
+  margin-top: 5px;
+  color: rgb(255 255 255 / 0.42);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.goal-recommendations button {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: rgb(198 255 91 / 0.14);
+  color: #d7ff73;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.goal-plan {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.goal-plan h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.goal-score {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.goal-score div {
+  padding: 11px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.goal-score strong {
+  display: block;
+  color: #d7ff73;
+  font-size: 18px;
+}
+
+.goal-score span {
+  display: block;
+  margin-top: 4px;
+  color: rgb(255 255 255 / 0.42);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.goal-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.goal-actions button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.goal-actions button:not(:first-child) {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
 }
 
 .search-command {
@@ -2088,12 +2297,18 @@ body[data-share-active="true"] #app {
     flex-direction: column;
   }
 
+  .goal-command > div {
+    grid-template-columns: 1fr;
+  }
+
   .search-command button {
     width: 100%;
   }
 
   .product-screen-feed.is-active,
   .search-grid,
+  .goal-layout,
+  .goal-card-grid,
   .graph-layout,
   .smart-list-grid {
     grid-template-columns: 1fr;
@@ -2119,6 +2334,19 @@ body[data-share-active="true"] #app {
 
   .agent-panel {
     position: static;
+  }
+
+  .goal-plan {
+    position: static;
+  }
+
+  .goal-recommendations article {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .goal-recommendations button {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .intro-row {

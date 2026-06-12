@@ -98,6 +98,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
@@ -149,6 +150,21 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-goals" data-product-screen="goals" aria-label="Networking goals">
+            <div class="goal-command">
+              <span class="product-kicker">Goal-oriented agent</span>
+              <h3>Tell Gigi what you are trying to unlock.</h3>
+              <div>
+                <textarea data-goal-brief aria-label="Current project or networking objective">I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.</textarea>
+                <button type="button" data-run-goal>Run goal</button>
+              </div>
+            </div>
+            <div class="goal-layout">
+              <div class="goal-list" data-goal-list></div>
+              <aside class="goal-plan" data-goal-plan></aside>
+            </div>
           </section>
 
           <section class="product-screen product-screen-search" data-product-screen="search" aria-label="Network search">
