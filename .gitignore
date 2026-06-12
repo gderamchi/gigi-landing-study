@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+work/
+outputs/*.png
+outputs/*.json
+outputs/*.txt
+playwright-report/
+test-results/

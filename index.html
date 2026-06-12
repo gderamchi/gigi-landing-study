@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A close, original implementation study of the Gigi landing page."
+    />
+    <title>Gigi: The agentic network</title>
+  </head>
+  <body>
+    <div id="app">
+      <iframe
+        class="scene-frame"
+        src="https://www.unicorn.studio/embed/k0s77DelLYZctVBhDv7b"
+        title="Landing scene"
+        aria-hidden="true"
+      ></iframe>
+
+      <header class="topbar" aria-label="Gigi header">
+        <a class="brand-mark" href="/" aria-label="Gigi home">
+          <img src="https://gigi.co/assets/gigi-logo.webp" alt="Gigi" width="26" height="26" />
+        </a>
+
+        <nav class="top-actions" aria-label="Contact links">
+          <div class="email-shell">
+            <a class="icon-button email-link" href="mailto:clara@gigi.co" aria-label="Email Gigi at clara@gigi.co">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6.5h16v11H4z" />
+                <path d="m4.5 7.25 7.5 5.35 7.5-5.35" />
+              </svg>
+              <span>clara@gigi.co</span>
+            </a>
+            <button class="copy-button" type="button" aria-label="Copy email address">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="9" height="9" rx="1.8" />
+                <path d="M6 15V6h9" />
+              </svg>
+            </button>
+          </div>
+
+          <a class="icon-button x-link" href="https://x.com/gigi_network" aria-label="Gigi on X">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 5 19 19" />
+              <path d="M19 5 5 19" />
+            </svg>
+          </a>
+        </nav>
+      </header>
+
+      <main class="hero" aria-label="Gigi landing">
+        <h1>
+          <span>Meet Gigi:</span>
+          <span>The <em>agentic</em> network</span>
+        </h1>
+        <p>Search your network. Share trusted access. Find a warm path to anyone worth meeting.</p>
+        <form class="beta-form" aria-label="Join the beta">
+          <input
+            type="email"
+            name="email"
+            autocomplete="email"
+            aria-label="Work email"
+            data-desktop-placeholder="Enter your work email"
+            data-mobile-placeholder="Work Email"
+            placeholder="Enter your work email"
+          />
+          <button type="submit">Join the beta</button>
+        </form>
+      </main>
+
+      <footer class="site-footer">
+        <span class="copyright">© 2026 Gigi</span>
+        <div class="backed-by" aria-label="Backed by">
+          <span>Backed by</span>
+          <img src="https://gigi.co/assets/investors-logo.png" alt="Gigi investors" />
+        </div>
+        <nav aria-label="Legal links">
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+        </nav>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
