@@ -273,13 +273,28 @@ a {
 .hero {
   position: absolute;
   z-index: 2;
-  top: 185.95px;
-  left: clamp(48px, 12vw, 220px);
-  width: min(55.066vw, 704.84px);
+  inset: 0;
+  display: flex;
+  width: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 24px 0 clamp(48px, 12vw, 220px);
   color: #fff;
+  pointer-events: none;
+}
+
+.hero-group {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .hero h1 {
+  width: max-content;
+  max-width: 100%;
   margin: 0;
   font-family: "Feature Display", Georgia, "Times New Roman", serif;
   font-size: clamp(56px, 7vw, 96px);
@@ -328,6 +343,7 @@ a {
     inset 0 1px 0 rgb(255 255 255 / 0.25),
     inset 0 -1px 0 rgb(255 255 255 / 0.05);
   animation: landing-fade-up 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+  pointer-events: auto;
 }
 
 .beta-form::before {
@@ -559,12 +575,22 @@ a {
   }
 
   .hero {
+    inset: auto;
     top: 188.61px;
     left: 24px;
+    display: block;
     width: calc(100vw - 48px);
+    padding: 0;
+  }
+
+  .hero-group {
+    display: block;
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero h1 {
+    width: 100%;
     font-size: 56px;
     line-height: 0.95;
     letter-spacing: -0.025em;
@@ -631,12 +657,6 @@ a {
 
   .site-footer nav {
     gap: 24px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .hero {
-    left: clamp(160px, 12vw, 220px);
   }
 }
 
