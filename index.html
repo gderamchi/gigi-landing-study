@@ -100,6 +100,7 @@
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
             <button class="product-nav-item" type="button" data-product-view="signals">Signals</button>
+            <button class="product-nav-item" type="button" data-product-view="references">Refs</button>
             <button class="product-nav-item" type="button" data-product-view="context">Context</button>
             <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
@@ -186,6 +187,22 @@
               <aside class="signal-insight-panel" data-signal-insights></aside>
             </div>
             <section class="signal-stream" data-signal-stream></section>
+          </section>
+
+          <section class="product-screen product-screen-references" data-product-screen="references" aria-label="Reference checks">
+            <div class="reference-layout">
+              <section class="reference-command">
+                <span class="product-kicker">Reference check</span>
+                <h3>Know who can actually vouch before you ask.</h3>
+                <div>
+                  <textarea data-reference-brief aria-label="Reference check question">Can anyone vouch for Priya before I bring her into a trust-heavy product review?</textarea>
+                  <button type="button" data-run-reference-check>Run check</button>
+                </div>
+                <div class="reference-inbox" data-reference-inbox></div>
+              </section>
+              <aside class="reference-summary" data-reference-summary></aside>
+            </div>
+            <section class="reference-candidates" data-reference-candidates></section>
           </section>
 
           <section class="product-screen product-screen-context" data-product-screen="context" aria-label="Context signals">

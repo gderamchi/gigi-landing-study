@@ -854,6 +854,10 @@ body[data-share-active="true"] #app {
 .ask-inbox-item,
 .ask-actions button,
 .ask-person-card button,
+.reference-command button,
+.reference-inbox-item,
+.reference-actions button,
+.reference-candidate-card button,
 .search-command button,
 .search-filters button,
 .section-heading button,
@@ -918,6 +922,9 @@ body[data-share-active="true"] #app {
 .ask-command,
 .ask-summary,
 .ask-shortlist,
+.reference-command,
+.reference-summary,
+.reference-candidates,
 .person-detail,
 .intro-board,
 .goal-command,
@@ -980,6 +987,9 @@ body[data-share-active="true"] #app {
 .ask-command p,
 .ask-summary p,
 .ask-person-card p,
+.reference-command p,
+.reference-summary p,
+.reference-candidate-card p,
 .person-card p,
 .person-detail p,
 .smart-list-card p {
@@ -1000,6 +1010,8 @@ body[data-share-active="true"] #app {
 .goal-actions button:first-child,
 .ask-command button[data-run-ask],
 .ask-actions button:first-child,
+.reference-command button[data-run-reference-check],
+.reference-actions button:first-child,
 .section-heading button,
 .claim-card button[data-approve-claim] {
   min-height: 42px;
@@ -1965,6 +1977,7 @@ body[data-share-active="true"] #app {
   .context-signal-row h4 {
     font-size: 17px;
   }
+
 }
 
 .goal-command {
@@ -2354,6 +2367,275 @@ body[data-share-active="true"] #app {
   color: #d7ff73;
   font-size: 12px;
   font-weight: 700;
+}
+
+.reference-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.reference-command {
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 78% 18%, rgb(198 255 91 / 0.17), transparent 28%),
+    radial-gradient(circle at 14% 82%, rgb(123 78 255 / 0.12), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.reference-command h3 {
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(34px, 4.4vw, 60px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.reference-command > div:first-of-type {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.reference-command textarea {
+  min-height: 82px;
+  resize: vertical;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
+  outline: none;
+  background: rgb(0 0 0 / 0.38);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.reference-inbox {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.reference-inbox-item {
+  min-height: 116px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.24);
+  text-align: left;
+}
+
+.reference-inbox-item.is-selected {
+  border-color: rgb(198 255 91 / 0.32);
+  background: rgb(198 255 91 / 0.09);
+}
+
+.reference-inbox-item span,
+.reference-inbox-item small {
+  display: block;
+  color: rgb(255 255 255 / 0.44);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.reference-inbox-item strong {
+  display: block;
+  margin-top: 14px;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.reference-inbox-item small {
+  margin-top: 12px;
+  color: #d7ff73;
+}
+
+.reference-summary {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.reference-summary h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.reference-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.reference-actions button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.reference-actions button:not(:first-child) {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+
+.reference-candidates {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.reference-candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.reference-candidate-card {
+  display: grid;
+  align-content: start;
+  min-height: 318px;
+  padding: 18px;
+  border: 0;
+  border-radius: 0;
+  background: rgb(8 8 8 / 0.94);
+  text-align: left;
+}
+
+.reference-candidate-card.is-requested {
+  background:
+    radial-gradient(circle at 82% 20%, rgb(198 255 91 / 0.13), transparent 28%),
+    rgb(8 8 8 / 0.94);
+}
+
+.reference-rank {
+  justify-self: end;
+  color: rgb(198 255 91 / 0.74);
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.reference-score {
+  margin-top: -20px;
+}
+
+.reference-score strong {
+  display: block;
+  color: #d7ff73;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.reference-score span {
+  display: block;
+  margin-top: 5px;
+  color: rgb(255 255 255 / 0.42);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.reference-candidate-card h4 {
+  margin: 18px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.reference-candidate-card .path-box {
+  min-height: 116px;
+}
+
+.reference-candidate-card button {
+  min-height: 36px;
+  margin-top: 16px;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: rgb(198 255 91 / 0.14);
+  color: #d7ff73;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reference-candidate-card button[disabled] {
+  opacity: 0.56;
+  cursor: default;
+}
+
+@media (min-width: 961px) and (max-height: 780px) {
+  .reference-command {
+    padding: 18px;
+  }
+
+  .reference-command h3 {
+    max-width: 640px;
+    font-size: 42px;
+  }
+
+  .reference-command > div:first-of-type {
+    margin-top: 16px;
+  }
+
+  .reference-command textarea {
+    min-height: 70px;
+  }
+
+  .reference-inbox {
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .reference-inbox-item {
+    min-height: 94px;
+    padding: 12px;
+  }
+
+  .reference-inbox-item strong {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+
+  .reference-summary {
+    padding: 18px;
+  }
+
+  .reference-summary h3 {
+    font-size: 34px;
+  }
+
+  .reference-candidates {
+    margin-top: 14px;
+  }
+
+  .reference-candidates .share-results-heading {
+    padding: 12px 20px;
+  }
+
+  .reference-candidate-card {
+    min-height: 270px;
+    padding: 16px;
+  }
+
+  .reference-candidate-card .path-box {
+    min-height: 98px;
+  }
 }
 
 .search-command {
@@ -3408,6 +3690,9 @@ body[data-share-active="true"] #app {
   .ask-layout,
   .ask-inbox,
   .ask-shortlist-grid,
+  .reference-layout,
+  .reference-inbox,
+  .reference-candidate-grid,
   .graph-layout,
   .smart-list-grid {
     grid-template-columns: 1fr;
@@ -3508,6 +3793,26 @@ body[data-share-active="true"] #app {
   .context-signal-actions button {
     width: max-content;
     padding: 0 16px;
+  }
+
+  .reference-summary {
+    position: static;
+  }
+
+  .reference-command > div:first-of-type {
+    grid-template-columns: 1fr;
+  }
+
+  .reference-command button[data-run-reference-check] {
+    width: 100%;
+  }
+
+  .reference-candidate-card {
+    min-height: auto;
+  }
+
+  .reference-candidate-card .path-box {
+    min-height: auto;
   }
 
   .goal-plan {

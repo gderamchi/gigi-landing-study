@@ -372,6 +372,111 @@ const networkAsks = [
   },
 ];
 
+const referenceChecks = [
+  {
+    id: "priya-product",
+    from: "Julien Renard",
+    role: "Chief of Staff, Northstar",
+    ask: "Can anyone vouch for Priya before I bring her into a trust-heavy product review?",
+    targetId: "priya",
+    useCase: "hiring",
+    status: "Strong path",
+    summary:
+      "Gigi found people who worked with Priya recently, then separated real project proof from weak social proximity.",
+    candidates: [
+      {
+        name: "Maxime Durand",
+        relation: "Worked with Priya on a launch review",
+        strength: 96,
+        evidence: ["shared project", "recent review", "close-circle signal"],
+        detail: "Maxime can speak to Priya's judgment on trust-heavy AI surfaces.",
+      },
+      {
+        name: "Clara Gold",
+        relation: "Saw Priya's design-system critique",
+        strength: 83,
+        evidence: ["meeting context", "product trust", "second-degree"],
+        detail: "Clara has enough context for a lightweight reputation check.",
+      },
+      {
+        name: "Nina Patel",
+        relation: "Reviewed founder references with Priya",
+        strength: 74,
+        evidence: ["reference loop", "calendar proof", "intro-gated"],
+        detail: "Nina is useful if the ask becomes investor-facing.",
+      },
+    ],
+  },
+  {
+    id: "adrian-investor",
+    from: "Claire Moreau",
+    role: "Founder, Lumen AI",
+    ask: "Who can reference-check Adrian before I ask for a fundraising intro?",
+    targetId: "adrian",
+    useCase: "fundraising",
+    status: "Ready",
+    summary:
+      "Gigi ranks references by recent meetings, investor relevance, and whether the connector can safely answer.",
+    candidates: [
+      {
+        name: "Clara Gold",
+        relation: "Met Adrian yesterday",
+        strength: 94,
+        evidence: ["recent meeting", "fundraising path", "direct trust"],
+        detail: "Clara can validate whether Adrian is worth a seed investor intro this week.",
+      },
+      {
+        name: "David Kim",
+        relation: "Hosted Adrian at a founder dinner",
+        strength: 81,
+        evidence: ["offline signal", "founder room", "close circle"],
+        detail: "David can reference the founder-room signal without exposing the dinner list.",
+      },
+      {
+        name: "Maya Chen",
+        relation: "Saw Adrian's investor materials",
+        strength: 77,
+        evidence: ["investor lens", "seed context", "private note"],
+        detail: "Maya is useful only after Clara validates the first-order context.",
+      },
+    ],
+  },
+  {
+    id: "lucas-hiring",
+    from: "Amelie Laurent",
+    role: "Talent partner",
+    ask: "Who can vouch for Lucas before I route him into a senior operator search?",
+    targetId: "lucas",
+    useCase: "hiring",
+    status: "Needs one approval",
+    summary:
+      "Gigi distinguishes people who merely know Lucas from people who have seen him operate in launch pressure.",
+    candidates: [
+      {
+        name: "Clara Gold",
+        relation: "Shared launch context with Lucas last week",
+        strength: 88,
+        evidence: ["marketplace launch", "calendar proof", "operator signal"],
+        detail: "Clara can reference Lucas for city-launch execution and hiring judgment.",
+      },
+      {
+        name: "Sofia Alvarez",
+        relation: "Compared senior AI recruiter loops with Lucas",
+        strength: 79,
+        evidence: ["talent context", "Europe link", "second-degree"],
+        detail: "Sofia can validate hiring context if the role is Europe-facing.",
+      },
+      {
+        name: "David Kim",
+        relation: "Saw Lucas help curate a founder dinner",
+        strength: 70,
+        evidence: ["community proof", "offline room", "weak tie"],
+        detail: "David is a backup reference if the ask shifts toward community-led growth.",
+      },
+    ],
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -382,6 +487,9 @@ const state = {
   activeAskId: "seed-angels",
   askBrief: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
   sharedAsks: [],
+  activeReferenceId: "priya-product",
+  referenceBrief: "Can anyone vouch for Priya before I bring her into a trust-heavy product review?",
+  referenceRequests: [],
   goalBrief:
     "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
@@ -495,6 +603,14 @@ function askById(id) {
   return networkAsks.find((ask) => ask.id === id) ?? networkAsks[0];
 }
 
+function referenceById(id) {
+  return referenceChecks.find((check) => check.id === id) ?? referenceChecks[0];
+}
+
+function referenceRequestKey(checkId, candidateName) {
+  return `${checkId}:${candidateName}`;
+}
+
 function listSlug(list) {
   return list.title
     .toLowerCase()
@@ -572,6 +688,7 @@ function setProductView(view) {
       feed: "Private circle",
       profile: "Social Capital",
       signals: "Close circle signals",
+      references: "Reference checks",
       context: "Context engine",
       goals: "Goals",
       asks: "Network asks",
@@ -1025,6 +1142,91 @@ function renderAsks() {
   `;
 }
 
+function renderReferences() {
+  const inbox = document.querySelector("[data-reference-inbox]");
+  const summary = document.querySelector("[data-reference-summary]");
+  const candidates = document.querySelector("[data-reference-candidates]");
+  const brief = document.querySelector("[data-reference-brief]");
+  if (!inbox || !summary || !candidates) return;
+
+  const check = referenceById(state.activeReferenceId);
+  const targetPerson = personById(check.targetId);
+  const requestedCount = check.candidates.filter((candidate) =>
+    state.referenceRequests.includes(referenceRequestKey(check.id, candidate.name)),
+  ).length;
+  if (brief && brief.value !== state.referenceBrief) {
+    brief.value = state.referenceBrief;
+  }
+
+  inbox.innerHTML = referenceChecks
+    .map(
+      (item) => {
+        const person = personById(item.targetId);
+        return `
+          <button class="reference-inbox-item ${item.id === check.id ? "is-selected" : ""}" type="button" data-select-reference="${item.id}">
+            <span>${escapeHtml(item.from)}</span>
+            <strong>${escapeHtml(person.name)}</strong>
+            <small>${escapeHtml(item.status)}</small>
+          </button>
+        `;
+      },
+    )
+    .join("");
+
+  summary.innerHTML = `
+    <span class="product-kicker">Gigi confidence</span>
+    <h3>${escapeHtml(requestedCount ? "Reference request live." : "Strong references found.")}</h3>
+    <p>${escapeHtml(check.summary)}</p>
+    <div class="goal-score">
+      <div><strong>${check.candidates.length}</strong><span>vouch paths</span></div>
+      <div><strong>${Math.round(check.candidates.reduce((sum, candidate) => sum + candidate.strength, 0) / check.candidates.length)}%</strong><span>avg strength</span></div>
+      <div><strong>${requestedCount}</strong><span>requested</span></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(targetPerson.path)}</strong>
+      <p>${escapeHtml(targetPerson.lastSignal)}. Gigi keeps each reference scoped to the ask and hides private notes by default.</p>
+    </div>
+    <div class="reference-actions">
+      <button type="button" data-request-top-reference>Request strongest vouch</button>
+      <button type="button" data-open-reference-target="${targetPerson.id}">Open target profile</button>
+    </div>
+  `;
+
+  candidates.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(check.role)}</span>
+      <strong>${escapeHtml(check.from)} needs confidence</strong>
+    </div>
+    <div class="reference-candidate-grid">
+      ${check.candidates
+        .map((candidate, index) => {
+          const key = referenceRequestKey(check.id, candidate.name);
+          const requested = state.referenceRequests.includes(key);
+          return `
+            <article class="reference-candidate-card ${requested ? "is-requested" : ""}">
+              <div class="reference-rank">0${index + 1}</div>
+              <div class="reference-score">
+                <strong>${candidate.strength}%</strong>
+                <span>reference strength</span>
+              </div>
+              <h4>${escapeHtml(candidate.name)}</h4>
+              <p>${escapeHtml(candidate.relation)}</p>
+              <div class="tag-row">${candidate.evidence.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+              <div class="path-box">
+                <strong>${escapeHtml(targetPerson.name)} · ${escapeHtml(targetPerson.role)}</strong>
+                <p>${escapeHtml(candidate.detail)}</p>
+              </div>
+              <button type="button" data-request-reference="${index}" ${requested ? "disabled" : ""}>
+                ${requested ? "Vouch requested" : "Request vouch"}
+              </button>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
 function renderFeed() {
   const list = document.querySelector("[data-feed-list]");
   if (!list) return;
@@ -1375,6 +1577,7 @@ function renderAll() {
   renderContext();
   renderGoals();
   renderAsks();
+  renderReferences();
   renderFeed();
   renderPeople();
   renderGraph();
@@ -1826,6 +2029,82 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  const referenceButton = target.closest("[data-select-reference]");
+  if (referenceButton) {
+    const check = referenceById(referenceButton.dataset.selectReference);
+    state.activeReferenceId = check.id;
+    state.referenceBrief = check.ask;
+    state.selectedPersonId = check.targetId;
+    state.filter = check.useCase;
+    state.query = check.ask;
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-run-reference-check]")) {
+    const brief = document.querySelector("[data-reference-brief]")?.value.trim();
+    const check = referenceById(state.activeReferenceId);
+    if (brief) {
+      state.referenceBrief = brief;
+    }
+    state.connected.calendar = true;
+    state.selectedPersonId = check.targetId;
+    state.query = state.referenceBrief;
+    state.filter = check.useCase;
+    state.feed.unshift({
+      person: "Reference check",
+      actor: "Gigi",
+      text: `ranked ${check.candidates.length} vouch paths for ${personById(check.targetId).name}, separating real proof from weak social proximity.`,
+      time: "Just now",
+      capital: 5,
+    });
+    renderAll();
+    return;
+  }
+
+  function requestReference(candidateIndex) {
+    const check = referenceById(state.activeReferenceId);
+    const candidate = check.candidates[candidateIndex] ?? check.candidates[0];
+    const targetPerson = personById(check.targetId);
+    const key = referenceRequestKey(check.id, candidate.name);
+    if (!state.referenceRequests.includes(key)) {
+      state.referenceRequests.push(key);
+      state.intros.unshift({
+        target: candidate.name,
+        connector: "Gigi",
+        reason: `Reference check for ${targetPerson.name}`,
+        status: "Waiting opt-in",
+      });
+      state.feed.unshift({
+        person: targetPerson.name,
+        actor: "Gigi",
+        text: `drafted a gated reference request to ${candidate.name} for ${targetPerson.name}. Private notes stay scoped to this check.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
+  }
+
+  if (target.closest("[data-request-top-reference]")) {
+    requestReference(0);
+    return;
+  }
+
+  const requestReferenceButton = target.closest("[data-request-reference]");
+  if (requestReferenceButton) {
+    requestReference(Number(requestReferenceButton.dataset.requestReference));
+    return;
+  }
+
+  const openReferenceTarget = target.closest("[data-open-reference-target]");
+  if (openReferenceTarget) {
+    state.selectedPersonId = openReferenceTarget.dataset.openReferenceTarget;
+    state.answer = "";
+    setProductView("search");
+    return;
+  }
+
   const filterButton = target.closest("[data-search-filter]");
   if (filterButton) {
     state.filter = filterButton.dataset.searchFilter;
@@ -2066,6 +2345,10 @@ document.querySelector("[data-goal-brief]")?.addEventListener("input", (event) =
 
 document.querySelector("[data-ask-brief]")?.addEventListener("input", (event) => {
   state.askBrief = event.currentTarget.value;
+});
+
+document.querySelector("[data-reference-brief]")?.addEventListener("input", (event) => {
+  state.referenceBrief = event.currentTarget.value;
 });
 
 document.addEventListener("input", (event) => {
