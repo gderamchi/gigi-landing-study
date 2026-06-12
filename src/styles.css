@@ -880,6 +880,7 @@ body[data-share-active="true"] #app {
 .smart-list-card button,
 .person-card button,
 .person-detail button,
+.reconnect-plan,
 .composer-actions button,
 .claim-card button[data-approve-claim] {
   border: 1px solid rgb(255 255 255 / 0.12);
@@ -1049,6 +1050,7 @@ body[data-share-active="true"] #app {
 .reference-candidate-card p,
 .person-card p,
 .person-detail p,
+.reconnect-plan p,
 .smart-list-card p {
   margin: 8px 0 0;
   color: rgb(255 255 255 / 0.56);
@@ -4412,8 +4414,48 @@ body[data-share-active="true"] #app {
   line-height: 1.4;
 }
 
+.reconnect-plan {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 14px;
+  border-color: rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.055);
+  cursor: default;
+}
+
+.reconnect-plan.is-ready {
+  border-color: rgb(198 255 91 / 0.24);
+  background: rgb(198 255 91 / 0.08);
+}
+
+.reconnect-plan.is-sent {
+  border-color: rgb(198 255 91 / 0.34);
+  background: linear-gradient(135deg, rgb(198 255 91 / 0.14), rgb(255 255 255 / 0.05));
+}
+
+.reconnect-plan span,
+.reconnect-plan small {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.reconnect-plan strong {
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.18;
+}
+
+.reconnect-plan small {
+  color: rgb(215 255 115 / 0.72);
+}
+
 .detail-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -4421,11 +4463,17 @@ body[data-share-active="true"] #app {
 .person-detail button {
   min-height: 38px;
   padding: 0 12px;
+  white-space: normal;
 }
 
-.person-detail button[data-request-intro] {
+.person-detail button[data-request-intro],
+.person-detail button[data-reconnect-person] {
   background: #d7ff73;
   color: #030303;
+}
+
+.person-detail button[data-reconnect-person] {
+  border-color: rgb(198 255 91 / 0.4);
 }
 
 .section-heading {
@@ -4506,6 +4554,11 @@ body[data-share-active="true"] #app {
 .message-actions button {
   min-height: 42px;
   padding: 0 16px;
+}
+
+.message-actions button[disabled] {
+  cursor: default;
+  opacity: 0.58;
 }
 
 .message-thread-list {
@@ -5550,6 +5603,10 @@ body[data-share-active="true"] #app {
 
   .search-command button {
     width: 100%;
+  }
+
+  .detail-actions {
+    grid-template-columns: 1fr;
   }
 
   .product-screen-feed.is-active,

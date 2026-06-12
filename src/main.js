@@ -145,6 +145,14 @@ const smartLists = [
     context: "Built from an incoming ask and filtered to paths you can actually share.",
     colors: ["#b5ff4f", "#254f32"],
   },
+  {
+    title: "Trust-heavy AI product reviewers",
+    creator: "Gigi",
+    count: 7,
+    people: ["priya", "adrian", "maya"],
+    context: "People who can pressure-test whether an AI product earns enough trust to share private context.",
+    colors: ["#5ce1ff", "#3f2f8f"],
+  },
 ];
 
 const messageThreads = [
@@ -891,6 +899,63 @@ const opportunityMoves = [
   },
 ];
 
+const reconnectPlans = {
+  adrian: {
+    lastTouch: "Met through Clara yesterday",
+    opener: "Saw the robotics infra angle and thought of the seed investor list we discussed.",
+    reason: "Follow while Clara still has fresh context from the meeting.",
+    nextStep: "Send a short check-in and ask whether one investor intro would be useful this week.",
+    channel: "Gigi DM",
+    capital: 4,
+    listIndex: 4,
+  },
+  maya: {
+    lastTouch: "Nina had a partner meeting with Maya on Tuesday",
+    opener: "Your AI productivity thesis came up while I was mapping seed infrastructure paths.",
+    reason: "Reconnect before the fundraise ask becomes a generic pitch.",
+    nextStep: "Ask Nina to validate the angle, then send a crisp founder-reference note.",
+    channel: "Forwardable note",
+    capital: 5,
+    listIndex: 1,
+  },
+  lucas: {
+    lastTouch: "Shared a dinner table with Clara last week",
+    opener: "I remembered your city launch playbook while mapping senior operator hires.",
+    reason: "The hiring ask is concrete enough to make the reconnect useful.",
+    nextStep: "Ask Lucas for one operator he trusts and offer a scoped Gigi list back.",
+    channel: "DM draft",
+    capital: 3,
+    listIndex: 3,
+  },
+  priya: {
+    lastTouch: "Maxime worked with Priya on a launch review",
+    opener: "Your trust-surface critique came up again while preparing an AI product review.",
+    reason: "Reconnect around a precise product question, not a vague coffee.",
+    nextStep: "Send the product-review angle and ask whether she is open to a 20-minute working session.",
+    channel: "Private note",
+    capital: 4,
+    listIndex: 5,
+  },
+  david: {
+    lastTouch: "Clara is building a dinner list with David",
+    opener: "Your founder dinner density question is exactly what this private circle is solving.",
+    reason: "Reconnect while the table is still being curated.",
+    nextStep: "Share a narrow dinner smart link and ask David which two people should be in the room.",
+    channel: "Smart link",
+    capital: 4,
+    listIndex: 2,
+  },
+  sofia: {
+    lastTouch: "Amelie met Sofia twice this month",
+    opener: "Your AI recruiting loops came up while mapping trusted European operator paths.",
+    reason: "Reconnect through Amelie while the talent context is still current.",
+    nextStep: "Ask for one senior recruiter benchmark before requesting any intro.",
+    channel: "Connector note",
+    capital: 3,
+    listIndex: 3,
+  },
+};
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -932,6 +997,8 @@ const state = {
   activeMoveId: "role-whisper",
   scannedMoves: [],
   movedMoves: [],
+  reconnectDrafts: [],
+  sentReconnects: [],
   previewListIndex: 0,
   previewLens: "founder",
   shareListIndex: 0,
@@ -2263,6 +2330,9 @@ function renderPersonDetail() {
   const detail = document.querySelector("[data-person-detail]");
   if (!detail) return;
   const person = personById(state.selectedPersonId);
+  const reconnect = reconnectPlans[person.id] ?? reconnectPlans.adrian;
+  const reconnectDrafted = state.reconnectDrafts.includes(person.id);
+  const reconnectSent = state.sentReconnects.includes(person.id);
   const answer =
     state.answer ||
     `${person.name} is relevant because ${person.intent}. Your strongest path is ${person.path}, based on ${person.lastSignal.toLowerCase()}.`;
@@ -2281,9 +2351,16 @@ function renderPersonDetail() {
     </div>
     <textarea data-gigi-question aria-label="Ask Gigi about ${escapeHtml(person.name)}">Why should I meet ${escapeHtml(person.name)}?</textarea>
     <p data-gigi-answer>${escapeHtml(answer)}</p>
+    <div class="reconnect-plan ${reconnectSent ? "is-sent" : reconnectDrafted ? "is-ready" : ""}">
+      <span>${escapeHtml(reconnectSent ? "Reconnect sent" : reconnectDrafted ? "Reconnect ready" : "How to reconnect")}</span>
+      <strong>${escapeHtml(reconnect.opener)}</strong>
+      <p>${escapeHtml(reconnect.reason)}</p>
+      <small>${escapeHtml(reconnect.lastTouch)} · ${escapeHtml(reconnect.channel)}</small>
+    </div>
     <div class="detail-actions">
       <button type="button" data-ask-gigi>Ask Gigi</button>
       <button type="button" data-request-intro="${person.id}">Request intro</button>
+      <button type="button" data-reconnect-person="${person.id}">${escapeHtml(reconnectSent ? "Reconnect sent" : reconnectDrafted ? "Send reconnect" : "Plan reconnect")}</button>
     </div>
   `;
 }
@@ -2318,6 +2395,17 @@ function renderMessages() {
   const built = state.builtMessageLinks.includes(thread.id);
   const sent = state.sentMessageLinks.includes(thread.id);
   const featuredPeople = thread.people.map(personById);
+  const buildButton = document.querySelector("[data-build-message-link]");
+  const sendButton = document.querySelector("[data-send-message-link]");
+
+  if (buildButton) {
+    buildButton.textContent = built ? "Link ready" : "Build Gigi link";
+    buildButton.disabled = built;
+  }
+  if (sendButton) {
+    sendButton.textContent = sent ? "DM sent" : "Send to DM";
+    sendButton.disabled = sent;
+  }
 
   threads.innerHTML = messageThreads
     .map((item) => {
@@ -3512,6 +3600,66 @@ document.addEventListener("click", async (event) => {
     state.selectedPersonId = personButton.dataset.selectPerson;
     state.answer = "";
     renderPeople();
+    return;
+  }
+
+  const reconnectButton = target.closest("[data-reconnect-person]");
+  if (reconnectButton) {
+    const person = personById(reconnectButton.dataset.reconnectPerson);
+    const reconnect = reconnectPlans[person.id] ?? reconnectPlans.adrian;
+    if (!state.reconnectDrafts.includes(person.id)) {
+      state.reconnectDrafts.push(person.id);
+      state.answer = `Gigi reconnect plan: ${reconnect.nextStep}`;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `planned a reconnect with ${person.name}: ${reconnect.nextStep}`,
+        time: "Just now",
+        capital: reconnect.capital,
+      });
+      state.socialCapital += reconnect.capital;
+      renderAll();
+      return;
+    }
+
+    if (!state.sentReconnects.includes(person.id)) {
+      state.sentReconnects.push(person.id);
+      state.connected.gmail = true;
+      const threadId = `reconnect-${person.id}`;
+      if (!messageThreads.some((thread) => thread.id === threadId)) {
+        messageThreads.unshift({
+          id: threadId,
+          contact: person.name,
+          asker: "Gigi",
+          incoming: reconnect.lastTouch,
+          reply: reconnect.opener,
+          reaction: "This is specific enough. Send the context.",
+          cardTitle: `Reconnect with ${person.name}`,
+          linkPath: `gigi.app/reconnect/${person.id}`,
+          listIndex: reconnect.listIndex ?? 0,
+          people: [person.id, ...people.filter((item) => item.id !== person.id).slice(0, 2).map((item) => item.id)],
+          context: reconnect.reason,
+        });
+      }
+      state.activeMessageThreadId = threadId;
+      if (!state.builtMessageLinks.includes(threadId)) {
+        state.builtMessageLinks.push(threadId);
+      }
+      const thread = messageThreadById(threadId);
+      state.previewListIndex = thread.listIndex;
+      state.shareListIndex = thread.listIndex;
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `prepared a local reconnect draft for ${person.name}. Nothing external was sent from this prototype.`,
+        time: "Just now",
+        capital: 2,
+      });
+      setProductView("messages");
+      return;
+    }
+
+    renderPersonDetail();
     return;
   }
 

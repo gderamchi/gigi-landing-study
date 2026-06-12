@@ -47,6 +47,7 @@ Implemented flows:
 - incoming network asks that turn "do you know someone?" into a scoped shortlist, private link, and intro queue
 - network search with filters for fundraising, hiring, and sales
 - person detail view with trust path, context, and "Ask Gigi" response
+- reconnect workflow that plans the right revival angle for a known contact and queues a local DM draft
 - warm-intro composer with private context, draft, save, and approve states
 - smart network lists with shareable private-link preview and recipient lens behavior
 - DM delivery flow that turns a text ask into a Gigi smart-link card and local message preview
