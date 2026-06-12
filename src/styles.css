@@ -842,6 +842,8 @@ body[data-share-active="true"] #app {
 .agent-panel button,
 .profile-signal-panel button,
 .profile-signal-row button,
+.context-actions button,
+.context-signal-actions button,
 .goal-command button,
 .goal-card,
 .goal-recommendations button,
@@ -905,6 +907,9 @@ body[data-share-active="true"] #app {
 .agent-panel,
 .profile-score-card,
 .profile-signal-panel,
+.context-command,
+.context-briefing,
+.context-review,
 .ask-command,
 .ask-summary,
 .ask-shortlist,
@@ -957,6 +962,9 @@ body[data-share-active="true"] #app {
 .feed-card p,
 .profile-score-card p,
 .profile-signal-row p,
+.context-command p,
+.context-briefing p,
+.context-signal-row p,
 .goal-command p,
 .goal-card p,
 .goal-plan p,
@@ -977,6 +985,7 @@ body[data-share-active="true"] #app {
 .feed-hero-card button,
 .agent-panel button,
 .profile-signal-panel .section-heading button,
+.context-actions button:first-child,
 .goal-command button,
 .goal-actions button:first-child,
 .ask-command button[data-run-ask],
@@ -1340,6 +1349,268 @@ body[data-share-active="true"] #app {
 
   .ask-person-card .path-box {
     min-height: 102px;
+  }
+}
+
+.context-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.context-command {
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 78% 20%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 16% 84%, rgb(123 78 255 / 0.12), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.context-command h3 {
+  max-width: 780px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(34px, 4.6vw, 62px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.context-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.context-actions button {
+  min-height: 42px;
+  padding: 0 15px;
+}
+
+.context-actions button:not(:first-child) {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+
+.context-source-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.context-source-grid article {
+  min-height: 142px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.24);
+}
+
+.context-source-grid span {
+  display: block;
+  color: rgb(255 255 255 / 0.44);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.context-source-grid strong {
+  display: block;
+  margin-top: 18px;
+  color: #d7ff73;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.context-source-grid p {
+  margin-top: 10px;
+  color: rgb(255 255 255 / 0.52);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.context-briefing {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.context-briefing h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.context-review {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.context-signal-list {
+  display: grid;
+  gap: 1px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.context-signal-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 186px;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  background: rgb(8 8 8 / 0.94);
+}
+
+.context-signal-row.is-hidden {
+  opacity: 0.62;
+}
+
+.context-signal-source {
+  display: grid;
+  min-height: 74px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.26);
+}
+
+.context-signal-source span {
+  color: rgb(255 255 255 / 0.44);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.context-signal-source strong {
+  margin-top: 7px;
+  color: #d7ff73;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.context-signal-row h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.12;
+}
+
+.context-signal-row small {
+  display: block;
+  margin-top: 9px;
+  color: rgb(255 255 255 / 0.44);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.context-signal-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: stretch;
+}
+
+.context-signal-actions span {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.66);
+  font-size: 12px;
+}
+
+.context-signal-row.is-live .context-signal-actions span {
+  background: rgb(198 255 91 / 0.13);
+  color: #d7ff73;
+}
+
+.context-signal-actions button {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #d7ff73;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.context-signal-actions button[disabled] {
+  opacity: 0.42;
+  cursor: default;
+}
+
+@media (min-width: 961px) and (max-height: 780px) {
+  .context-command {
+    padding: 18px;
+  }
+
+  .context-command h3 {
+    max-width: 650px;
+    font-size: 42px;
+    line-height: 0.95;
+  }
+
+  .context-actions {
+    margin-top: 16px;
+  }
+
+  .context-actions button {
+    min-height: 38px;
+  }
+
+  .context-source-grid {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .context-source-grid article {
+    min-height: 110px;
+    padding: 12px;
+  }
+
+  .context-source-grid strong {
+    margin-top: 12px;
+    font-size: 21px;
+  }
+
+  .context-source-grid p {
+    margin-top: 8px;
+    line-height: 1.28;
+  }
+
+  .context-briefing {
+    padding: 18px;
+  }
+
+  .context-briefing h3 {
+    font-size: 34px;
+  }
+
+  .context-review {
+    margin-top: 14px;
+  }
+
+  .context-review .share-results-heading {
+    padding: 12px 20px;
+  }
+
+  .context-signal-row {
+    padding: 14px 16px;
+  }
+
+  .context-signal-row h4 {
+    font-size: 17px;
   }
 }
 
@@ -2774,6 +3045,8 @@ body[data-share-active="true"] #app {
   .product-screen-feed.is-active,
   .search-grid,
   .profile-layout,
+  .context-layout,
+  .context-source-grid,
   .goal-layout,
   .goal-card-grid,
   .ask-layout,
@@ -2830,6 +3103,36 @@ body[data-share-active="true"] #app {
   }
 
   .profile-signal-row button {
+    width: max-content;
+    padding: 0 16px;
+  }
+
+  .context-briefing {
+    position: static;
+  }
+
+  .context-actions {
+    flex-direction: column;
+  }
+
+  .context-signal-row {
+    grid-template-columns: 1fr;
+  }
+
+  .context-signal-source {
+    justify-items: start;
+    padding: 12px;
+  }
+
+  .context-signal-actions {
+    justify-items: start;
+  }
+
+  .context-signal-actions span {
+    justify-self: start;
+  }
+
+  .context-signal-actions button {
     width: max-content;
     padding: 0 16px;
   }

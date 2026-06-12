@@ -99,6 +99,7 @@
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
+            <button class="product-nav-item" type="button" data-product-view="context">Context</button>
             <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
@@ -176,6 +177,22 @@
                 <div class="profile-signals" data-profile-signals></div>
               </section>
             </div>
+          </section>
+
+          <section class="product-screen product-screen-context" data-product-screen="context" aria-label="Context signals">
+            <div class="context-layout">
+              <section class="context-command">
+                <span class="product-kicker">Context engine</span>
+                <h3>Review the invisible signals before Gigi works for you.</h3>
+                <div class="context-actions">
+                  <button type="button" data-scan-context>Scan context</button>
+                  <button type="button" data-approve-all-context>Approve all live signals</button>
+                </div>
+                <div class="context-source-grid" data-context-sources></div>
+              </section>
+              <aside class="context-briefing" data-context-briefing></aside>
+            </div>
+            <div class="context-review" data-context-review></div>
           </section>
 
           <section class="product-screen product-screen-goals" data-product-screen="goals" aria-label="Networking goals">

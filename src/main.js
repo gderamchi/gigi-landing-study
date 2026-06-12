@@ -213,6 +213,53 @@ const socialSignals = [
   },
 ];
 
+const contextSignals = [
+  {
+    id: "calendar-maya",
+    source: "Calendar",
+    personId: "maya",
+    label: "Recurring investor meeting",
+    text: "Nina met Maya twice in the last 30 days and has a live fundraising path for this week.",
+    strength: 94,
+    impact: 10,
+    privacy: "Private until intro approval",
+    status: "Review",
+  },
+  {
+    id: "project-adrian",
+    source: "Project",
+    personId: "adrian",
+    label: "AI infra project overlap",
+    text: "Your current seed goal, Adrian's robotics infra work, and Clara's meeting history all point to a high-fit intro.",
+    strength: 89,
+    impact: 8,
+    privacy: "Visible in scoped shortlist",
+    status: "Live",
+  },
+  {
+    id: "mention-david",
+    source: "Mention",
+    personId: "david",
+    label: "Private dinner signal",
+    text: "David's founder dinner list overlaps with technical founders and seed investors you are trying to meet.",
+    strength: 82,
+    impact: 6,
+    privacy: "Private note",
+    status: "Review",
+  },
+  {
+    id: "connection-priya",
+    source: "Connection",
+    personId: "priya",
+    label: "Trusted product reference",
+    text: "Maxime worked with Priya on a trust-heavy AI product review, which supports hiring and diligence asks.",
+    strength: 78,
+    impact: 5,
+    privacy: "Connector gated",
+    status: "Review",
+  },
+];
+
 const networkAsks = [
   {
     id: "seed-angels",
@@ -274,6 +321,8 @@ const state = {
   graphRefreshes: 0,
   socialCapital: 248,
   profileApprovals: [],
+  contextApprovals: ["project-adrian"],
+  contextHidden: [],
   claimApproved: false,
   intros: [
     {
@@ -441,6 +490,7 @@ function setProductView(view) {
     const titles = {
       feed: "Private circle",
       profile: "Social Capital",
+      context: "Context engine",
       goals: "Goals",
       asks: "Network asks",
       search: "Network search",
@@ -529,6 +579,108 @@ function renderProfile() {
       `;
     })
     .join("");
+}
+
+function contextSignalState(signal) {
+  if (state.contextHidden.includes(signal.id)) return "Hidden";
+  if (state.contextApprovals.includes(signal.id) || signal.status === "Live") return "Live";
+  return "Review";
+}
+
+function renderContext() {
+  const sources = document.querySelector("[data-context-sources]");
+  const briefing = document.querySelector("[data-context-briefing]");
+  const review = document.querySelector("[data-context-review]");
+  if (!sources || !briefing || !review) return;
+
+  const liveSignals = contextSignals.filter((signal) => contextSignalState(signal) === "Live");
+  const reviewSignals = contextSignals.filter((signal) => contextSignalState(signal) === "Review");
+  const hiddenSignals = contextSignals.filter((signal) => contextSignalState(signal) === "Hidden");
+  const nextPerson = personById("maya");
+  const sourceStats = [
+    {
+      label: "Calendar",
+      value: state.connected.calendar ? "Live" : "Pending",
+      detail: state.connected.calendar
+        ? "34 meetings reviewed across recurring relationships."
+        : "Connect to ground Gigi in people you actually meet.",
+    },
+    {
+      label: "Projects",
+      value: "Live",
+      detail: "3 active goals and project intents mapped to warm paths.",
+    },
+    {
+      label: "Mentions",
+      value: `${contextSignals.filter((signal) => signal.source === "Mention").length}`,
+      detail: "Online and private mentions stay gated until approved.",
+    },
+    {
+      label: "Connectors",
+      value: `${people.length}`,
+      detail: "Relationship strength is ranked before any intro is drafted.",
+    },
+  ];
+
+  sources.innerHTML = sourceStats
+    .map(
+      (source) => `
+        <article>
+          <span>${escapeHtml(source.label)}</span>
+          <strong>${escapeHtml(source.value)}</strong>
+          <p>${escapeHtml(source.detail)}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  briefing.innerHTML = `
+    <span class="product-kicker">Next meeting brief</span>
+    <h3>Walk in like you already know the room.</h3>
+    <p>Gigi turns approved context into a private briefing before the meeting. Nothing is shared until you approve the signal.</p>
+    <div class="path-box">
+      <strong>${escapeHtml(nextPerson.name)} · ${escapeHtml(nextPerson.role)}</strong>
+      <p>${escapeHtml(nextPerson.lastSignal)}. Suggested angle: ask about AI-native productivity founders before Series A.</p>
+    </div>
+    <div class="goal-score">
+      <div><strong>${liveSignals.length}</strong><span>live signals</span></div>
+      <div><strong>${reviewSignals.length}</strong><span>to review</span></div>
+      <div><strong>${hiddenSignals.length}</strong><span>hidden</span></div>
+    </div>
+  `;
+
+  review.innerHTML = `
+    <div class="share-results-heading">
+      <span>Signal review</span>
+      <strong>${reviewSignals.length} pending</strong>
+    </div>
+    <div class="context-signal-list">
+      ${contextSignals
+        .map((signal) => {
+          const signalState = contextSignalState(signal);
+          const person = personById(signal.personId);
+          return `
+            <article class="context-signal-row is-${signalState.toLowerCase()}">
+              <div class="context-signal-source">
+                <span>${escapeHtml(signal.source)}</span>
+                <strong>${signal.strength}%</strong>
+              </div>
+              <div>
+                <h4>${escapeHtml(signal.label)}</h4>
+                <p>${escapeHtml(signal.text)}</p>
+                <small>${escapeHtml(person.path)} · ${escapeHtml(signal.privacy)} · +${signal.impact}</small>
+              </div>
+              <div class="context-signal-actions">
+                <span>${escapeHtml(signalState)}</span>
+                <button type="button" data-approve-context="${signal.id}" ${signalState === "Live" ? "disabled" : ""}>Approve</button>
+                <button type="button" data-hide-context="${signal.id}" ${signalState === "Hidden" ? "disabled" : ""}>Hide</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
 }
 
 function renderGoals() {
@@ -1019,6 +1171,7 @@ function renderAll() {
   renderConnectedSources();
   renderSourceHealth();
   renderProfile();
+  renderContext();
   renderGoals();
   renderAsks();
   renderFeed();
@@ -1164,6 +1317,78 @@ document.addEventListener("click", async (event) => {
       });
     }
     setProductView("intros");
+    return;
+  }
+
+  if (target.closest("[data-scan-context]")) {
+    state.connected.calendar = true;
+    state.feed.unshift({
+      person: "Context",
+      actor: "Gigi",
+      text: `reviewed ${contextSignals.length} context signals across calendar, projects, mentions, and connectors.`,
+      time: "Just now",
+      capital: 6,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-approve-all-context]")) {
+    const approvedNow = contextSignals.filter((signal) => contextSignalState(signal) === "Review");
+    approvedNow.forEach((signal) => {
+      if (!state.contextApprovals.includes(signal.id)) {
+        state.contextApprovals.push(signal.id);
+        state.socialCapital += signal.impact;
+      }
+    });
+    if (approvedNow.length) {
+      state.feed.unshift({
+        person: "Context",
+        actor: "You",
+        text: `approved ${approvedNow.length} context signals for meeting briefs and warm-path recommendations.`,
+        time: "Just now",
+        capital: approvedNow.reduce((sum, signal) => sum + signal.impact, 0),
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  const approveContextButton = target.closest("[data-approve-context]");
+  if (approveContextButton) {
+    const signal = contextSignals.find((item) => item.id === approveContextButton.dataset.approveContext);
+    if (signal && !state.contextApprovals.includes(signal.id)) {
+      state.contextHidden = state.contextHidden.filter((id) => id !== signal.id);
+      state.contextApprovals.push(signal.id);
+      state.socialCapital += signal.impact;
+      state.selectedPersonId = signal.personId;
+      state.feed.unshift({
+        person: signal.label,
+        actor: "You",
+        text: `approved a ${signal.source.toLowerCase()} context signal. Gigi can now use it in private briefs and recommendations.`,
+        time: "Just now",
+        capital: signal.impact,
+      });
+      renderAll();
+    }
+    return;
+  }
+
+  const hideContextButton = target.closest("[data-hide-context]");
+  if (hideContextButton) {
+    const signal = contextSignals.find((item) => item.id === hideContextButton.dataset.hideContext);
+    if (signal && !state.contextHidden.includes(signal.id)) {
+      state.contextHidden.push(signal.id);
+      state.contextApprovals = state.contextApprovals.filter((id) => id !== signal.id);
+      state.feed.unshift({
+        person: signal.label,
+        actor: "You",
+        text: `hid a ${signal.source.toLowerCase()} context signal from Gigi recommendations.`,
+        time: "Just now",
+        capital: 0,
+      });
+      renderAll();
+    }
     return;
   }
 
