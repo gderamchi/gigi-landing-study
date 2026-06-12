@@ -21,7 +21,8 @@ for (const viewport of viewports) {
     ["local", targetUrl],
   ]) {
     const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
-    await page.goto(url, { waitUntil: "load" });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.waitForLoadState("load", { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(5000);
     await page.screenshot({
       path: path.join(outputDir, `gigi-${kind}-${viewport.name}.png`),
