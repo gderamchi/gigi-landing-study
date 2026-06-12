@@ -36,6 +36,7 @@ Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
 - Social Capital profile with built/network/reputation breakdown and private signals
+- close-circle signal writing with reciprocal reputation requests and a living social-capital feed
 - context engine for reviewing calendar, project, mention, and connector signals before they power recommendations
 - goal-oriented networking agent that turns a project objective into ranked warm paths
 - incoming network asks that turn "do you know someone?" into a scoped shortlist, private link, and intro queue

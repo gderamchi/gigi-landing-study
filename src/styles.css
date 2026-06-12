@@ -842,6 +842,8 @@ body[data-share-active="true"] #app {
 .agent-panel button,
 .profile-signal-panel button,
 .profile-signal-row button,
+.signal-composer button,
+.signal-insight-panel button,
 .context-actions button,
 .context-signal-actions button,
 .goal-command button,
@@ -907,6 +909,9 @@ body[data-share-active="true"] #app {
 .agent-panel,
 .profile-score-card,
 .profile-signal-panel,
+.signal-composer,
+.signal-insight-panel,
+.signal-stream,
 .context-command,
 .context-briefing,
 .context-review,
@@ -962,6 +967,9 @@ body[data-share-active="true"] #app {
 .feed-card p,
 .profile-score-card p,
 .profile-signal-row p,
+.signal-composer p,
+.signal-insight-panel p,
+.signal-stream-row p,
 .context-command p,
 .context-briefing p,
 .context-signal-row p,
@@ -985,6 +993,8 @@ body[data-share-active="true"] #app {
 .feed-hero-card button,
 .agent-panel button,
 .profile-signal-panel .section-heading button,
+.signal-primary-action,
+.signal-insight-panel button,
 .context-actions button:first-child,
 .goal-command button,
 .goal-actions button:first-child,
@@ -1250,6 +1260,250 @@ body[data-share-active="true"] #app {
   cursor: default;
 }
 
+.signal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.signal-composer {
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 74% 12%, rgb(198 255 91 / 0.2), transparent 28%),
+    radial-gradient(circle at 14% 88%, rgb(211 91 255 / 0.13), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.signal-composer h3 {
+  max-width: 790px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(34px, 4.25vw, 58px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.signal-recipient-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.signal-person-button {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  text-align: left;
+}
+
+.signal-person-button .avatar {
+  width: 38px;
+  height: 38px;
+  font-size: 12px;
+}
+
+.signal-person-button strong,
+.signal-person-button small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signal-person-button strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.signal-person-button small {
+  margin-top: 3px;
+  color: rgb(255 255 255 / 0.46);
+  font-size: 11px;
+}
+
+.signal-person-button.is-selected,
+.signal-option-button.is-selected {
+  border-color: rgb(198 255 91 / 0.34);
+  background: rgb(198 255 91 / 0.13);
+  color: #d7ff73;
+}
+
+.signal-control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.signal-option-group > span,
+.signal-draft-label {
+  display: block;
+  color: rgb(255 255 255 / 0.48);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signal-option-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.signal-option-button {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.signal-draft-label {
+  margin-top: 18px;
+}
+
+.signal-draft-label textarea {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  margin-top: 8px;
+  resize: vertical;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 14px;
+  padding: 14px;
+  outline: none;
+  background: rgb(0 0 0 / 0.28);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.signal-preview {
+  margin-top: 14px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgb(0 0 0 / 0.22);
+}
+
+.signal-preview span,
+.signal-stream-meta span {
+  color: rgb(255 255 255 / 0.44);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signal-preview strong {
+  display: block;
+  margin-top: 6px;
+  color: #d7ff73;
+  font-size: 20px;
+}
+
+.signal-primary-action {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+}
+
+.signal-insight-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.signal-insight-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.signal-insight-panel button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 16px;
+}
+
+.signal-stream {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.signal-stream-list {
+  display: grid;
+  gap: 1px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.signal-stream-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 112px;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  background: rgb(8 8 8 / 0.94);
+}
+
+.signal-stream-meta {
+  display: grid;
+  min-height: 74px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.26);
+}
+
+.signal-stream-meta strong {
+  margin-top: 7px;
+  color: #d7ff73;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.signal-stream-row h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.12;
+}
+
+.signal-stream-row small {
+  display: block;
+  margin-top: 9px;
+  color: rgb(255 255 255 / 0.44);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.signal-direction {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.66);
+  font-size: 12px;
+}
+
+.signal-stream-row.is-received .signal-direction {
+  background: rgb(198 255 91 / 0.13);
+  color: #d7ff73;
+}
+
 @media (min-width: 961px) and (max-height: 780px) {
   .product-workspace {
     padding-top: 22px;
@@ -1324,6 +1578,105 @@ body[data-share-active="true"] #app {
 
   .profile-signal-row small {
     margin-top: 7px;
+  }
+
+  .signal-composer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 12px 14px;
+    padding: 18px;
+  }
+
+  .signal-composer > .product-kicker,
+  .signal-composer h3,
+  .signal-primary-action {
+    grid-column: 1 / -1;
+  }
+
+  .signal-composer h3 {
+    max-width: 650px;
+    font-size: 42px;
+  }
+
+  .signal-recipient-grid {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .signal-person-button {
+    min-height: 54px;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .signal-person-button > span:not(.avatar) {
+    display: none;
+  }
+
+  .signal-person-button .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .signal-control-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .signal-option-group > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .signal-option-button {
+    min-height: 30px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  .signal-draft-label {
+    margin-top: 0;
+  }
+
+  .signal-draft-label textarea {
+    min-height: 74px;
+  }
+
+  .signal-preview {
+    display: none;
+  }
+
+  .signal-primary-action {
+    min-height: 40px;
+    margin-top: 10px;
+  }
+
+  .signal-insight-panel {
+    padding: 18px;
+  }
+
+  .signal-insight-panel h3 {
+    font-size: 34px;
+  }
+
+  .signal-stream {
+    margin-top: 14px;
+  }
+
+  .signal-stream .share-results-heading {
+    padding: 12px 20px;
+  }
+
+  .signal-stream-row {
+    padding: 14px 16px;
+  }
+
+  .signal-stream-row h4 {
+    font-size: 17px;
   }
 
   .ask-command {
@@ -3045,6 +3398,9 @@ body[data-share-active="true"] #app {
   .product-screen-feed.is-active,
   .search-grid,
   .profile-layout,
+  .signal-layout,
+  .signal-recipient-grid,
+  .signal-control-grid,
   .context-layout,
   .context-source-grid,
   .goal-layout,
@@ -3105,6 +3461,23 @@ body[data-share-active="true"] #app {
   .profile-signal-row button {
     width: max-content;
     padding: 0 16px;
+  }
+
+  .signal-insight-panel {
+    position: static;
+  }
+
+  .signal-stream-row {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-stream-meta {
+    justify-items: start;
+    padding: 12px;
+  }
+
+  .signal-direction {
+    justify-self: start;
   }
 
   .context-briefing {

@@ -213,6 +213,82 @@ const socialSignals = [
   },
 ];
 
+const signalPillars = [
+  {
+    id: "Built",
+    label: "Built",
+    prompt: "Proof they can deliver, ship, or execute under pressure.",
+  },
+  {
+    id: "Network",
+    label: "Network",
+    prompt: "Who they know, who shows up, and which rooms they can open.",
+  },
+  {
+    id: "Reputation",
+    label: "Reputation",
+    prompt: "What trusted people say when they are not performing publicly.",
+  },
+];
+
+const signalPrivacyModes = [
+  {
+    id: "Close circle",
+    label: "Close circle",
+    detail: "Visible to trusted mutuals when it helps an ask.",
+  },
+  {
+    id: "Intro-gated",
+    label: "Intro-gated",
+    detail: "Only shown when an intro is approved.",
+  },
+  {
+    id: "Private note",
+    label: "Private note",
+    detail: "Kept as context for your own agent.",
+  },
+];
+
+const circleSignals = [
+  {
+    id: "signal-clara-built",
+    direction: "received",
+    actor: "Clara Gold",
+    subject: "You",
+    pillar: "Built",
+    title: "Shipped under ambiguity",
+    text: "Clara wrote that you turn loose product context into something people can try quickly.",
+    privacy: "Close circle",
+    score: 18,
+    time: "2h ago",
+  },
+  {
+    id: "signal-nina-reputation",
+    direction: "received",
+    actor: "Nina Patel",
+    subject: "You",
+    pillar: "Reputation",
+    title: "Precise fundraising context",
+    text: "Nina said your asks are specific enough that she is comfortable opening investor paths.",
+    privacy: "Intro-gated",
+    score: 12,
+    time: "Yesterday",
+  },
+  {
+    id: "signal-you-priya",
+    direction: "written",
+    actor: "You",
+    subject: "Priya Raman",
+    personId: "priya",
+    pillar: "Reputation",
+    title: "Trust-heavy product taste",
+    text: "Priya made the launch review sharper by catching the parts that would make users hesitate.",
+    privacy: "Close circle",
+    score: 7,
+    time: "Today",
+  },
+];
+
 const contextSignals = [
   {
     id: "calendar-maya",
@@ -321,6 +397,11 @@ const state = {
   graphRefreshes: 0,
   socialCapital: 248,
   profileApprovals: [],
+  signalRecipientId: "priya",
+  signalPillar: "Reputation",
+  signalPrivacy: "Close circle",
+  signalDraft: "Priya made the launch review sharper by catching the parts that would make users hesitate.",
+  circleSignals: circleSignals.map((signal) => ({ ...signal })),
   contextApprovals: ["project-adrian"],
   contextHidden: [],
   claimApproved: false,
@@ -490,6 +571,7 @@ function setProductView(view) {
     const titles = {
       feed: "Private circle",
       profile: "Social Capital",
+      signals: "Close circle signals",
       context: "Context engine",
       goals: "Goals",
       asks: "Network asks",
@@ -579,6 +661,124 @@ function renderProfile() {
       `;
     })
     .join("");
+}
+
+function renderSignals() {
+  const composer = document.querySelector("[data-signal-composer]");
+  const insights = document.querySelector("[data-signal-insights]");
+  const stream = document.querySelector("[data-signal-stream]");
+  if (!composer || !insights || !stream) return;
+
+  const selectedPerson = personById(state.signalRecipientId);
+  const pillar = signalPillars.find((item) => item.id === state.signalPillar) ?? signalPillars[0];
+  const privacy =
+    signalPrivacyModes.find((item) => item.id === state.signalPrivacy) ?? signalPrivacyModes[0];
+  const receivedSignals = state.circleSignals.filter((signal) => signal.direction === "received");
+  const writtenSignals = state.circleSignals.filter((signal) => signal.direction === "written");
+  const closeCircleCount = state.circleSignals.filter((signal) => signal.privacy === "Close circle").length;
+
+  composer.innerHTML = `
+    <span class="product-kicker">Write a signal</span>
+    <h3>Make private proof useful for the people you trust.</h3>
+    <div class="signal-recipient-grid">
+      ${people
+        .map(
+          (person) => `
+            <button class="signal-person-button ${person.id === selectedPerson.id ? "is-selected" : ""}" type="button" data-select-signal-person="${person.id}">
+              ${avatar(person.name)}
+              <span>
+                <strong>${escapeHtml(person.name)}</strong>
+                <small>${escapeHtml(person.connector)} · ${person.trust}% trust</small>
+              </span>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+    <div class="signal-control-grid">
+      <div class="signal-option-group">
+        <span>Signal type</span>
+        <div>
+          ${signalPillars
+            .map(
+              (item) => `
+                <button class="signal-option-button ${item.id === state.signalPillar ? "is-selected" : ""}" type="button" data-select-signal-pillar="${item.id}">
+                  ${escapeHtml(item.label)}
+                </button>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+      <div class="signal-option-group">
+        <span>Visibility</span>
+        <div>
+          ${signalPrivacyModes
+            .map(
+              (item) => `
+                <button class="signal-option-button ${item.id === state.signalPrivacy ? "is-selected" : ""}" type="button" data-select-signal-privacy="${item.id}">
+                  ${escapeHtml(item.label)}
+                </button>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+    <label class="signal-draft-label">
+      Private context
+      <textarea data-signal-draft placeholder="Write what this person proved in private.">${escapeHtml(state.signalDraft)}</textarea>
+    </label>
+    <div class="signal-preview">
+      <span>${escapeHtml(pillar.label)} · ${escapeHtml(privacy.label)}</span>
+      <strong>${escapeHtml(selectedPerson.name)}</strong>
+      <p>${escapeHtml(pillar.prompt)} ${escapeHtml(privacy.detail)}</p>
+    </div>
+    <button class="signal-primary-action" type="button" data-publish-signal>${escapeHtml(privacy.label === "Close circle" ? "Publish to close circle" : `Publish ${privacy.label.toLowerCase()} signal`)}</button>
+  `;
+
+  insights.innerHTML = `
+    <span class="product-kicker">Social proof loop</span>
+    <h3>Signals compound into reputation.</h3>
+    <p>Write proof about people you actually know. Gigi keeps it scoped, then uses approved context when an ask or intro needs it.</p>
+    <div class="goal-score">
+      <div><strong>${receivedSignals.length}</strong><span>about you</span></div>
+      <div><strong>${writtenSignals.length}</strong><span>written</span></div>
+      <div><strong>${closeCircleCount}</strong><span>close circle</span></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(selectedPerson.path)}</strong>
+      <p>${escapeHtml(selectedPerson.lastSignal)}. A reciprocal signal request can ask ${escapeHtml(selectedPerson.name)} to validate the relationship.</p>
+    </div>
+    <button type="button" data-request-reciprocal>Ask for reciprocal signal</button>
+  `;
+
+  stream.innerHTML = `
+    <div class="share-results-heading">
+      <span>Living feed of social capital</span>
+      <strong>${state.circleSignals.length} signals</strong>
+    </div>
+    <div class="signal-stream-list">
+      ${state.circleSignals
+        .map(
+          (signal) => `
+            <article class="signal-stream-row is-${escapeHtml(signal.direction)}">
+              <div class="signal-stream-meta">
+                <span>${escapeHtml(signal.pillar)}</span>
+                <strong>+${signal.score}</strong>
+              </div>
+              <div>
+                <h4>${escapeHtml(signal.title)}</h4>
+                <p>${escapeHtml(signal.text)}</p>
+                <small>${escapeHtml(signal.actor)} -> ${escapeHtml(signal.subject)} · ${escapeHtml(signal.privacy)} · ${escapeHtml(signal.time)}</small>
+              </div>
+              <span class="signal-direction">${signal.direction === "received" ? "About you" : "Written"}</span>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function contextSignalState(signal) {
@@ -1171,6 +1371,7 @@ function renderAll() {
   renderConnectedSources();
   renderSourceHealth();
   renderProfile();
+  renderSignals();
   renderContext();
   renderGoals();
   renderAsks();
@@ -1314,6 +1515,87 @@ document.addEventListener("click", async (event) => {
         text: "drafted a private vouch request for Clara to validate your latest shipped work.",
         time: "Just now",
         capital: 5,
+      });
+    }
+    setProductView("intros");
+    return;
+  }
+
+  const signalPersonButton = target.closest("[data-select-signal-person]");
+  if (signalPersonButton) {
+    state.signalRecipientId = signalPersonButton.dataset.selectSignalPerson;
+    const person = personById(state.signalRecipientId);
+    state.signalDraft = `${person.name} created useful context for ${person.intent}.`;
+    renderSignals();
+    return;
+  }
+
+  const signalPillarButton = target.closest("[data-select-signal-pillar]");
+  if (signalPillarButton) {
+    state.signalPillar = signalPillarButton.dataset.selectSignalPillar;
+    renderSignals();
+    return;
+  }
+
+  const signalPrivacyButton = target.closest("[data-select-signal-privacy]");
+  if (signalPrivacyButton) {
+    state.signalPrivacy = signalPrivacyButton.dataset.selectSignalPrivacy;
+    renderSignals();
+    return;
+  }
+
+  if (target.closest("[data-publish-signal]")) {
+    const draft = document.querySelector("[data-signal-draft]")?.value.trim();
+    if (draft) {
+      const person = personById(state.signalRecipientId);
+      const signal = {
+        id: `signal-${Date.now()}`,
+        direction: "written",
+        actor: "You",
+        subject: person.name,
+        personId: person.id,
+        pillar: state.signalPillar,
+        title: `${state.signalPillar} signal for ${person.name}`,
+        text: draft,
+        privacy: state.signalPrivacy,
+        score: 6,
+        time: "Just now",
+      };
+      state.circleSignals.unshift(signal);
+      person.lastSignal = `You wrote a ${state.signalPillar.toLowerCase()} signal about ${person.name}`;
+      person.capital += 6;
+      state.socialCapital += 3;
+      state.feed.unshift({
+        person: person.name,
+        actor: "You",
+        text: `wrote a ${state.signalPillar.toLowerCase()} signal for ${person.name}. Gigi can use it when a trusted ask matches.`,
+        time: "Just now",
+        capital: 6,
+      });
+      state.signalDraft = `Write another private signal about ${person.name}.`;
+      renderAll();
+    }
+    return;
+  }
+
+  if (target.closest("[data-request-reciprocal]")) {
+    const person = personById(state.signalRecipientId);
+    const exists = state.intros.some(
+      (intro) => intro.target === person.name && intro.reason === "Reciprocal signal request",
+    );
+    if (!exists) {
+      state.intros.unshift({
+        target: person.name,
+        connector: "Gigi",
+        reason: "Reciprocal signal request",
+        status: "Waiting opt-in",
+      });
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `drafted a gated request for ${person.name} to write a reciprocal signal about your relationship.`,
+        time: "Just now",
+        capital: 4,
       });
     }
     setProductView("intros");
@@ -1784,6 +2066,13 @@ document.querySelector("[data-goal-brief]")?.addEventListener("input", (event) =
 
 document.querySelector("[data-ask-brief]")?.addEventListener("input", (event) => {
   state.askBrief = event.currentTarget.value;
+});
+
+document.addEventListener("input", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (target?.matches("[data-signal-draft]")) {
+    state.signalDraft = target.value;
+  }
 });
 
 window.addEventListener("resize", () => {
