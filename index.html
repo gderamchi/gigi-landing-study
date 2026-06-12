@@ -112,6 +112,7 @@
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
+            <button class="product-nav-item" type="button" data-product-view="strength">Strength</button>
             <button class="product-nav-item" type="button" data-product-view="access">Access</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
             <button class="product-nav-item" type="button" data-product-view="messages">DMs</button>
@@ -400,6 +401,22 @@
               <div class="trust-graph" data-trust-graph></div>
               <aside class="graph-detail" data-graph-detail></aside>
             </div>
+          </section>
+
+          <section class="product-screen product-screen-strength" data-product-screen="strength" aria-label="Relationship strength">
+            <div class="strength-layout">
+              <section class="strength-command">
+                <span class="product-kicker">Relationship strength</span>
+                <h3>Know which relationships can carry the ask.</h3>
+                <div class="strength-actions">
+                  <button type="button" data-run-strength>Analyze relationships</button>
+                  <button type="button" data-route-strength>Open strongest route</button>
+                </div>
+                <div class="strength-list" data-strength-list></div>
+              </section>
+              <aside class="strength-panel" data-strength-panel></aside>
+            </div>
+            <section class="strength-ledger" data-strength-ledger></section>
           </section>
 
           <section class="product-screen product-screen-access" data-product-screen="access" aria-label="Permissioned access">

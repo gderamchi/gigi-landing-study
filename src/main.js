@@ -873,6 +873,57 @@ const radarPredictions = [
   },
 ];
 
+const relationshipAudits = [
+  {
+    id: "maxime-priya-strength",
+    label: "Product trust",
+    connector: "Maxime Durand",
+    targetId: "priya",
+    accessId: "julien-priya",
+    ask: "Can Maxime safely carry a trust-heavy product review ask to Priya?",
+    proof: "12 shared calendar events, 4 launch-review threads, and a fresh product critique inside the last week.",
+    risk: "Strong enough for a scoped advisor ask, not for broad hiring context.",
+    score: 91,
+    meetings: 12,
+    threads: 4,
+    recency: "6 days",
+    capital: 6,
+    signals: ["recent work", "reply depth", "connector trust"],
+  },
+  {
+    id: "nina-maya-strength",
+    label: "Investor path",
+    connector: "Nina Patel",
+    targetId: "maya",
+    accessId: "claire-maya",
+    ask: "Can Nina credibly route Claire's seed ask to Maya?",
+    proof: "8 investor-context meetings, 3 founder-reference threads, and one current partner-meeting note.",
+    risk: "Good for fundraising fit; keep round details hidden until Nina approves the forwardable note.",
+    score: 88,
+    meetings: 8,
+    threads: 3,
+    recency: "2 days",
+    capital: 5,
+    signals: ["calendar density", "fundraising context", "mutual intent"],
+  },
+  {
+    id: "clara-adrian-strength",
+    label: "Room access",
+    connector: "Clara Gold",
+    targetId: "adrian",
+    accessId: "david-adrian",
+    ask: "Can Clara open a private founder-room path to Adrian without leaking the room?",
+    proof: "5 recent founder-room overlaps, 2 private list edits, and a direct dinner-context mention.",
+    risk: "Useful for opt-in dinner access only; do not expose the full attendee graph.",
+    score: 84,
+    meetings: 5,
+    threads: 2,
+    recency: "9 days",
+    capital: 4,
+    signals: ["offline room", "private list", "limited scope"],
+  },
+];
+
 const opportunityMoves = [
   {
     id: "role-whisper",
@@ -1067,6 +1118,9 @@ const state = {
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
+  activeStrengthId: "maxime-priya-strength",
+  analyzedStrength: [],
+  routedStrength: [],
   scoreQuery: "",
   activeScoreId: "clara",
   scoreRevealed: false,
@@ -1226,6 +1280,10 @@ function radarById(id) {
   return radarPredictions.find((prediction) => prediction.id === id) ?? radarPredictions[0];
 }
 
+function relationshipAuditById(id) {
+  return relationshipAudits.find((audit) => audit.id === id) ?? relationshipAudits[0];
+}
+
 function accessRequestById(id) {
   return accessRequests.find((request) => request.id === id) ?? accessRequests[0];
 }
@@ -1355,6 +1413,7 @@ function setProductView(view) {
       asks: "Network asks",
       search: "Network search",
       graph: "Trust graph",
+      strength: "Relationship strength",
       access: "Permissioned access",
       lists: "Smart links",
       messages: "Message delivery",
@@ -2736,6 +2795,89 @@ function renderGraph() {
   `;
 }
 
+function renderStrength() {
+  const list = document.querySelector("[data-strength-list]");
+  const panel = document.querySelector("[data-strength-panel]");
+  const ledger = document.querySelector("[data-strength-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = relationshipAuditById(state.activeStrengthId);
+  const person = personById(active.targetId);
+  const analyzed = state.analyzedStrength.includes(active.id);
+  const routed = state.routedStrength.includes(active.id);
+  const runButton = document.querySelector("[data-run-strength]");
+  const routeButton = document.querySelector("[data-route-strength]");
+
+  if (runButton) {
+    runButton.textContent = analyzed || routed ? "Analysis live" : "Analyze relationships";
+    runButton.disabled = analyzed || routed;
+  }
+  if (routeButton) {
+    routeButton.textContent = routed ? "Open Access route" : "Open strongest route";
+  }
+
+  list.innerHTML = relationshipAudits
+    .map((audit) => {
+      const target = personById(audit.targetId);
+      const auditAnalyzed = state.analyzedStrength.includes(audit.id);
+      const auditRouted = state.routedStrength.includes(audit.id);
+      return `
+        <button class="strength-card ${audit.id === active.id ? "is-selected" : ""} ${auditRouted ? "is-routed" : auditAnalyzed ? "is-analyzed" : ""}" type="button" data-select-strength="${audit.id}">
+          <span>${escapeHtml(audit.label)}</span>
+          <strong>${escapeHtml(audit.connector)} → ${escapeHtml(target.name)}</strong>
+          <small>${escapeHtml(auditRouted ? "Route opened" : auditAnalyzed ? `${audit.score}% strength` : `${audit.meetings} meetings · ${audit.recency}`)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Relationship proof</span>
+    <h3>${escapeHtml(active.connector)} → ${escapeHtml(person.name)}</h3>
+    <p>${escapeHtml(analyzed ? active.ask : "Analyze Calendar and Gmail context before deciding whether this path can carry an ask.")}</p>
+    <div class="strength-score">
+      <strong>${escapeHtml(analyzed ? `${active.score}%` : "--")}</strong>
+      <span>${escapeHtml(routed ? "sent to Access" : analyzed ? "usable strength" : "waiting")}</span>
+    </div>
+    <div class="strength-metrics">
+      <div><span>Meetings</span><strong>${escapeHtml(analyzed ? String(active.meetings) : "--")}</strong></div>
+      <div><span>Threads</span><strong>${escapeHtml(analyzed ? String(active.threads) : "--")}</strong></div>
+      <div><span>Recency</span><strong>${escapeHtml(analyzed ? active.recency : "--")}</strong></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(analyzed ? "What Gigi can use" : "Private until analyzed")}</strong>
+      <p>${escapeHtml(analyzed ? active.proof : "This prototype keeps relationship evidence hidden until the local analysis runs.")}</p>
+    </div>
+    <div class="tag-row">
+      ${active.signals.map((signal) => `<span>${escapeHtml(signal)}</span>`).join("")}
+    </div>
+  `;
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(routed ? "Route opened" : analyzed ? "Strength analyzed" : "Relationship audit")}</span>
+      <strong>${escapeHtml(routed ? "Access check queued" : analyzed ? "Ready to route" : "Waiting")}</strong>
+    </div>
+    <div class="strength-ledger-grid">
+      <article>
+        <span>Source truth</span>
+        <h4>${escapeHtml(analyzed ? "Calendar + Gmail agree" : "Not yet connected")}</h4>
+        <p>${escapeHtml(analyzed ? active.proof : "Gigi needs actual interaction history before ranking relationship strength.")}</p>
+      </article>
+      <article>
+        <span>Ask fit</span>
+        <h4>${escapeHtml(analyzed ? active.ask : "Need a concrete ask")}</h4>
+        <p>${escapeHtml(analyzed ? "The relationship is scored against one narrow request, not generic social proximity." : "Relationship strength stays meaningless until tied to a specific outcome.")}</p>
+      </article>
+      <article>
+        <span>Boundary</span>
+        <h4>${escapeHtml(routed ? "Permissioned route only" : analyzed ? "Scope required" : "No sharing")}</h4>
+        <p>${escapeHtml(analyzed ? active.risk : "Nothing external is sent from this prototype, and private context remains local.")}</p>
+      </article>
+    </div>
+  `;
+}
+
 function renderAccess() {
   const requests = document.querySelector("[data-access-requests]");
   const route = document.querySelector("[data-access-route]");
@@ -3040,6 +3182,7 @@ function renderAll() {
   renderRadar();
   renderPeople();
   renderGraph();
+  renderStrength();
   renderAccess();
   renderLists();
   renderMessages();
@@ -4050,6 +4193,65 @@ document.addEventListener("click", async (event) => {
     });
     renderFeed();
     renderGraph();
+    return;
+  }
+
+  const strengthButton = target.closest("[data-select-strength]");
+  if (strengthButton) {
+    const audit = relationshipAuditById(strengthButton.dataset.selectStrength);
+    state.activeStrengthId = audit.id;
+    renderStrength();
+    return;
+  }
+
+  if (target.closest("[data-run-strength]")) {
+    const audit = relationshipAuditById(state.activeStrengthId);
+    const person = personById(audit.targetId);
+    const wasAnalyzed = state.analyzedStrength.includes(audit.id);
+    state.connected.calendar = true;
+    state.connected.gmail = true;
+    state.connected.contacts = true;
+    if (!wasAnalyzed) {
+      state.analyzedStrength.push(audit.id);
+      state.socialCapital += audit.capital;
+      state.feed.unshift({
+        person: audit.connector,
+        actor: "Gigi",
+        text: `analyzed relationship strength from ${audit.connector} to ${person.name}: ${audit.score}% usable for this scoped ask.`,
+        time: "Just now",
+        capital: audit.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-route-strength]")) {
+    const audit = relationshipAuditById(state.activeStrengthId);
+    const person = personById(audit.targetId);
+    const accessRequest = accessRequestById(audit.accessId);
+    if (!state.analyzedStrength.includes(audit.id)) {
+      state.analyzedStrength.push(audit.id);
+      state.socialCapital += audit.capital;
+    }
+    if (!state.routedStrength.includes(audit.id)) {
+      state.routedStrength.push(audit.id);
+      state.feed.unshift({
+        person: person.name,
+        actor: "Gigi",
+        text: `opened the strongest permissioned route to ${person.name} after proving ${audit.connector}'s relationship strength.`,
+        time: "Just now",
+        capital: 3,
+      });
+    }
+    if (!state.checkedAccess.includes(accessRequest.id)) {
+      state.checkedAccess.push(accessRequest.id);
+    }
+    state.connected.calendar = true;
+    state.connected.gmail = true;
+    state.connected.contacts = true;
+    state.activeAccessId = accessRequest.id;
+    setProductView("access");
     return;
   }
 
