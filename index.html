@@ -113,6 +113,7 @@
             <button class="product-nav-item" type="button" data-product-view="call">Call</button>
             <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
             <button class="product-nav-item" type="button" data-product-view="approvals">Approvals</button>
+            <button class="product-nav-item" type="button" data-product-view="rights">Rights</button>
             <button class="product-nav-item" type="button" data-product-view="moves">Moves</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="matches">Matches</button>
@@ -267,6 +268,23 @@
               <aside class="approval-panel" data-approval-panel></aside>
             </div>
             <section class="approval-ledger" data-approval-ledger></section>
+          </section>
+
+          <section class="product-screen product-screen-rights" data-product-screen="rights" aria-label="Data rights">
+            <div class="rights-layout">
+              <section class="rights-command">
+                <span class="product-kicker">Data rights</span>
+                <h3>Control the data behind the graph.</h3>
+                <p>Export, correct, withdraw, or delete local product data before it powers recommendations.</p>
+                <div class="rights-actions">
+                  <button type="button" data-run-right-action>Run right</button>
+                  <button type="button" data-open-right-source>Open source surface</button>
+                </div>
+                <div class="rights-list" data-rights-list></div>
+              </section>
+              <aside class="rights-panel" data-rights-panel></aside>
+            </div>
+            <section class="rights-ledger" data-rights-ledger></section>
           </section>
 
           <section class="product-screen product-screen-moves" data-product-screen="moves" aria-label="Opportunity moves">

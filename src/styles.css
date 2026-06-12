@@ -1008,6 +1008,9 @@ body[data-share-active="true"] #app {
 .approval-actions button,
 .approval-card,
 .approval-panel button,
+.rights-actions button,
+.rights-card,
+.rights-panel button,
 .os-actions button,
 .people-os-scenario,
 .move-actions button,
@@ -1119,6 +1122,9 @@ body[data-share-active="true"] #app {
 .approval-command,
 .approval-panel,
 .approval-ledger,
+.rights-command,
+.rights-panel,
+.rights-ledger,
 .move-command,
 .move-preview,
 .move-status,
@@ -1226,6 +1232,9 @@ body[data-share-active="true"] #app {
 .approval-command p,
 .approval-panel p,
 .approval-ledger-grid p,
+.rights-command p,
+.rights-panel p,
+.rights-ledger-grid p,
 .move-command p,
 .move-preview p,
 .move-status-grid p,
@@ -2314,6 +2323,9 @@ body[data-share-active="true"] #app {
 .approval-card span,
 .approval-card small,
 .approval-ledger-grid span,
+.rights-card span,
+.rights-card small,
+.rights-ledger-grid span,
 .setup-progress span {
   color: rgb(255 255 255 / 0.5);
   font-size: 11px;
@@ -2699,6 +2711,188 @@ body[data-share-active="true"] #app {
 }
 
 .approval-ledger-grid h4 {
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.rights-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+}
+
+.rights-command {
+  min-height: 560px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 18%, rgb(92 225 255 / 0.15), transparent 30%),
+    radial-gradient(circle at 18% 82%, rgb(198 255 91 / 0.14), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.rights-command h3 {
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(44px, 5vw, 76px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.rights-command p {
+  max-width: 620px;
+  margin-top: 18px;
+  font-size: 16px;
+}
+
+.rights-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.rights-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.rights-actions button:first-child {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.rights-actions button:not(:first-child) {
+  color: #fff;
+}
+
+.rights-actions button[disabled] {
+  cursor: default;
+  opacity: 0.52;
+}
+
+.rights-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.rights-card {
+  min-height: 146px;
+  align-content: start;
+  padding: 15px;
+  text-align: left;
+}
+
+.rights-card.is-selected {
+  border-color: rgb(92 225 255 / 0.34);
+  background: rgb(92 225 255 / 0.08);
+}
+
+.rights-card.is-completed {
+  border-color: rgb(198 255 91 / 0.36);
+  background: rgb(198 255 91 / 0.09);
+}
+
+.rights-card span,
+.rights-card strong,
+.rights-card small {
+  display: block;
+}
+
+.rights-card strong {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.08;
+}
+
+.rights-card small {
+  margin-top: 18px;
+  color: #d7ff73;
+}
+
+.rights-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 72% 18%, rgb(198 255 91 / 0.12), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.rights-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.rights-state {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  border: 1px solid rgb(92 225 255 / 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgb(92 225 255 / 0.07);
+}
+
+.rights-state strong {
+  color: #d7ff73;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.rights-state span {
+  color: rgb(255 255 255 / 0.54);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rights-panel button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  color: #d7ff73;
+}
+
+.rights-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.rights-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.rights-ledger-grid article {
+  min-height: 164px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.rights-ledger-grid article.is-completed {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(198 255 91 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.rights-ledger-grid h4 {
   margin: 9px 0 0;
   color: #fff;
   font-size: 20px;
@@ -4208,6 +4402,37 @@ body[data-share-active="true"] #app {
   }
 
   .approval-ledger-grid article {
+    min-height: 134px;
+    padding: 14px;
+  }
+
+  .rights-command {
+    min-height: 430px;
+    padding: 22px;
+  }
+
+  .rights-command h3 {
+    font-size: 50px;
+  }
+
+  .rights-list {
+    margin-top: 18px;
+  }
+
+  .rights-card {
+    min-height: 124px;
+    padding: 12px;
+  }
+
+  .rights-card strong {
+    font-size: 17px;
+  }
+
+  .rights-panel {
+    padding: 18px;
+  }
+
+  .rights-ledger-grid article {
     min-height: 134px;
     padding: 14px;
   }
@@ -7852,6 +8077,9 @@ body[data-share-active="true"] #app {
   .approval-layout,
   .approval-list,
   .approval-ledger-grid,
+  .rights-layout,
+  .rights-list,
+  .rights-ledger-grid,
   .move-layout,
   .move-list,
   .move-status-grid,
@@ -8084,6 +8312,33 @@ body[data-share-active="true"] #app {
   }
 
   .approval-panel {
+    position: static;
+  }
+
+  .rights-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .rights-command h3 {
+    font-size: 52px;
+  }
+
+  .rights-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .rights-actions button {
+    width: 100%;
+  }
+
+  .rights-card,
+  .rights-ledger-grid article {
+    min-height: auto;
+  }
+
+  .rights-panel {
     position: static;
   }
 

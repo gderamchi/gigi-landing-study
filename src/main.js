@@ -1180,6 +1180,53 @@ const approvalActions = [
   },
 ];
 
+const dataRights = [
+  {
+    id: "export-data",
+    label: "Export data",
+    source: "Account",
+    view: "setup",
+    action: "Build a local export of profile, notes, drafts, and intro requests.",
+    detail: "The export summarizes what the prototype knows without sending the archive anywhere.",
+    effect: "Creates a local export receipt and marks consent receipts as exported.",
+    status: "Ready",
+    capital: 1,
+  },
+  {
+    id: "correct-enrichment",
+    label: "Correct enrichment",
+    source: "Profile data",
+    view: "context",
+    action: "Correct an enriched profile signal before it affects search or intros.",
+    detail: "Third-party and public profile signals are contextual, so stale or inaccurate context must be reviewable.",
+    effect: "Updates Priya's context to a verified design-systems review signal.",
+    status: "Needs review",
+    capital: 2,
+  },
+  {
+    id: "withdraw-consent",
+    label: "Withdraw consent",
+    source: "Gmail + AI",
+    view: "setup",
+    action: "Withdraw Gmail and AI-processing consent from product actions.",
+    detail: "Recommendations can remain visible, but new Gmail drafts and AI-powered context scans are disabled locally.",
+    effect: "Disconnects Gmail/public profile, pauses setup mapping, and marks AI processing as withdrawn.",
+    status: "Available",
+    capital: 0,
+  },
+  {
+    id: "delete-local-data",
+    label: "Request deletion",
+    source: "Retention",
+    view: "approvals",
+    action: "Queue local account-data deletion and stop graph sharing.",
+    detail: "Deletion is modeled as a user-initiated request; this prototype does not contact external systems.",
+    effect: "Locks shared links, clears exported receipts, and records a deletion request.",
+    status: "Not requested",
+    capital: 0,
+  },
+];
+
 const intakeCall = {
   objective:
     "Raise a seed round for an AI infrastructure company while hiring one trust-heavy product advisor.",
@@ -1532,6 +1579,12 @@ const state = {
   scannedApprovals: [],
   approvedApprovals: [],
   blockedApprovals: [],
+  activeRightId: "export-data",
+  completedRights: [],
+  dataExported: false,
+  correctedEnrichment: false,
+  aiConsentWithdrawn: false,
+  deletionRequested: false,
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
@@ -1795,6 +1848,10 @@ function approvalActionById(id) {
   return approvalActions.find((action) => action.id === id) ?? approvalActions[0];
 }
 
+function dataRightById(id) {
+  return dataRights.find((right) => right.id === id) ?? dataRights[0];
+}
+
 function opportunityMoveById(id) {
   return opportunityMoves.find((move) => move.id === id) ?? opportunityMoves[0];
 }
@@ -1910,6 +1967,7 @@ function setProductView(view) {
       call: "Intake call",
       setup: "Trust setup",
       approvals: "Approval queue",
+      rights: "Data rights",
       moves: "Opportunity moves",
       score: "Social Capital Score",
       matches: "Match reports",
@@ -2249,6 +2307,113 @@ function renderApprovals() {
         .map(
           (row) => `
             <article class="${approved ? "is-approved" : blocked ? "is-blocked" : scanned ? "is-scanned" : ""}">
+              <span>${escapeHtml(row.label)}</span>
+              <h4>${escapeHtml(row.value)}</h4>
+              <p>${escapeHtml(row.detail)}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function dataRightState(right) {
+  if (state.completedRights.includes(right.id)) return "Completed";
+  if (right.id === "withdraw-consent" && state.aiConsentWithdrawn) return "Completed";
+  if (right.id === "delete-local-data" && state.deletionRequested) return "Completed";
+  return right.status;
+}
+
+function renderRights() {
+  const list = document.querySelector("[data-rights-list]");
+  const panel = document.querySelector("[data-rights-panel]");
+  const ledger = document.querySelector("[data-rights-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = dataRightById(state.activeRightId);
+  const activeState = dataRightState(active);
+  const completedCount = dataRights.filter((right) => dataRightState(right) === "Completed").length;
+  const runButton = document.querySelector("[data-run-right-action]");
+  const openButton = document.querySelector("[data-open-right-source]");
+
+  if (runButton) {
+    runButton.textContent = activeState === "Completed" ? "Right completed" : "Run right";
+    runButton.disabled = activeState === "Completed";
+  }
+  if (openButton) {
+    openButton.textContent = `Open ${active.source}`;
+  }
+
+  list.innerHTML = dataRights
+    .map((right) => {
+      const rightState = dataRightState(right);
+      return `
+        <button class="rights-card ${right.id === active.id ? "is-selected" : ""} ${rightState === "Completed" ? "is-completed" : ""}" type="button" data-select-right="${right.id}">
+          <span>${escapeHtml(right.source)}</span>
+          <strong>${escapeHtml(right.label)}</strong>
+          <small>${escapeHtml(rightState)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Selected right</span>
+    <h3>${escapeHtml(active.action)}</h3>
+    <p>${escapeHtml(active.detail)}</p>
+    <div class="rights-state">
+      <strong>${escapeHtml(activeState)}</strong>
+      <span>${escapeHtml(active.source)}</span>
+    </div>
+    <div class="path-box">
+      <strong>Local effect</strong>
+      <p>${escapeHtml(active.effect)}</p>
+    </div>
+    <button type="button" data-open-right-source>Open ${escapeHtml(active.source)}</button>
+  `;
+
+  const ledgerRows = [
+    {
+      label: "Access",
+      value: state.dataExported ? "Exported" : "Available",
+      detail: state.dataExported
+        ? "A local export receipt exists for profile data, notes, drafts, and intro requests."
+        : "The user can inspect and export the data model before sharing anything.",
+    },
+    {
+      label: "Correction",
+      value: state.correctedEnrichment ? "Corrected" : "Reviewable",
+      detail: state.correctedEnrichment
+        ? "The enriched profile signal was corrected before it could influence routing."
+        : "Public and third-party enrichment is treated as contextual and not guaranteed.",
+    },
+    {
+      label: "Consent",
+      value: state.aiConsentWithdrawn ? "Withdrawn" : "Active",
+      detail: state.aiConsentWithdrawn
+        ? "Gmail and AI-source consent are paused for new product actions."
+        : "Connected sources still require approval before messages or intros move.",
+    },
+    {
+      label: "Deletion",
+      value: state.deletionRequested ? "Requested" : "Not requested",
+      detail: state.deletionRequested
+        ? "Shared links are locked locally while deletion is modeled as a user-initiated request."
+        : "Data is retained only to power the local product simulation.",
+    },
+  ];
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>Rights ledger</span>
+      <strong>${escapeHtml(`${completedCount}/${dataRights.length} completed`)}</strong>
+    </div>
+    <div class="rights-ledger-grid">
+      ${ledgerRows
+        .map(
+          (row) => `
+            <article class="${row.value === "Active" || row.value === "Available" || row.value === "Not requested" ? "" : "is-completed"}">
               <span>${escapeHtml(row.label)}</span>
               <h4>${escapeHtml(row.value)}</h4>
               <p>${escapeHtml(row.detail)}</p>
@@ -4279,6 +4444,7 @@ function renderAll() {
   renderPeopleOs();
   renderSetup();
   renderApprovals();
+  renderRights();
   renderMoves();
   renderScore();
   renderMatches();
@@ -4590,6 +4756,77 @@ document.addEventListener("click", async (event) => {
     if (action.id === "smart-link-approval") state.previewListIndex = 1;
     if (action.id === "signal-approval") state.signalRecipientId = "priya";
     setProductView(action.view);
+    return;
+  }
+
+  const rightButton = target.closest("[data-select-right]");
+  if (rightButton) {
+    state.activeRightId = rightButton.dataset.selectRight;
+    renderRights();
+    return;
+  }
+
+  if (target.closest("[data-run-right-action]")) {
+    const right = dataRightById(state.activeRightId);
+    if (!state.completedRights.includes(right.id)) {
+      state.completedRights.push(right.id);
+      state.socialCapital += right.capital;
+
+      if (right.id === "export-data") {
+        state.dataExported = true;
+        state.consentReceiptExported = true;
+      }
+
+      if (right.id === "correct-enrichment") {
+        state.correctedEnrichment = true;
+        const person = personById("priya");
+        person.intent = "advising AI teams on trust-heavy product surfaces after verified design-systems review";
+        person.lastSignal = "Corrected enrichment: design-systems review signal verified by Maxime";
+        const signal = contextSignals.find((item) => item.id === "mention-priya");
+        if (signal) {
+          signal.label = "Corrected product-trust signal";
+          signal.text = "Correction applied: Priya's signal is design-systems review quality, not a broad hiring endorsement.";
+          signal.privacy = "Corrected context";
+        }
+      }
+
+      if (right.id === "withdraw-consent") {
+        state.aiConsentWithdrawn = true;
+        state.connected.gmail = false;
+        state.connected.publicProfile = false;
+        state.setupMapped = false;
+        state.generatedEmailDrafts = [];
+        state.approvedEmailDrafts = [];
+      }
+
+      if (right.id === "delete-local-data") {
+        state.deletionRequested = true;
+        state.dataExported = false;
+        state.consentReceiptExported = false;
+        state.shareUnlocked = false;
+        state.shareRequested = [];
+        state.approvedApprovals = [];
+        state.blockedApprovals = [];
+      }
+
+      state.feed.unshift({
+        person: right.label,
+        actor: "You",
+        text: `ran ${right.label.toLowerCase()}. ${right.effect}`,
+        time: "Just now",
+        capital: right.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-right-source]")) {
+    const right = dataRightById(state.activeRightId);
+    if (right.id === "correct-enrichment") {
+      state.activeDossierId = "priya-product-dossier";
+    }
+    setProductView(right.view);
     return;
   }
 
