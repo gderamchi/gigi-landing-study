@@ -38,6 +38,7 @@ Implemented flows:
 - invite-only beta gate that turns the landing-page email into a local invite before opening trust setup
 - People OS context-machine loop that reasons over private context, trust, reputation, intent, and approval boundaries before prompting a connector
 - trust setup workflow that connects simulated Calendar, Gmail, Contacts, and public-profile sources before agent actions unlock
+- consent receipt workflow that grants, revokes, and exports local source permissions before Gmail, Calendar, Contacts, or profile context can power product actions
 - voice-intake workflow that simulates a Gigi call, extracts intent, and activates a goal plan
 - opportunity-move queue that detects hidden roles, rounds, cap-table edges, and hot decks before they become public
 - proactive Radar workflow that surfaces a useful person before a direct search and routes the match into permissioned Access

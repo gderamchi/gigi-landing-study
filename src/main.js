@@ -1523,6 +1523,7 @@ const state = {
   },
   activeSetupSourceId: "calendar",
   setupMapped: false,
+  consentReceiptExported: false,
   activeMoveId: "role-whisper",
   scannedMoves: [],
   movedMoves: [],
@@ -1967,7 +1968,8 @@ function renderSetup() {
   const sourceList = document.querySelector("[data-setup-source-list]");
   const audit = document.querySelector("[data-setup-audit]");
   const results = document.querySelector("[data-setup-results]");
-  if (!sourceList || !audit || !results) return;
+  const consent = document.querySelector("[data-setup-consent]");
+  if (!sourceList || !audit || !results || !consent) return;
 
   const activeSource = setupSourceById(state.activeSetupSourceId);
   const connectedSources = setupSources.filter((source) => state.connected[source.id]);
@@ -2053,6 +2055,35 @@ function renderSetup() {
         )
         .join("")}
     </div>
+  `;
+
+  consent.innerHTML = `
+    <div class="share-results-heading">
+      <span>Consent receipts</span>
+      <strong>${escapeHtml(state.consentReceiptExported ? "Exported locally" : `${connectedCount} active`)}</strong>
+    </div>
+    <div class="setup-consent-list">
+      ${setupSources
+        .map((source) => {
+          const connected = Boolean(state.connected[source.id]);
+          return `
+            <article class="${connected ? "is-granted" : "is-revoked"}">
+              <div>
+                <span>${escapeHtml(source.label)}</span>
+                <strong>${escapeHtml(connected ? "Explicit consent granted" : "Not connected")}</strong>
+                <p>${escapeHtml(connected ? source.privacy : source.unlock)}</p>
+              </div>
+              <small>${escapeHtml(connected ? "Approval-gated use" : "No product action can use this source")}</small>
+              <div class="setup-consent-actions">
+                <button type="button" data-connect-source="${source.id}" ${connected ? "disabled" : ""}>Grant</button>
+                <button type="button" data-revoke-source="${source.id}" ${connected ? "" : "disabled"}>Revoke</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+    <button class="setup-consent-export" type="button" data-export-consent>${escapeHtml(state.consentReceiptExported ? "Receipt exported" : "Export local receipt")}</button>
   `;
 }
 
@@ -4208,20 +4239,53 @@ document.addEventListener("click", async (event) => {
   const sourceButton = target.closest("[data-connect-source]");
   if (sourceButton) {
     const source = sourceButton.dataset.connectSource;
-    state.connected[source] = true;
+    const sourceMeta = setupSourceById(source);
+    if (!state.connected[source]) {
+      state.connected[source] = true;
+      state.setupMapped = setupSources.every((item) => state.connected[item.id]);
+      state.socialCapital += sourceMeta.capital;
+      state.feed.unshift({
+        person: sourceMeta.label,
+        actor: "Gigi",
+        text: `granted ${sourceMeta.label} consent. ${sourceMeta.unlock} remain approval-gated before anything is shared or sent.`,
+        time: "Just now",
+        capital: sourceMeta.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  const revokeSourceButton = target.closest("[data-revoke-source]");
+  if (revokeSourceButton) {
+    const source = revokeSourceButton.dataset.revokeSource;
+    const sourceMeta = setupSourceById(source);
+    if (state.connected[source]) {
+      state.connected[source] = false;
+      state.setupMapped = false;
+      state.consentReceiptExported = false;
+      state.feed.unshift({
+        person: sourceMeta.label,
+        actor: "You",
+        text: `revoked ${sourceMeta.label} access. Gigi keeps recommendations draft-only until consent is granted again.`,
+        time: "Just now",
+        capital: 0,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-export-consent]")) {
+    state.consentReceiptExported = true;
     state.feed.unshift({
-      person: source === "gmail" ? "Gmail" : "Calendar",
+      person: "Consent receipts",
       actor: "Gigi",
-      text:
-        source === "gmail"
-          ? "enabled Gmail drafting. Messages still require explicit approval before sending."
-          : "reviewed meeting history and found recurring relationships that can support warm paths.",
+      text: "exported a local consent receipt showing active sources, approval boundaries, and revocation state.",
       time: "Just now",
-      capital: source === "gmail" ? 3 : 6,
+      capital: 1,
     });
-    renderConnectedSources();
-    renderSourceHealth();
-    renderFeed();
+    renderAll();
     return;
   }
 
