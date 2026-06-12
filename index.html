@@ -111,6 +111,7 @@
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
+            <button class="product-nav-item" type="button" data-product-view="access">Access</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
             <button class="product-nav-item" type="button" data-product-view="messages">DMs</button>
             <button class="product-nav-item" type="button" data-product-view="intros">Intros</button>
@@ -382,6 +383,22 @@
               <div class="trust-graph" data-trust-graph></div>
               <aside class="graph-detail" data-graph-detail></aside>
             </div>
+          </section>
+
+          <section class="product-screen product-screen-access" data-product-screen="access" aria-label="Permissioned access">
+            <div class="access-layout">
+              <section class="access-command">
+                <span class="product-kicker">Permissioned trust graph</span>
+                <h3>Coordinate access without exposing the whole network.</h3>
+                <div class="access-actions">
+                  <button type="button" data-run-access-check>Run agent check</button>
+                  <button type="button" data-approve-access-route>Approve route</button>
+                </div>
+                <div class="access-request-list" data-access-requests></div>
+              </section>
+              <aside class="access-route" data-access-route></aside>
+            </div>
+            <section class="access-ledger" data-access-ledger></section>
           </section>
 
           <section class="product-screen product-screen-lists" data-product-screen="lists" aria-label="Smart network lists">

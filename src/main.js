@@ -956,6 +956,63 @@ const reconnectPlans = {
   },
 };
 
+const accessRequests = [
+  {
+    id: "claire-maya",
+    asker: "Claire Moreau",
+    askerRole: "Founder, Lumen AI",
+    ask: "Needs a founder-friendly VC for an AI infra seed round.",
+    targetId: "maya",
+    connector: "Nina Patel",
+    requesterAgent: "Claire's agent",
+    connectorAgent: "Nina's agent",
+    recipientAgent: "Maya's agent",
+    route: ["Claire Moreau", "You", "Nina Patel", "Maya Chen"],
+    reason: "Nina has fresh investor context, Maya's thesis matches the round, and the ask is specific enough for a double opt-in.",
+    privateContext: "Claire gets fundraising relevance and a forwardable note. Maya only sees the seed-round angle after Nina approves.",
+    policy: "Connector approval + recipient opt-in",
+    status: "Needs agent check",
+    score: 94,
+    capital: 8,
+  },
+  {
+    id: "julien-priya",
+    asker: "Julien Renard",
+    askerRole: "Chief of Staff, Northstar",
+    ask: "Needs a trust-heavy product reviewer before a senior AI product sprint.",
+    targetId: "priya",
+    connector: "Maxime Durand",
+    requesterAgent: "Julien's agent",
+    connectorAgent: "Maxime's agent",
+    recipientAgent: "Priya's agent",
+    route: ["Julien Renard", "You", "Maxime Durand", "Priya Raman"],
+    reason: "Maxime worked with Priya recently and the product-review context is narrow enough to avoid a vague coffee ask.",
+    privateContext: "Julien sees the review scope. Priya sees only the product-trust question and can reject before any context expands.",
+    policy: "Reference-safe path + recipient opt-in",
+    status: "Ready to check",
+    score: 91,
+    capital: 7,
+  },
+  {
+    id: "david-adrian",
+    asker: "David Kim",
+    askerRole: "Founder dinner host",
+    ask: "Needs one technical founder for a private SF dinner.",
+    targetId: "adrian",
+    connector: "Clara Gold",
+    requesterAgent: "David's agent",
+    connectorAgent: "Clara's agent",
+    recipientAgent: "Adrian's agent",
+    route: ["David Kim", "You", "Clara Gold", "Adrian Vega"],
+    reason: "Clara met Adrian yesterday, the dinner context is narrow, and the full guest list stays hidden.",
+    privateContext: "David gets a small smart-link card. Adrian sees the dinner theme, not the whole attendee graph.",
+    policy: "Scoped list + connector approval",
+    status: "Privacy review",
+    score: 87,
+    capital: 6,
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -981,6 +1038,9 @@ const state = {
   activeNudgeId: "clara-scott",
   builtNudges: [],
   sentNudges: [],
+  activeAccessId: "claire-maya",
+  checkedAccess: [],
+  approvedAccess: [],
   activeMessageThreadId: "andrea-seed",
   builtMessageLinks: [],
   sentMessageLinks: [],
@@ -1114,6 +1174,10 @@ function connectorNudgeById(id) {
   return connectorNudges.find((nudge) => nudge.id === id) ?? connectorNudges[0];
 }
 
+function accessRequestById(id) {
+  return accessRequests.find((request) => request.id === id) ?? accessRequests[0];
+}
+
 function setupSourceById(id) {
   return setupSources.find((source) => source.id === id) ?? setupSources[0];
 }
@@ -1238,6 +1302,7 @@ function setProductView(view) {
       asks: "Network asks",
       search: "Network search",
       graph: "Trust graph",
+      access: "Permissioned access",
       lists: "Smart links",
       messages: "Message delivery",
       intros: "Warm introductions",
@@ -2534,6 +2599,110 @@ function renderGraph() {
   `;
 }
 
+function renderAccess() {
+  const requests = document.querySelector("[data-access-requests]");
+  const route = document.querySelector("[data-access-route]");
+  const ledger = document.querySelector("[data-access-ledger]");
+  if (!requests || !route || !ledger) return;
+
+  const active = accessRequestById(state.activeAccessId);
+  const target = personById(active.targetId);
+  const checked = state.checkedAccess.includes(active.id);
+  const approved = state.approvedAccess.includes(active.id);
+  const checkButton = document.querySelector("[data-run-access-check]");
+  const approveButton = document.querySelector("[data-approve-access-route]");
+
+  if (checkButton) {
+    checkButton.textContent = checked || approved ? "Agent checked" : "Run agent check";
+    checkButton.disabled = checked || approved;
+  }
+  if (approveButton) {
+    approveButton.textContent = approved ? "Open intro queue" : "Approve route";
+  }
+
+  requests.innerHTML = accessRequests
+    .map((request) => {
+      const requestChecked = state.checkedAccess.includes(request.id);
+      const requestApproved = state.approvedAccess.includes(request.id);
+      return `
+        <button class="access-request-card ${request.id === active.id ? "is-selected" : ""} ${requestApproved ? "is-approved" : requestChecked ? "is-checked" : ""}" type="button" data-select-access="${request.id}">
+          <span>${escapeHtml(request.asker)}</span>
+          <strong>${escapeHtml(personById(request.targetId).name)}</strong>
+          <small>${escapeHtml(requestApproved ? "Route approved" : requestChecked ? "Agent checked" : request.status)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  route.innerHTML = `
+    <span class="product-kicker">Access route</span>
+    <h3>${escapeHtml(active.asker)} → ${escapeHtml(target.name)}</h3>
+    <p>${escapeHtml(active.ask)}</p>
+    <div class="access-score">
+      <strong>${active.score}%</strong>
+      <span>${escapeHtml(approved ? "route approved" : checked ? "safe to request" : "needs check")}</span>
+    </div>
+    <div class="access-route-steps">
+      ${active.route
+        .map(
+          (step, index) => `
+            <div>
+              <span>${index + 1}</span>
+              <strong>${escapeHtml(step)}</strong>
+            </div>
+          `,
+        )
+        .join("")}
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(active.policy)}</strong>
+      <p>${escapeHtml(active.privateContext)}</p>
+    </div>
+  `;
+
+  const rows = [
+    {
+      label: "Requesting agent",
+      actor: active.requesterAgent,
+      detail: active.reason,
+      state: checked || approved ? "Intent verified" : "Waiting for graph scan",
+    },
+    {
+      label: "Connector agent",
+      actor: active.connectorAgent,
+      detail: `${active.connector} can approve the path without exposing unrelated private notes.`,
+      state: approved ? "Approved" : checked ? "Needs human approval" : "Permission pending",
+    },
+    {
+      label: "Recipient agent",
+      actor: active.recipientAgent,
+      detail: `${target.name} receives only the scoped ask and can opt in before any intro is sent.`,
+      state: approved ? "Opt-in queued" : "Hidden until approval",
+    },
+  ];
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(approved ? "Access coordinated" : checked ? "Agent check complete" : "Permission ledger")}</span>
+      <strong>${escapeHtml(approved ? "Route approved" : checked ? "Ready for approval" : "Private by default")}</strong>
+    </div>
+    <div class="access-ledger-grid">
+      ${rows
+        .map(
+          (row) => `
+            <article class="${approved ? "is-approved" : checked ? "is-checked" : ""}">
+              <span>${escapeHtml(row.label)}</span>
+              <h4>${escapeHtml(row.actor)}</h4>
+              <p>${escapeHtml(row.detail)}</p>
+              <small>${escapeHtml(row.state)}</small>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderLinkPreview() {
   const title = document.querySelector("[data-link-preview-title]");
   const body = document.querySelector("[data-link-preview-body]");
@@ -2733,6 +2902,7 @@ function renderAll() {
   renderFeed();
   renderPeople();
   renderGraph();
+  renderAccess();
   renderLists();
   renderMessages();
   renderLinkPreview();
@@ -3683,6 +3853,62 @@ document.addEventListener("click", async (event) => {
     });
     renderFeed();
     renderGraph();
+    return;
+  }
+
+  const accessRequestButton = target.closest("[data-select-access]");
+  if (accessRequestButton) {
+    state.activeAccessId = accessRequestButton.dataset.selectAccess;
+    renderAccess();
+    return;
+  }
+
+  if (target.closest("[data-run-access-check]")) {
+    const request = accessRequestById(state.activeAccessId);
+    if (!state.checkedAccess.includes(request.id)) {
+      state.checkedAccess.push(request.id);
+      state.connected.calendar = true;
+      state.connected.contacts = true;
+      state.feed.unshift({
+        person: request.asker,
+        actor: "Gigi",
+        text: `checked the permissioned route to ${personById(request.targetId).name} across requester, connector, and recipient agents.`,
+        time: "Just now",
+        capital: request.capital,
+      });
+      state.socialCapital += request.capital;
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-approve-access-route]")) {
+    const request = accessRequestById(state.activeAccessId);
+    const targetPerson = personById(request.targetId);
+    if (state.approvedAccess.includes(request.id)) {
+      setProductView("intros");
+      return;
+    }
+    if (!state.checkedAccess.includes(request.id)) {
+      state.checkedAccess.push(request.id);
+    }
+    if (!state.approvedAccess.includes(request.id)) {
+      state.approvedAccess.push(request.id);
+      state.intros.unshift({
+        target: targetPerson.name,
+        connector: request.connector,
+        reason: "Permissioned access route",
+        status: "Waiting opt-in",
+      });
+      state.feed.unshift({
+        person: targetPerson.name,
+        actor: "You",
+        text: `approved the permissioned route from ${request.asker} to ${targetPerson.name}. Gigi queued the double opt-in intro locally.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
     return;
   }
 

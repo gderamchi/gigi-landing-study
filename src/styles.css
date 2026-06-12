@@ -856,6 +856,8 @@ body[data-share-active="true"] #app {
 .signal-insight-panel button,
 .context-actions button,
 .context-signal-actions button,
+.access-actions button,
+.access-request-card,
 .briefing-command button,
 .briefing-agenda-item,
 .briefing-card button,
@@ -951,6 +953,9 @@ body[data-share-active="true"] #app {
 .context-command,
 .context-briefing,
 .context-review,
+.access-command,
+.access-route,
+.access-ledger,
 .briefing-command,
 .briefing-card,
 .briefing-dossier,
@@ -1033,6 +1038,8 @@ body[data-share-active="true"] #app {
 .context-command p,
 .context-briefing p,
 .context-signal-row p,
+.access-route p,
+.access-ledger-grid p,
 .briefing-command p,
 .briefing-card p,
 .briefing-dossier-card p,
@@ -1070,6 +1077,7 @@ body[data-share-active="true"] #app {
 .signal-primary-action,
 .signal-insight-panel button,
 .context-actions button:first-child,
+.access-actions button:first-child,
 .briefing-controls button:first-child,
 .message-actions button:first-child,
 .goal-command button,
@@ -4519,6 +4527,230 @@ body[data-share-active="true"] #app {
   background: rgb(0 0 0 / 0.28);
 }
 
+.access-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+}
+
+.access-command {
+  min-height: 520px;
+  border-radius: 24px;
+  padding: 26px;
+  background:
+    radial-gradient(circle at 76% 22%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 18% 82%, rgb(92 225 255 / 0.12), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.access-command h3 {
+  max-width: 760px;
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(42px, 4.8vw, 72px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+
+.access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.access-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.access-actions button:not(:first-child) {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+
+.access-actions button[disabled] {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.access-request-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.access-request-card {
+  min-height: 136px;
+  align-items: flex-start;
+  padding: 15px;
+  text-align: left;
+}
+
+.access-request-card.is-selected {
+  border-color: rgb(198 255 91 / 0.34);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.access-request-card.is-checked {
+  border-color: rgb(92 225 255 / 0.3);
+}
+
+.access-request-card.is-approved {
+  border-color: rgb(198 255 91 / 0.42);
+  background: rgb(198 255 91 / 0.14);
+}
+
+.access-request-card span,
+.access-request-card strong,
+.access-request-card small {
+  display: block;
+}
+
+.access-request-card span,
+.access-ledger-grid span,
+.access-route-steps span {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.access-request-card strong {
+  margin-top: 10px;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.05;
+}
+
+.access-request-card small {
+  margin-top: 12px;
+  color: #d7ff73;
+  font-size: 12px;
+}
+
+.access-route {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 72% 18%, rgb(92 225 255 / 0.13), transparent 28%),
+    rgb(255 255 255 / 0.045);
+}
+
+.access-route h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.access-score {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid rgb(198 255 91 / 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgb(198 255 91 / 0.08);
+}
+
+.access-score strong {
+  color: #d7ff73;
+  font-size: 44px;
+  line-height: 0.9;
+}
+
+.access-score span {
+  color: rgb(255 255 255 / 0.58);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.access-route-steps {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.access-route-steps div {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.access-route-steps span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.09);
+}
+
+.access-route-steps strong {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+.access-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.access-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.access-ledger-grid article {
+  min-height: 178px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.access-ledger-grid article.is-checked {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.access-ledger-grid article.is-approved {
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.1), rgb(5 5 5 / 0.72));
+}
+
+.access-ledger-grid h4 {
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.12;
+}
+
+.access-ledger-grid small {
+  display: block;
+  margin-top: 14px;
+  color: #d7ff73;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .message-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -5633,6 +5865,9 @@ body[data-share-active="true"] #app {
   .signal-control-grid,
   .context-layout,
   .context-source-grid,
+  .access-layout,
+  .access-request-list,
+  .access-ledger-grid,
   .briefing-layout,
   .briefing-agenda,
   .briefing-dossier-grid,
@@ -5899,6 +6134,10 @@ body[data-share-active="true"] #app {
   }
 
   .context-briefing {
+    position: static;
+  }
+
+  .access-route {
     position: static;
   }
 

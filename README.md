@@ -48,6 +48,7 @@ Implemented flows:
 - network search with filters for fundraising, hiring, and sales
 - person detail view with trust path, context, and "Ask Gigi" response
 - reconnect workflow that plans the right revival angle for a known contact and queues a local DM draft
+- permissioned-access workflow where agents check a route, preserve private context, and queue a double opt-in intro
 - warm-intro composer with private context, draft, save, and approve states
 - smart network lists with shareable private-link preview and recipient lens behavior
 - DM delivery flow that turns a text ask into a Gigi smart-link card and local message preview
