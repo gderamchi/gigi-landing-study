@@ -848,6 +848,8 @@ body[data-share-active="true"] #app {
 .integration-controls button,
 .setup-actions button,
 .setup-source-card,
+.os-actions button,
+.people-os-scenario,
 .move-actions button,
 .move-list-item,
 .match-selector-item,
@@ -947,6 +949,9 @@ body[data-share-active="true"] #app {
 
 .feed-column,
 .agent-panel,
+.os-command,
+.os-panel,
+.os-reasoning,
 .setup-command,
 .setup-audit,
 .setup-results,
@@ -1046,6 +1051,9 @@ body[data-share-active="true"] #app {
 
 .feed-hero-card p,
 .agent-signal p,
+.os-command p,
+.os-panel p,
+.os-reasoning-grid p,
 .setup-command p,
 .setup-audit p,
 .setup-results-grid p,
@@ -1111,6 +1119,7 @@ body[data-share-active="true"] #app {
 }
 
 .feed-hero-card button,
+.os-actions button:first-child,
 .setup-actions button:first-child,
 .move-actions button:first-child,
 .match-panel-actions button:first-child,
@@ -1241,6 +1250,182 @@ body[data-share-active="true"] #app {
 .agent-panel button {
   width: 100%;
   margin-top: 18px;
+}
+
+.os-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 18px;
+}
+
+.os-command {
+  min-height: 540px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 76% 20%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 22% 82%, rgb(92 225 255 / 0.12), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.os-command h3 {
+  max-width: 780px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(46px, 5vw, 76px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.os-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.os-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.people-os-scenario-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.people-os-scenario {
+  min-height: 150px;
+  align-content: start;
+  padding: 15px;
+  text-align: left;
+}
+
+.people-os-scenario.is-selected {
+  border-color: rgb(198 255 91 / 0.34);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.people-os-scenario.is-run {
+  border-color: rgb(92 225 255 / 0.3);
+}
+
+.people-os-scenario.is-prompted {
+  border-color: rgb(198 255 91 / 0.42);
+  background: rgb(198 255 91 / 0.14);
+}
+
+.people-os-scenario span,
+.people-os-scenario strong,
+.people-os-scenario small {
+  display: block;
+}
+
+.people-os-scenario span,
+.os-prompt span,
+.os-reasoning-grid span {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.people-os-scenario strong {
+  margin-top: 10px;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.people-os-scenario small {
+  margin-top: 12px;
+  color: rgb(255 255 255 / 0.55);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.os-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 76% 14%, rgb(92 225 255 / 0.13), transparent 26%),
+    rgb(255 255 255 / 0.045);
+}
+
+.os-route-header {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.os-route-header h3 {
+  margin: 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.os-route-header > strong {
+  color: #d7ff73;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.os-prompt {
+  margin-top: 18px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  border-radius: 18px;
+  padding: 15px;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.os-prompt.is-prompted {
+  border-color: rgb(198 255 91 / 0.28);
+  background: rgb(198 255 91 / 0.08);
+}
+
+.os-reasoning {
+  margin-top: 18px;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.os-reasoning-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.os-reasoning-grid article {
+  min-height: 160px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.26);
+}
+
+.os-reasoning-grid article.is-live {
+  border-color: rgb(198 255 91 / 0.2);
+  background: rgb(198 255 91 / 0.07);
+}
+
+.os-reasoning-grid h4 {
+  margin: 10px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.08;
 }
 
 .call-layout {
@@ -7049,6 +7234,9 @@ body[data-share-active="true"] #app {
   }
 
   .product-screen-feed.is-active,
+  .os-layout,
+  .people-os-scenario-list,
+  .os-reasoning-grid,
   .call-layout,
   .call-summary-grid,
   .radar-layout,
@@ -7113,6 +7301,36 @@ body[data-share-active="true"] #app {
 
   .radar-prediction {
     position: static;
+  }
+
+  .os-panel {
+    position: static;
+  }
+
+  .os-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .os-command h3 {
+    font-size: 54px;
+  }
+
+  .os-command p {
+    font-size: 16px;
+  }
+
+  .os-actions {
+    flex-direction: column;
+  }
+
+  .os-actions button {
+    width: 100%;
+  }
+
+  .people-os-scenario,
+  .os-reasoning-grid article {
+    min-height: auto;
   }
 
   .call-panel {

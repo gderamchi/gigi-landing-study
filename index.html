@@ -94,6 +94,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="os">People OS</button>
             <button class="product-nav-item" type="button" data-product-view="radar">Radar</button>
             <button class="product-nav-item" type="button" data-product-view="call">Call</button>
             <button class="product-nav-item" type="button" data-product-view="setup">Setup</button>
@@ -164,6 +165,24 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-os" data-product-screen="os" aria-label="People OS">
+            <div class="os-layout">
+              <section class="os-command">
+                <span class="product-kicker">People OS</span>
+                <h3>Let the network reason before you reach out.</h3>
+                <p>Gigi turns private context, trust, reputation, and current intent into one approval-gated next move.</p>
+                <div class="os-actions">
+                  <button type="button" data-run-people-os>Run context machine</button>
+                  <button type="button" data-ask-people-os-connector>Ask connector</button>
+                  <button type="button" data-open-people-os-intros>Open intro queue</button>
+                </div>
+                <div class="people-os-scenario-list" data-people-os-scenarios></div>
+              </section>
+              <aside class="os-panel" data-people-os-panel></aside>
+            </div>
+            <section class="os-reasoning" data-people-os-reasoning></section>
           </section>
 
           <section class="product-screen product-screen-radar" data-product-screen="radar" aria-label="Proactive radar">

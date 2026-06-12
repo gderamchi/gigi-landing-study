@@ -386,6 +386,111 @@ const connectorNudges = [
   },
 ];
 
+const peopleOsRuns = [
+  {
+    id: "nina-maya-agent",
+    label: "Fundraising",
+    title: "Nina can open Maya while the investor context is fresh.",
+    objective: "Claire needs a founder-friendly AI infra investor this week.",
+    source: "Nina met Maya twice in the last 30 days.",
+    targetId: "maya",
+    connector: "Nina Patel",
+    accessId: "claire-maya",
+    listIndex: 4,
+    score: 94,
+    capital: 9,
+    connectorPrompt:
+      "Nina, Maya is a strong fit for Claire's AI infra seed round and you have recent context. Should Gigi prepare a scoped double opt-in intro?",
+    connectorResponse: "Yes, but ask Claire for the tight fundraising blurb before Maya sees anything else.",
+    action: "Queue a double opt-in investor intro with round details hidden until Nina approves the forwardable note.",
+    reasoning: [
+      {
+        label: "Context",
+        title: "Fresh relationship truth",
+        detail: "Recent calendar meetings make Nina the person who can actually carry the ask.",
+      },
+      {
+        label: "Intent",
+        title: "Seed round maps to Maya",
+        detail: "Claire's active goal, Maya's thesis, and AI infra context line up without a cold pitch.",
+      },
+      {
+        label: "Boundary",
+        title: "Round details stay gated",
+        detail: "The connector approves the forwardable note before any private fundraising context expands.",
+      },
+    ],
+  },
+  {
+    id: "maxime-priya-agent",
+    label: "Hiring",
+    title: "Maxime can route Priya into the product review safely.",
+    objective: "Julien needs a trust-heavy product reviewer before launch.",
+    source: "Maxime worked with Priya on a recent launch review.",
+    targetId: "priya",
+    connector: "Maxime Durand",
+    accessId: "julien-priya",
+    listIndex: 5,
+    score: 91,
+    capital: 8,
+    connectorPrompt:
+      "Maxime, Priya is relevant for Julien's trust-heavy AI product review. Want Gigi to draft a narrow opt-in intro?",
+    connectorResponse: "Yes, keep the launch notes private and make it a 20-minute working review.",
+    action: "Queue a product-review intro and reveal only the scoped ask to Priya.",
+    reasoning: [
+      {
+        label: "Context",
+        title: "Project proof beats proximity",
+        detail: "The useful signal is a real launch review, not a generic LinkedIn connection.",
+      },
+      {
+        label: "Reputation",
+        title: "Private trust can transfer",
+        detail: "Maxime's proof supports Priya's judgment without exposing unrelated product critiques.",
+      },
+      {
+        label: "Boundary",
+        title: "Reference-safe path",
+        detail: "The intro stays narrow until Priya opts in to see more context.",
+      },
+    ],
+  },
+  {
+    id: "clara-adrian-agent",
+    label: "Rooms",
+    title: "Clara can invite Adrian without leaking the room.",
+    objective: "David needs one technical founder for a private dinner.",
+    source: "Clara met Adrian yesterday and David is still curating the list.",
+    targetId: "adrian",
+    connector: "Clara Gold",
+    accessId: "david-adrian",
+    listIndex: 2,
+    score: 87,
+    capital: 7,
+    connectorPrompt:
+      "Clara, Adrian fits David's technical founder dinner. Should Gigi send a scoped dinner-theme intro?",
+    connectorResponse: "Yes, expose the theme only. Do not show the attendee graph yet.",
+    action: "Queue the dinner intro with the guest list hidden behind trusted access.",
+    reasoning: [
+      {
+        label: "Context",
+        title: "Offline room is time-sensitive",
+        detail: "The dinner list is useful now because the room is still being shaped.",
+      },
+      {
+        label: "Network",
+        title: "Clara is the safe bridge",
+        detail: "A recent meeting plus founder-room context makes the ask warm without broad disclosure.",
+      },
+      {
+        label: "Boundary",
+        title: "Guest list remains private",
+        detail: "Adrian sees the dinner theme, not David's whole graph or invite list.",
+      },
+    ],
+  },
+];
+
 const scoreProfiles = [
   {
     id: "clara",
@@ -1363,6 +1468,9 @@ const state = {
   callStarted: false,
   callExtracted: false,
   callActivated: false,
+  activePeopleOsId: "nina-maya-agent",
+  ranPeopleOs: [],
+  promptedPeopleOs: [],
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
@@ -1543,6 +1651,10 @@ function connectorNudgeById(id) {
   return connectorNudges.find((nudge) => nudge.id === id) ?? connectorNudges[0];
 }
 
+function peopleOsRunById(id) {
+  return peopleOsRuns.find((run) => run.id === id) ?? peopleOsRuns[0];
+}
+
 function radarById(id) {
   return radarPredictions.find((prediction) => prediction.id === id) ?? radarPredictions[0];
 }
@@ -1669,6 +1781,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      os: "People OS",
       radar: "Proactive radar",
       call: "Intake call",
       setup: "Trust setup",
@@ -1716,6 +1829,78 @@ function filteredPeople() {
     const matchesFilter = state.filter === "all" || person.useCase === state.filter;
     return matchesQuery && matchesFilter;
   });
+}
+
+function renderPeopleOs() {
+  const scenarios = document.querySelector("[data-people-os-scenarios]");
+  const panel = document.querySelector("[data-people-os-panel]");
+  const reasoning = document.querySelector("[data-people-os-reasoning]");
+  if (!scenarios || !panel || !reasoning) return;
+
+  const run = peopleOsRunById(state.activePeopleOsId);
+  const targetPerson = personById(run.targetId);
+  const ran = state.ranPeopleOs.includes(run.id);
+  const prompted = state.promptedPeopleOs.includes(run.id);
+
+  scenarios.innerHTML = peopleOsRuns
+    .map((item) => {
+      const itemTarget = personById(item.targetId);
+      const itemRan = state.ranPeopleOs.includes(item.id);
+      const itemPrompted = state.promptedPeopleOs.includes(item.id);
+      return `
+        <button class="people-os-scenario ${item.id === run.id ? "is-selected" : ""} ${itemPrompted ? "is-prompted" : itemRan ? "is-run" : ""}" type="button" data-select-people-os="${item.id}">
+          <span>${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(itemTarget.name)}</strong>
+          <small>${escapeHtml(itemPrompted ? "Connector accepted" : itemRan ? `${item.score}% route ready` : item.source)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">${escapeHtml(prompted ? "Connector accepted" : ran ? "Agent reasoning" : "Context machine")}</span>
+    <div class="os-route-header">
+      ${avatar(targetPerson.name)}
+      <div>
+        <h3>${escapeHtml(ran || prompted ? targetPerson.name : "Run the context machine")}</h3>
+        <p>${escapeHtml(ran || prompted ? targetPerson.role : "Gigi waits for permission before combining private context.")}</p>
+      </div>
+      <strong>${escapeHtml(ran || prompted ? `${run.score}%` : "--")}</strong>
+    </div>
+    <div class="os-prompt ${prompted ? "is-prompted" : ""}">
+      <span>${escapeHtml(prompted ? "Connector response" : ran ? "Connector prompt" : "Private context")}</span>
+      <p>${escapeHtml(prompted ? run.connectorResponse : ran ? run.connectorPrompt : run.source)}</p>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(run.objective)}</strong>
+      <p>${escapeHtml(prompted ? run.action : ran ? "The action is ready, but nothing leaves the local queue until the connector is asked." : "Gigi will rank this by context, intent, trust, reputation, and privacy boundary.")}</p>
+    </div>
+    <div class="goal-score">
+      <div><strong>${escapeHtml(ran || prompted ? run.score : "--")}</strong><span>trust fit</span></div>
+      <div><strong>${escapeHtml(ran || prompted ? run.connector.split(" ")[0] : "Gigi")}</strong><span>bridge</span></div>
+      <div><strong>${escapeHtml(prompted ? "Queued" : ran ? "Ready" : "Draft")}</strong><span>move</span></div>
+    </div>
+  `;
+
+  reasoning.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(prompted ? "Opportunity moved" : ran ? "Reasoning trace" : "Waiting for context")}</span>
+      <strong>${escapeHtml(prompted ? "Intro queued" : ran ? "Ready" : "Run first")}</strong>
+    </div>
+    <div class="os-reasoning-grid">
+      ${run.reasoning
+        .map(
+          (item) => `
+            <article class="${ran || prompted ? "is-live" : ""}">
+              <span>${escapeHtml(item.label)}</span>
+              <h4>${escapeHtml(ran || prompted ? item.title : "Locked")}</h4>
+              <p>${escapeHtml(ran || prompted ? item.detail : "Run the context machine before this private signal is combined with intent.")}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function renderSetup() {
@@ -3773,6 +3958,7 @@ function renderAll() {
   );
   renderConnectedSources();
   renderSourceHealth();
+  renderPeopleOs();
   renderSetup();
   renderMoves();
   renderScore();
@@ -3894,6 +4080,74 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const peopleOsButton = target.closest("[data-select-people-os]");
+  if (peopleOsButton) {
+    const run = peopleOsRunById(peopleOsButton.dataset.selectPeopleOs);
+    state.activePeopleOsId = run.id;
+    renderPeopleOs();
+    return;
+  }
+
+  if (target.closest("[data-run-people-os]")) {
+    const run = peopleOsRunById(state.activePeopleOsId);
+    if (!state.ranPeopleOs.includes(run.id)) {
+      state.ranPeopleOs.push(run.id);
+      state.connected.calendar = true;
+      state.connected.contacts = true;
+      state.connected.publicProfile = true;
+      state.socialCapital += run.capital;
+      state.feed.unshift({
+        person: personById(run.targetId).name,
+        actor: "Gigi People OS",
+        text: `reasoned over ${run.connector}'s context, current intent, trust, reputation, and privacy boundaries for ${run.objective.toLowerCase()}.`,
+        time: "Just now",
+        capital: run.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-ask-people-os-connector]")) {
+    const run = peopleOsRunById(state.activePeopleOsId);
+    const person = personById(run.targetId);
+    if (!state.ranPeopleOs.includes(run.id)) {
+      state.ranPeopleOs.push(run.id);
+      state.socialCapital += run.capital;
+    }
+    if (!state.promptedPeopleOs.includes(run.id)) {
+      state.promptedPeopleOs.push(run.id);
+      state.connected.calendar = true;
+      state.connected.gmail = true;
+      state.connected.contacts = true;
+      state.activeAccessId = run.accessId;
+      state.previewListIndex = run.listIndex;
+      state.shareListIndex = run.listIndex;
+      if (!state.intros.some((intro) => intro.target === person.name && intro.reason === "People OS connector prompt")) {
+        state.intros.unshift({
+          target: person.name,
+          connector: run.connector,
+          reason: "People OS connector prompt",
+          status: "Waiting opt-in",
+        });
+      }
+      state.feed.unshift({
+        person: person.name,
+        actor: run.connector,
+        text: `accepted the People OS prompt. Gigi queued a local double opt-in route and kept private context gated.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-people-os-intros]")) {
+    setProductView("intros");
     return;
   }
 
