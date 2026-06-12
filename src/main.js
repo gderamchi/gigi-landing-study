@@ -1465,6 +1465,8 @@ const state = {
   filter: "all",
   selectedPersonId: "adrian",
   answer: "",
+  betaEmail: "",
+  betaInviteAccepted: false,
   callStarted: false,
   callExtracted: false,
   callActivated: false,
@@ -1595,6 +1597,63 @@ function updatePlaceholder() {
   if (!input) return;
   input.placeholder =
     window.innerWidth < 640 ? input.dataset.mobilePlaceholder : input.dataset.desktopPlaceholder;
+}
+
+function renderBetaInvite() {
+  const copy = document.querySelector("[data-beta-invite-copy]");
+  const steps = document.querySelector("[data-beta-invite-steps]");
+  const acceptButton = document.querySelector("[data-accept-beta-invite]");
+  const setupButton = document.querySelector("[data-open-beta-setup]");
+  if (!copy || !steps || !acceptButton || !setupButton) return;
+
+  const accepted = state.betaInviteAccepted;
+  const email = state.betaEmail || "your work email";
+  copy.textContent = accepted
+    ? `Invite unlocked for ${email}. This local prototype now starts where Gigi asks for trusted context before doing anything useful.`
+    : `Request received for ${email}. Gigi is invite-only, so access is modeled as a local invite before Calendar, Gmail, and Contacts can power recommendations.`;
+
+  const inviteSteps = [
+    {
+      label: "Access",
+      title: "Request beta access",
+      detail: "The public landing page collects a work email and keeps the product invite-only.",
+      live: true,
+    },
+    {
+      label: "Invite",
+      title: "Clara unlocks the link",
+      detail: "No external DM is sent here. Accepting the invite only unlocks the local prototype.",
+      live: accepted,
+    },
+    {
+      label: "Context",
+      title: "Connect trusted sources",
+      detail: "Gigi needs Calendar, Gmail, Contacts, and public profile context before the graph can act.",
+      live: accepted && state.setupMapped,
+    },
+  ];
+
+  steps.innerHTML = inviteSteps
+    .map(
+      (step) => `
+        <article class="${step.live ? "is-live" : ""}">
+          <span>${escapeHtml(step.label)}</span>
+          <strong>${escapeHtml(step.title)}</strong>
+          <p>${escapeHtml(step.detail)}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  acceptButton.textContent = accepted ? "Invite accepted" : "Accept local invite";
+  acceptButton.disabled = accepted;
+  setupButton.disabled = !accepted;
+}
+
+function openBetaInvite() {
+  renderBetaInvite();
+  const modal = document.querySelector("[data-beta-invite-modal]");
+  if (modal) modal.hidden = false;
 }
 
 function initials(name) {
@@ -3986,6 +4045,7 @@ function renderAll() {
   renderShareView();
   renderIntros();
   renderClaimProfile();
+  renderBetaInvite();
 }
 
 function openComposer(personId) {
@@ -4043,8 +4103,10 @@ document.querySelector(".beta-form")?.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = event.currentTarget.querySelector("input");
   if (input?.value) {
+    state.betaEmail = input.value.trim();
+    state.betaInviteAccepted = false;
     event.currentTarget.dataset.sent = "true";
-    window.setTimeout(() => openProduct("feed"), 180);
+    window.setTimeout(() => openBetaInvite(), 180);
   }
 });
 
@@ -4060,6 +4122,31 @@ document.addEventListener("click", async (event) => {
 
   if (target.closest("[data-close-product]")) {
     closeProduct();
+    return;
+  }
+
+  if (target.closest("[data-close-beta-invite]")) {
+    document.querySelector("[data-beta-invite-modal]").hidden = true;
+    return;
+  }
+
+  if (target.closest("[data-accept-beta-invite]")) {
+    state.betaInviteAccepted = true;
+    state.feed.unshift({
+      person: "Beta invite",
+      actor: "Gigi",
+      text: `unlocked local beta access for ${state.betaEmail || "the requested work email"}. Connect trusted sources before the graph acts.`,
+      time: "Just now",
+      capital: 3,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-beta-setup]")) {
+    if (!state.betaInviteAccepted) return;
+    document.querySelector("[data-beta-invite-modal]").hidden = true;
+    openProduct("setup");
     return;
   }
 

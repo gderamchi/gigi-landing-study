@@ -491,6 +491,126 @@ a {
   color: rgb(255 255 255 / 0.8);
 }
 
+.beta-invite-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 0.72);
+  backdrop-filter: blur(16px);
+}
+
+.beta-invite-card {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  width: min(740px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 10%, rgb(198 255 91 / 0.18), transparent 28%),
+    radial-gradient(circle at 18% 76%, rgb(92 225 255 / 0.12), transparent 34%),
+    #111;
+  box-shadow: 0 40px 140px rgb(0 0 0 / 0.58);
+  color: #fff;
+}
+
+.beta-invite-card h2 {
+  max-width: 580px;
+  margin: 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(42px, 5vw, 68px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+}
+
+.beta-invite-card > p {
+  max-width: 620px;
+  margin: 0;
+  color: rgb(255 255 255 / 0.58);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.45;
+}
+
+.beta-invite-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.beta-invite-steps article {
+  min-height: 148px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  border-radius: 16px;
+  padding: 15px;
+  background: rgb(0 0 0 / 0.26);
+}
+
+.beta-invite-steps article.is-live {
+  border-color: rgb(198 255 91 / 0.28);
+  background: rgb(198 255 91 / 0.08);
+}
+
+.beta-invite-steps span {
+  color: rgb(255 255 255 / 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.beta-invite-steps strong {
+  display: block;
+  margin-top: 10px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.08;
+}
+
+.beta-invite-steps p {
+  margin: 8px 0 0;
+  color: rgb(255 255 255 / 0.54);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.beta-invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.beta-invite-actions button {
+  min-height: 42px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 10px;
+  padding: 0 16px;
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.beta-invite-actions button:first-child {
+  border-color: transparent;
+  background: #d7ff73;
+  color: #050505;
+}
+
+.beta-invite-actions button[disabled] {
+  cursor: default;
+  opacity: 0.56;
+}
+
 @keyframes landing-fade-up {
   from {
     opacity: 0;
@@ -659,10 +779,45 @@ a {
   .site-footer nav {
     gap: 24px;
   }
+
+  .beta-invite-modal {
+    place-items: start center;
+    overflow-y: auto;
+    padding: 18px;
+  }
+
+  .beta-invite-card {
+    gap: 13px;
+    width: min(100%, calc(100vw - 36px));
+    max-height: none;
+    padding: 22px 20px;
+  }
+
+  .beta-invite-card h2 {
+    font-size: 36px;
+  }
+
+  .beta-invite-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .beta-invite-steps article {
+    min-height: auto;
+    padding: 13px;
+  }
+
+  .beta-invite-actions {
+    flex-direction: column;
+  }
+
+  .beta-invite-actions button {
+    width: 100%;
+  }
 }
 
 .product-app[hidden],
 .share-app[hidden],
+.beta-invite-modal[hidden],
 .claim-modal[hidden],
 .link-preview-modal[hidden],
 .intro-composer[hidden] {

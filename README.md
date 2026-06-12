@@ -35,6 +35,7 @@ You can also submit any email on the landing page to enter the product flow.
 Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
+- invite-only beta gate that turns the landing-page email into a local invite before opening trust setup
 - People OS context-machine loop that reasons over private context, trust, reputation, intent, and approval boundaries before prompting a connector
 - trust setup workflow that connects simulated Calendar, Gmail, Contacts, and public-profile sources before agent actions unlock
 - voice-intake workflow that simulates a Gigi call, extracts intent, and activates a goal plan

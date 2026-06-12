@@ -87,6 +87,20 @@
         </nav>
       </footer>
 
+      <div class="beta-invite-modal" data-beta-invite-modal hidden>
+        <section class="beta-invite-card" role="dialog" aria-modal="true" aria-label="Gigi beta invite">
+          <button class="modal-close" type="button" data-close-beta-invite aria-label="Close">×</button>
+          <span class="product-kicker">Invite-only beta</span>
+          <h2>Get access before Gigi touches your graph.</h2>
+          <p data-beta-invite-copy></p>
+          <div class="beta-invite-steps" data-beta-invite-steps></div>
+          <div class="beta-invite-actions">
+            <button type="button" data-accept-beta-invite>Accept local invite</button>
+            <button type="button" data-open-beta-setup>Open trust setup</button>
+          </div>
+        </section>
+      </div>
+
       <section class="product-app" aria-label="Gigi product" hidden>
         <aside class="product-sidebar" aria-label="Product navigation">
           <button class="product-logo-button" type="button" data-close-product aria-label="Back to landing">
