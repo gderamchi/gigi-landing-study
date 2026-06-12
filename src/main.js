@@ -1227,6 +1227,69 @@ const dataRights = [
   },
 ];
 
+const boundaryChecks = [
+  {
+    id: "recruiting-service",
+    label: "Recruiting service",
+    category: "Not a recruiter",
+    ask: "Find, rank, and send me the best candidate for a senior AI product role.",
+    concern: "This asks Gigi to operate like a recruitment service and make the candidate decision.",
+    safeVersion: "Create a permissioned shortlist of warm paths you can review before any outreach.",
+    routeView: "asks",
+    routeLabel: "Open Network asks",
+    rule: "Recommendations only",
+    capital: 1,
+  },
+  {
+    id: "background-check",
+    label: "Background check",
+    category: "Not a background check",
+    ask: "Tell me if this founder is safe to invest in based on private notes.",
+    concern: "This asks for a background check and a decision about a person from private context.",
+    safeVersion: "Surface consented context signals and let the user decide whether to request references.",
+    routeView: "references",
+    routeLabel: "Open Reference checks",
+    rule: "Context, not adjudication",
+    capital: 0,
+  },
+  {
+    id: "data-brokerage",
+    label: "Data brokerage",
+    category: "No data brokerage",
+    ask: "Export my second-degree network with private notes so I can upload it elsewhere.",
+    concern: "This would expose a network graph as data brokerage instead of a scoped, consented share.",
+    safeVersion: "Share a single private smart link with gated recipient access and explicit intro requests.",
+    routeView: "lists",
+    routeLabel: "Open Smart links",
+    rule: "Scoped sharing",
+    capital: 0,
+  },
+  {
+    id: "reputation-authority",
+    label: "Reputation authority",
+    category: "Not a scoring authority",
+    ask: "Give Priya an official reputation score and publish it to my circle.",
+    concern: "This treats Gigi as a reputation or scoring authority instead of an assistive context tool.",
+    safeVersion: "Write a contextual close-circle signal with visibility and correction controls.",
+    routeView: "signals",
+    routeLabel: "Open Signals",
+    rule: "Contextual signal only",
+    capital: 1,
+  },
+  {
+    id: "autonomous-agent",
+    label: "Autonomous action",
+    category: "No autonomous sending",
+    ask: "Email every good investor path and book meetings automatically.",
+    concern: "This asks Gigi to act independently, send messages, and make contact decisions.",
+    safeVersion: "Prepare approval-gated Gmail drafts and route them through the approval queue.",
+    routeView: "approvals",
+    routeLabel: "Open Approvals",
+    rule: "User action required",
+    capital: 1,
+  },
+];
+
 const intakeCall = {
   objective:
     "Raise a seed round for an AI infrastructure company while hiring one trust-heavy product advisor.",
@@ -1585,6 +1648,10 @@ const state = {
   correctedEnrichment: false,
   aiConsentWithdrawn: false,
   deletionRequested: false,
+  activeBoundaryId: "background-check",
+  reviewedBoundaries: [],
+  routedBoundaries: [],
+  blockedBoundaries: [],
   activeRadarId: "trust-review",
   scannedRadar: [],
   activatedRadar: [],
@@ -1852,6 +1919,10 @@ function dataRightById(id) {
   return dataRights.find((right) => right.id === id) ?? dataRights[0];
 }
 
+function boundaryCheckById(id) {
+  return boundaryChecks.find((check) => check.id === id) ?? boundaryChecks[0];
+}
+
 function opportunityMoveById(id) {
   return opportunityMoves.find((move) => move.id === id) ?? opportunityMoves[0];
 }
@@ -1896,6 +1967,12 @@ function listIndexBySlug(slug) {
 function shareUrl(index) {
   const list = smartLists[index] ?? smartLists[0];
   return `${window.location.origin}/share/${listSlug(list)}`;
+}
+
+function resetHorizontalScroll() {
+  document.documentElement.scrollLeft = 0;
+  document.body.scrollLeft = 0;
+  window.scrollTo(0, window.scrollY);
 }
 
 function avatar(name) {
@@ -1957,6 +2034,7 @@ function setProductView(view) {
   });
   if (activeNavItem && window.matchMedia("(max-width: 960px)").matches) {
     activeNavItem.scrollIntoView({ block: "nearest", inline: "start" });
+    resetHorizontalScroll();
   }
   const title = document.querySelector("[data-product-title]");
   if (title) {
@@ -1968,6 +2046,7 @@ function setProductView(view) {
       setup: "Trust setup",
       approvals: "Approval queue",
       rights: "Data rights",
+      boundaries: "Product boundaries",
       moves: "Opportunity moves",
       score: "Social Capital Score",
       matches: "Match reports",
@@ -2414,6 +2493,113 @@ function renderRights() {
         .map(
           (row) => `
             <article class="${row.value === "Active" || row.value === "Available" || row.value === "Not requested" ? "" : "is-completed"}">
+              <span>${escapeHtml(row.label)}</span>
+              <h4>${escapeHtml(row.value)}</h4>
+              <p>${escapeHtml(row.detail)}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function boundaryState(check) {
+  if (state.blockedBoundaries.includes(check.id)) return "Blocked";
+  if (state.routedBoundaries.includes(check.id)) return "Safe route";
+  if (state.reviewedBoundaries.includes(check.id)) return "Reviewed";
+  return "Needs review";
+}
+
+function renderBoundaries() {
+  const list = document.querySelector("[data-boundary-list]");
+  const panel = document.querySelector("[data-boundary-panel]");
+  const ledger = document.querySelector("[data-boundary-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = boundaryCheckById(state.activeBoundaryId);
+  const activeState = boundaryState(active);
+  const reviewed = state.reviewedBoundaries.includes(active.id);
+  const routed = state.routedBoundaries.includes(active.id);
+  const blocked = state.blockedBoundaries.includes(active.id);
+  const reviewButton = document.querySelector("[data-review-boundary]");
+  const routeButton = document.querySelector("[data-route-boundary]");
+  const blockButton = document.querySelector("[data-block-boundary]");
+
+  if (reviewButton) {
+    reviewButton.textContent = reviewed || routed || blocked ? "Ask reviewed" : "Review ask";
+    reviewButton.disabled = reviewed || routed || blocked;
+  }
+  if (routeButton) {
+    routeButton.textContent = routed ? "Open safe route" : "Route safe version";
+    routeButton.disabled = blocked;
+  }
+  if (blockButton) {
+    blockButton.textContent = blocked ? "Blocked" : "Block use";
+    blockButton.disabled = routed || blocked;
+  }
+
+  list.innerHTML = boundaryChecks
+    .map((check) => {
+      const checkState = boundaryState(check);
+      return `
+        <button class="boundary-card ${check.id === active.id ? "is-selected" : ""} is-${checkState.toLowerCase().replaceAll(" ", "-")}" type="button" data-select-boundary="${check.id}">
+          <span>${escapeHtml(check.category)}</span>
+          <strong>${escapeHtml(check.label)}</strong>
+          <small>${escapeHtml(checkState)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Boundary review</span>
+    <h3>${escapeHtml(active.ask)}</h3>
+    <p>${escapeHtml(active.concern)}</p>
+    <div class="boundary-state">
+      <strong>${escapeHtml(activeState)}</strong>
+      <span>${escapeHtml(active.rule)}</span>
+    </div>
+    <div class="path-box">
+      <strong>Safe version</strong>
+      <p>${escapeHtml(active.safeVersion)}</p>
+    </div>
+    <button type="button" data-open-boundary-route>${escapeHtml(active.routeLabel)}</button>
+  `;
+
+  const ledgerRows = [
+    {
+      label: "User ask",
+      value: reviewed || routed || blocked ? "Classified" : "Unreviewed",
+      detail: active.ask,
+    },
+    {
+      label: "Boundary",
+      value: active.category,
+      detail: active.concern,
+    },
+    {
+      label: "Product role",
+      value: active.rule,
+      detail: "Gigi gives context and recommendations, while the user remains responsible for decisions.",
+    },
+    {
+      label: "Outcome",
+      value: blocked ? "Blocked" : routed ? "Routed safely" : reviewed ? "Needs user choice" : "Waiting",
+      detail: blocked ? "The request stays stopped." : active.safeVersion,
+    },
+  ];
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>Boundary ledger</span>
+      <strong>${escapeHtml(`${state.routedBoundaries.length} routed · ${state.blockedBoundaries.length} blocked`)}</strong>
+    </div>
+    <div class="boundary-ledger-grid">
+      ${ledgerRows
+        .map(
+          (row) => `
+            <article class="${blocked ? "is-blocked" : routed ? "is-routed" : reviewed ? "is-reviewed" : ""}">
               <span>${escapeHtml(row.label)}</span>
               <h4>${escapeHtml(row.value)}</h4>
               <p>${escapeHtml(row.detail)}</p>
@@ -4445,6 +4631,7 @@ function renderAll() {
   renderSetup();
   renderApprovals();
   renderRights();
+  renderBoundaries();
   renderMoves();
   renderScore();
   renderMatches();
@@ -4827,6 +5014,97 @@ document.addEventListener("click", async (event) => {
       state.activeDossierId = "priya-product-dossier";
     }
     setProductView(right.view);
+    return;
+  }
+
+  const boundaryButton = target.closest("[data-select-boundary]");
+  if (boundaryButton) {
+    state.activeBoundaryId = boundaryButton.dataset.selectBoundary;
+    renderBoundaries();
+    return;
+  }
+
+  if (target.closest("[data-review-boundary]")) {
+    const check = boundaryCheckById(state.activeBoundaryId);
+    if (!state.reviewedBoundaries.includes(check.id)) {
+      state.reviewedBoundaries.push(check.id);
+      state.feed.unshift({
+        person: check.label,
+        actor: "Gigi",
+        text: `reviewed a boundary issue: ${check.concern}`,
+        time: "Just now",
+        capital: 1,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-route-boundary]")) {
+    const check = boundaryCheckById(state.activeBoundaryId);
+    if (state.blockedBoundaries.includes(check.id)) {
+      setProductView(check.routeView);
+      return;
+    }
+    if (!state.reviewedBoundaries.includes(check.id)) {
+      state.reviewedBoundaries.push(check.id);
+    }
+    if (!state.routedBoundaries.includes(check.id)) {
+      state.routedBoundaries.push(check.id);
+      state.socialCapital += check.capital;
+      if (check.id === "recruiting-service") {
+        state.activeAskId = "ai-operator";
+        state.askBrief = "Who are trusted AI product reviewers or recruiting-adjacent operators I can ask for advice?";
+      }
+      if (check.id === "background-check") {
+        state.activeReferenceId = "priya-product";
+        state.referenceBrief = "Can anyone provide consented product-review context for Priya before I ask for a reference?";
+      }
+      if (check.id === "data-brokerage") {
+        state.previewListIndex = 1;
+        state.shareListIndex = 1;
+      }
+      if (check.id === "reputation-authority") {
+        state.signalRecipientId = "priya";
+        state.signalPrivacy = "Close circle";
+      }
+      if (check.id === "autonomous-agent") {
+        state.activeApprovalId = "gmail-priya-approval";
+      }
+      state.feed.unshift({
+        person: check.label,
+        actor: "Gigi",
+        text: `converted an unsafe ask into a safe product route: ${check.safeVersion}`,
+        time: "Just now",
+        capital: check.capital,
+      });
+    }
+    setProductView(check.routeView);
+    return;
+  }
+
+  if (target.closest("[data-block-boundary]")) {
+    const check = boundaryCheckById(state.activeBoundaryId);
+    if (!state.routedBoundaries.includes(check.id) && !state.blockedBoundaries.includes(check.id)) {
+      state.blockedBoundaries.push(check.id);
+      if (!state.reviewedBoundaries.includes(check.id)) {
+        state.reviewedBoundaries.push(check.id);
+      }
+      state.feed.unshift({
+        person: check.label,
+        actor: "You",
+        text: `blocked an out-of-bounds ask. ${check.concern}`,
+        time: "Just now",
+        capital: 0,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-boundary-route]")) {
+    const check = boundaryCheckById(state.activeBoundaryId);
+    setProductView(check.routeView);
     return;
   }
 

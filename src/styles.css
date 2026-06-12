@@ -55,6 +55,10 @@ body,
   margin: 0;
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   min-height: 100vh;
   overflow: hidden;
@@ -827,7 +831,8 @@ a {
 body[data-product-active="true"],
 body[data-share-active="true"] {
   min-height: 100vh;
-  overflow: auto;
+  overflow-x: clip;
+  overflow-y: auto;
   background:
     radial-gradient(circle at 68% 12%, rgb(168 255 91 / 0.16), transparent 26%),
     radial-gradient(circle at 22% 24%, rgb(109 71 255 / 0.16), transparent 30%),
@@ -1011,6 +1016,9 @@ body[data-share-active="true"] #app {
 .rights-actions button,
 .rights-card,
 .rights-panel button,
+.boundary-actions button,
+.boundary-card,
+.boundary-panel button,
 .os-actions button,
 .people-os-scenario,
 .move-actions button,
@@ -1125,6 +1133,9 @@ body[data-share-active="true"] #app {
 .rights-command,
 .rights-panel,
 .rights-ledger,
+.boundary-command,
+.boundary-panel,
+.boundary-ledger,
 .move-command,
 .move-preview,
 .move-status,
@@ -1235,6 +1246,9 @@ body[data-share-active="true"] #app {
 .rights-command p,
 .rights-panel p,
 .rights-ledger-grid p,
+.boundary-command p,
+.boundary-panel p,
+.boundary-ledger-grid p,
 .move-command p,
 .move-preview p,
 .move-status-grid p,
@@ -2326,6 +2340,9 @@ body[data-share-active="true"] #app {
 .rights-card span,
 .rights-card small,
 .rights-ledger-grid span,
+.boundary-card span,
+.boundary-card small,
+.boundary-ledger-grid span,
 .setup-progress span {
   color: rgb(255 255 255 / 0.5);
   font-size: 11px;
@@ -2893,6 +2910,200 @@ body[data-share-active="true"] #app {
 }
 
 .rights-ledger-grid h4 {
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.boundary-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 18px;
+}
+
+.boundary-command {
+  min-height: 560px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 18%, rgb(198 255 91 / 0.16), transparent 30%),
+    radial-gradient(circle at 18% 82%, rgb(255 107 107 / 0.11), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.boundary-command h3 {
+  max-width: 780px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(44px, 5vw, 76px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.boundary-command p {
+  max-width: 680px;
+  margin-top: 18px;
+  font-size: 16px;
+}
+
+.boundary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.boundary-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.boundary-actions button:first-child {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.boundary-actions button:not(:first-child) {
+  color: #fff;
+}
+
+.boundary-actions button[disabled] {
+  cursor: default;
+  opacity: 0.52;
+}
+
+.boundary-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.boundary-card {
+  min-height: 154px;
+  align-content: start;
+  padding: 14px;
+  text-align: left;
+}
+
+.boundary-card.is-selected {
+  border-color: rgb(198 255 91 / 0.36);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.boundary-card.is-safe-route {
+  border-color: rgb(92 225 255 / 0.32);
+}
+
+.boundary-card.is-blocked {
+  border-color: rgb(255 107 107 / 0.28);
+  opacity: 0.68;
+}
+
+.boundary-card span,
+.boundary-card strong,
+.boundary-card small {
+  display: block;
+}
+
+.boundary-card strong {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.08;
+}
+
+.boundary-card small {
+  margin-top: 18px;
+  color: #d7ff73;
+}
+
+.boundary-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 72% 18%, rgb(198 255 91 / 0.12), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.boundary-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.boundary-state {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  border: 1px solid rgb(198 255 91 / 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgb(198 255 91 / 0.08);
+}
+
+.boundary-state strong {
+  color: #d7ff73;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.boundary-state span {
+  color: rgb(255 255 255 / 0.54);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.boundary-panel button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  color: #d7ff73;
+}
+
+.boundary-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.boundary-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.boundary-ledger-grid article {
+  min-height: 178px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.boundary-ledger-grid article.is-reviewed {
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.boundary-ledger-grid article.is-routed {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.boundary-ledger-grid article.is-blocked {
+  background: linear-gradient(145deg, rgb(255 107 107 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.boundary-ledger-grid h4 {
   margin: 9px 0 0;
   color: #fff;
   font-size: 20px;
@@ -4433,6 +4644,41 @@ body[data-share-active="true"] #app {
   }
 
   .rights-ledger-grid article {
+    min-height: 134px;
+    padding: 14px;
+  }
+
+  .boundary-command {
+    min-height: 430px;
+    padding: 22px;
+  }
+
+  .boundary-command h3 {
+    font-size: 48px;
+  }
+
+  .boundary-list {
+    margin-top: 18px;
+  }
+
+  .boundary-card {
+    min-height: 118px;
+    padding: 12px;
+  }
+
+  .boundary-card strong {
+    font-size: 16px;
+  }
+
+  .boundary-panel {
+    padding: 18px;
+  }
+
+  .boundary-panel h3 {
+    font-size: 32px;
+  }
+
+  .boundary-ledger-grid article {
     min-height: 134px;
     padding: 14px;
   }
@@ -8080,6 +8326,9 @@ body[data-share-active="true"] #app {
   .rights-layout,
   .rights-list,
   .rights-ledger-grid,
+  .boundary-layout,
+  .boundary-list,
+  .boundary-ledger-grid,
   .move-layout,
   .move-list,
   .move-status-grid,
@@ -8339,6 +8588,37 @@ body[data-share-active="true"] #app {
   }
 
   .rights-panel {
+    position: static;
+  }
+
+  .boundary-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .boundary-command h3 {
+    font-size: 50px;
+  }
+
+  .boundary-command p {
+    font-size: 16px;
+  }
+
+  .boundary-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .boundary-actions button {
+    width: 100%;
+  }
+
+  .boundary-card,
+  .boundary-ledger-grid article {
+    min-height: auto;
+  }
+
+  .boundary-panel {
     position: static;
   }
 
