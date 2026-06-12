@@ -452,6 +452,72 @@ const scoreProfiles = [
   },
 ];
 
+const dynamicProfileLenses = [
+  {
+    id: "fundraising",
+    label: "Fundraising",
+    title: "Investor-facing founder profile",
+    headline: "Trusted builder with warm seed-round proof.",
+    intent: "Raise a seed round for AI infrastructure.",
+    audience: "Founder-friendly VCs and seed angels",
+    visibleProof:
+      "Show shipped product proof, Nina's investor reference, and warm paths to AI-native seed investors.",
+    hiddenProof:
+      "Hide round details, founder references, and private investor notes until the intro is approved.",
+    graphDelta: "Investor graph",
+    shareListIndex: 4,
+    capital: 6,
+    breakdown: [
+      { label: "Built", value: 94, detail: "AI infra demo, fast execution, and founder proof lead this lens." },
+      { label: "Network", value: 88, detail: "Nina and Clara create warm investor routes without cold outreach." },
+      { label: "Reputation", value: 90, detail: "Private vouches make the profile credible before the pitch." },
+    ],
+    receipts: ["Shipped AI infra demo", "Warm investor reference", "Seed investors I like and can intro"],
+  },
+  {
+    id: "hiring",
+    label: "Hiring",
+    title: "Advisor and operator profile",
+    headline: "Precise operator context for trust-heavy AI work.",
+    intent: "Hire senior AI operators and product advisors.",
+    audience: "Design systems leads, operators, and talent partners",
+    visibleProof:
+      "Show launch-review judgment, trusted implementation loops, and warm routes to senior product reviewers.",
+    hiddenProof:
+      "Keep Maxime's launch notes and private product critiques hidden until the reviewer opts in.",
+    graphDelta: "Talent graph",
+    shareListIndex: 5,
+    capital: 5,
+    breakdown: [
+      { label: "Built", value: 90, detail: "Shipping proof matters, but product judgment moves to the front." },
+      { label: "Network", value: 83, detail: "Maxime and Priya become the strongest intent-aware path." },
+      { label: "Reputation", value: 92, detail: "Trust-heavy product proof becomes the lead social signal." },
+    ],
+    receipts: ["Trust-heavy AI product reviewers", "Design systems critique", "Launch review context"],
+  },
+  {
+    id: "rooms",
+    label: "Rooms",
+    title: "Private-room profile",
+    headline: "Useful founder-room signal without exposing the room.",
+    intent: "Open high-trust founder rooms and first-customer conversations.",
+    audience: "Hosts, technical founders, and early customer connectors",
+    visibleProof:
+      "Show founder dinner signal, technical builder credibility, and scoped smart-link context.",
+    hiddenProof:
+      "Do not reveal the guest list, customer notes, or broad attendee graph before the host unlocks access.",
+    graphDelta: "Room graph",
+    shareListIndex: 2,
+    capital: 4,
+    breakdown: [
+      { label: "Built", value: 86, detail: "Technical proof stays visible enough for the room to trust the ask." },
+      { label: "Network", value: 91, detail: "David and Clara become the primary room-opening context." },
+      { label: "Reputation", value: 84, detail: "Private host proof is useful only inside the scoped room." },
+    ],
+    receipts: ["Founder dinner signal", "Cool kids for David's dinner", "Private circle dinner"],
+  },
+];
+
 const goals = [
   {
     id: "raise-seed",
@@ -1359,6 +1425,9 @@ const state = {
   shareRequested: [],
   graphRefreshes: 0,
   socialCapital: 248,
+  activeProfileLens: "fundraising",
+  builtDynamicProfiles: [],
+  publishedDynamicProfiles: [],
   profileApprovals: [],
   signalRecipientId: "priya",
   signalPillar: "Reputation",
@@ -1452,6 +1521,10 @@ function personById(id) {
 
 function scoreProfileById(id) {
   return scoreProfiles.find((profile) => profile.id === id) ?? scoreProfiles[0];
+}
+
+function dynamicProfileLensById(id) {
+  return dynamicProfileLenses.find((lens) => lens.id === id) ?? dynamicProfileLenses[0];
 }
 
 function messageThreadById(id) {
@@ -2077,30 +2150,17 @@ function renderNudges() {
 function renderProfile() {
   const score = document.querySelector("[data-profile-score]");
   const breakdown = document.querySelector("[data-profile-breakdown]");
+  const dynamicProfile = document.querySelector("[data-dynamic-profile]");
   const signals = document.querySelector("[data-profile-signals]");
-  if (!score || !breakdown || !signals) return;
+  if (!score || !breakdown || !dynamicProfile || !signals) return;
 
   score.textContent = String(state.socialCapital);
 
-  const pillars = [
-    {
-      label: "Built",
-      value: 92,
-      detail: "Projects, launches, and proof you can deliver.",
-    },
-    {
-      label: "Network",
-      value: 81,
-      detail: "People who actually show up, not follower count.",
-    },
-    {
-      label: "Reputation",
-      value: 88,
-      detail: "Private trust signals from people in the room.",
-    },
-  ];
+  const lens = dynamicProfileLensById(state.activeProfileLens);
+  const built = state.builtDynamicProfiles.includes(lens.id);
+  const published = state.publishedDynamicProfiles.includes(lens.id);
 
-  breakdown.innerHTML = pillars
+  breakdown.innerHTML = lens.breakdown
     .map(
       (pillar) => `
         <article>
@@ -2111,6 +2171,60 @@ function renderProfile() {
       `,
     )
     .join("");
+
+  dynamicProfile.innerHTML = `
+    <span class="product-kicker">Dynamic profile</span>
+    <div class="dynamic-profile-tabs" aria-label="Profile intent">
+      ${dynamicProfileLenses
+        .map(
+          (item) => `
+            <button class="${item.id === lens.id ? "is-selected" : ""}" type="button" data-profile-lens="${item.id}">
+              ${escapeHtml(item.label)}
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+    <article class="dynamic-profile-preview ${published ? "is-published" : built ? "is-built" : ""}">
+      <div>
+        <span>${escapeHtml(lens.title)}</span>
+        <h4>${escapeHtml(lens.headline)}</h4>
+        <p>${escapeHtml(built || published ? lens.visibleProof : "Build the profile lens before Gigi decides which proof should lead for this intent.")}</p>
+      </div>
+      <div class="dynamic-profile-state">
+        <strong>${escapeHtml(published ? "Live" : built ? "Ready" : "Draft")}</strong>
+        <span>${escapeHtml(lens.graphDelta)}</span>
+      </div>
+    </article>
+    <div class="dynamic-profile-grid">
+      <article>
+        <span>Intent</span>
+        <strong>${escapeHtml(lens.intent)}</strong>
+        <p>${escapeHtml(`Audience: ${lens.audience}.`)}</p>
+      </article>
+      <article>
+        <span>Visible proof</span>
+        <strong>${escapeHtml(built || published ? lens.receipts[0] : "Waiting")}</strong>
+        <p>${escapeHtml(built || published ? lens.receipts.slice(1).join(" · ") : "Gigi has not assembled this intent lens yet.")}</p>
+      </article>
+      <article>
+        <span>Private boundary</span>
+        <strong>${escapeHtml(published ? "Scoped and live" : built ? "Ready to publish" : "Hidden by default")}</strong>
+        <p>${escapeHtml(lens.hiddenProof)}</p>
+      </article>
+    </div>
+    <div class="dynamic-profile-actions">
+      <button type="button" data-build-dynamic-profile ${built || published ? "disabled" : ""}>
+        ${escapeHtml(built || published ? "Profile built" : "Build dynamic profile")}
+      </button>
+      <button type="button" data-publish-dynamic-profile ${(!built && !published) || published ? "disabled" : ""}>
+        ${escapeHtml(published ? "Published to graph" : "Publish to graph")}
+      </button>
+      <button type="button" data-open-dynamic-profile-link ${published ? "" : "disabled"}>
+        Open smart link
+      </button>
+    </div>
+  `;
 
   signals.innerHTML = socialSignals
     .map((signal) => {
@@ -4165,6 +4279,66 @@ document.addEventListener("click", async (event) => {
 
   if (target.closest("[data-open-nudge-intros]")) {
     setProductView("intros");
+    return;
+  }
+
+  const profileLensButton = target.closest("[data-profile-lens]");
+  if (profileLensButton) {
+    state.activeProfileLens = profileLensButton.dataset.profileLens;
+    renderProfile();
+    return;
+  }
+
+  if (target.closest("[data-build-dynamic-profile]")) {
+    const lens = dynamicProfileLensById(state.activeProfileLens);
+    if (!state.builtDynamicProfiles.includes(lens.id)) {
+      state.builtDynamicProfiles.push(lens.id);
+      state.connected.calendar = true;
+      state.connected.contacts = true;
+      state.connected.publicProfile = true;
+      state.socialCapital += lens.capital;
+      state.feed.unshift({
+        person: lens.title,
+        actor: "Gigi",
+        text: `built a dynamic ${lens.label.toLowerCase()} profile so the graph leads with ${lens.receipts[0].toLowerCase()} for ${lens.audience.toLowerCase()}.`,
+        time: "Just now",
+        capital: lens.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-publish-dynamic-profile]")) {
+    const lens = dynamicProfileLensById(state.activeProfileLens);
+    if (!state.builtDynamicProfiles.includes(lens.id)) {
+      state.builtDynamicProfiles.push(lens.id);
+      state.socialCapital += lens.capital;
+    }
+    if (!state.publishedDynamicProfiles.includes(lens.id)) {
+      state.publishedDynamicProfiles.push(lens.id);
+      state.previewListIndex = lens.shareListIndex;
+      state.shareListIndex = lens.shareListIndex;
+      state.feed.unshift({
+        person: lens.graphDelta,
+        actor: "You",
+        text: `published the ${lens.label.toLowerCase()} profile lens to the searchable and shareable graph with private proof still gated.`,
+        time: "Just now",
+        capital: 3,
+      });
+      state.socialCapital += 3;
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-dynamic-profile-link]")) {
+    const lens = dynamicProfileLensById(state.activeProfileLens);
+    if (!state.publishedDynamicProfiles.includes(lens.id)) return;
+    state.previewListIndex = lens.shareListIndex;
+    state.previewLens = lens.id === "hiring" ? "hiring" : "founder";
+    renderLinkPreview();
+    document.querySelector("[data-link-preview-modal]").hidden = false;
     return;
   }
 

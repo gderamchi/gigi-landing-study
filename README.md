@@ -40,7 +40,7 @@ Implemented flows:
 - opportunity-move queue that detects hidden roles, rounds, cap-table edges, and hot decks before they become public
 - proactive Radar workflow that surfaces a useful person before a direct search and routes the match into permissioned Access
 - Social Capital Score reveal with name search, private graph signal, point unlock, and score breakdown
-- Social Capital profile with built/network/reputation breakdown and private signals
+- dynamic Social Capital profile with built/network/reputation breakdown, intent-aware profile lenses, publish-to-graph state, and private signals
 - close-circle signal writing with reciprocal reputation requests and a living social-capital feed
 - reference-check workflow that ranks real vouch paths before requesting gated reputation proof
 - context engine for reviewing calendar, project, mention, and connector signals before they power recommendations
