@@ -175,6 +175,36 @@ const goals = [
   },
 ];
 
+const socialSignals = [
+  {
+    id: "shipped",
+    pillar: "Built",
+    title: "Shipped AI infra demo",
+    source: "Clara Gold",
+    text: "Clara vouched that you turned a fuzzy infra idea into a live product demo in one weekend.",
+    capital: 18,
+    status: "Pending",
+  },
+  {
+    id: "trusted",
+    pillar: "Trusted",
+    title: "Warm investor reference",
+    source: "Nina Patel",
+    text: "Nina said she would take a fundraising intro from you because your context is always precise.",
+    capital: 12,
+    status: "Live",
+  },
+  {
+    id: "room",
+    pillar: "Room",
+    title: "Founder dinner signal",
+    source: "David Kim",
+    text: "David added you to a private dinner shortlist for technical founders and seed investors.",
+    capital: 8,
+    status: "Private",
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -196,6 +226,7 @@ const state = {
   shareRequested: [],
   graphRefreshes: 0,
   socialCapital: 248,
+  profileApprovals: [],
   claimApproved: false,
   intros: [
     {
@@ -358,6 +389,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      profile: "Social Capital",
       goals: "Goals",
       search: "Network search",
       graph: "Trust graph",
@@ -387,6 +419,64 @@ function filteredPeople() {
     const matchesFilter = state.filter === "all" || person.useCase === state.filter;
     return matchesQuery && matchesFilter;
   });
+}
+
+function renderProfile() {
+  const score = document.querySelector("[data-profile-score]");
+  const breakdown = document.querySelector("[data-profile-breakdown]");
+  const signals = document.querySelector("[data-profile-signals]");
+  if (!score || !breakdown || !signals) return;
+
+  score.textContent = String(state.socialCapital);
+
+  const pillars = [
+    {
+      label: "Built",
+      value: 92,
+      detail: "Projects, launches, and proof you can deliver.",
+    },
+    {
+      label: "Network",
+      value: 81,
+      detail: "People who actually show up, not follower count.",
+    },
+    {
+      label: "Reputation",
+      value: 88,
+      detail: "Private trust signals from people in the room.",
+    },
+  ];
+
+  breakdown.innerHTML = pillars
+    .map(
+      (pillar) => `
+        <article>
+          <strong>${pillar.value}</strong>
+          <span>${escapeHtml(pillar.label)}</span>
+          <p>${escapeHtml(pillar.detail)}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  signals.innerHTML = socialSignals
+    .map((signal) => {
+      const approved = state.profileApprovals.includes(signal.id) || signal.status === "Live";
+      return `
+        <article class="profile-signal-row ${approved ? "is-live" : ""}">
+          <div>
+            <span>${escapeHtml(signal.pillar)}</span>
+            <h4>${escapeHtml(signal.title)}</h4>
+            <p>${escapeHtml(signal.text)}</p>
+            <small>via ${escapeHtml(signal.source)} · +${signal.capital}</small>
+          </div>
+          <button type="button" data-approve-signal="${signal.id}" ${approved ? "disabled" : ""}>
+            ${approved ? "Live" : "Approve"}
+          </button>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function renderGoals() {
@@ -801,6 +891,7 @@ function renderAll() {
   );
   renderConnectedSources();
   renderSourceHealth();
+  renderProfile();
   renderGoals();
   renderFeed();
   renderPeople();
@@ -904,6 +995,47 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const approveSignalButton = target.closest("[data-approve-signal]");
+  if (approveSignalButton) {
+    const signal = socialSignals.find((item) => item.id === approveSignalButton.dataset.approveSignal);
+    if (signal && !state.profileApprovals.includes(signal.id)) {
+      state.profileApprovals.push(signal.id);
+      state.socialCapital += signal.capital;
+      state.feed.unshift({
+        person: signal.title,
+        actor: "You",
+        text: `approved a ${signal.pillar.toLowerCase()} signal from ${signal.source}. It now strengthens your Social Capital profile.`,
+        time: "Just now",
+        capital: signal.capital,
+      });
+      renderAll();
+    }
+    return;
+  }
+
+  if (target.closest("[data-request-vouch]")) {
+    const hasVouchRequest = state.intros.some(
+      (intro) => intro.target === "Clara Gold" && intro.reason === "Reputation vouch request",
+    );
+    if (!hasVouchRequest) {
+      state.intros.unshift({
+        target: "Clara Gold",
+        connector: "Gigi",
+        reason: "Reputation vouch request",
+        status: "Waiting opt-in",
+      });
+      state.feed.unshift({
+        person: "Reputation",
+        actor: "Gigi",
+        text: "drafted a private vouch request for Clara to validate your latest shipped work.",
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    setProductView("intros");
     return;
   }
 

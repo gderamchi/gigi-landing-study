@@ -35,6 +35,7 @@ You can also submit any email on the landing page to enter the product flow.
 Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
+- Social Capital profile with built/network/reputation breakdown and private signals
 - goal-oriented networking agent that turns a project objective into ranked warm paths
 - network search with filters for fundraising, hiring, and sales
 - person detail view with trust path, context, and "Ask Gigi" response
