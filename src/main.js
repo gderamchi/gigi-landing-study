@@ -336,6 +336,66 @@ const contextSignals = [
   },
 ];
 
+const meetingBriefings = [
+  {
+    id: "sequoia-pitch",
+    title: "Seed pitch with Maya Chen",
+    personId: "maya",
+    time: "Tomorrow 9:30 AM",
+    room: "Northstar / Zoom",
+    objective: "Earn a warm second meeting for the AI infra seed round.",
+    opener: "Open with Maya's AI-native productivity thesis and ask where infra founders still sound too horizontal.",
+    commonGround: ["Japan trip", "AI productivity founders", "founder references"],
+    pitchAngle:
+      "Frame the company as connective tissue for teams drowning in AI tooling, then ask for one founder pattern she has not seen solved.",
+    sensitive: "Do not mention private dinner context unless Nina approves the investor reference.",
+    questions: [
+      "Which seed-stage infra teams feel most differentiated this year?",
+      "What would make this round feel obviously partner-meeting worthy?",
+      "Who should validate the operator pain before the next pitch?",
+    ],
+    signalIds: ["calendar-maya", "project-adrian"],
+  },
+  {
+    id: "cofounder-coffee",
+    title: "Coffee with Priya Raman",
+    personId: "priya",
+    time: "Today 4:00 PM",
+    room: "Sightglass SF",
+    objective: "Decide whether Priya is the right trust-surface advisor for the product review.",
+    opener: "Start with the part of the review where users hesitate before sharing private context.",
+    commonGround: ["design systems", "trust-heavy AI", "launch reviews"],
+    pitchAngle:
+      "Ask Priya to pressure-test whether Social Capital feels earned, not gamified.",
+    sensitive: "Keep the Maxime vouch private until Priya opts into the reference loop.",
+    questions: [
+      "Where does the product ask for too much trust too early?",
+      "Which profile signal should stay private by default?",
+      "What would make a recipient feel safe requesting an intro?",
+    ],
+    signalIds: ["connection-priya"],
+  },
+  {
+    id: "dinner-host-sync",
+    title: "Founder dinner sync with David",
+    personId: "david",
+    time: "Friday 7:15 PM",
+    room: "Private dinner list",
+    objective: "Build a small founder room without exposing Clara's broader network.",
+    opener: "Ask David which founder would make the table feel sharper, not larger.",
+    commonGround: ["technical founders", "private dinners", "seed investors"],
+    pitchAngle:
+      "Position the smart link as a way to share just enough context for opt-in intros.",
+    sensitive: "Do not expose the full dinner list before David unlocks the private link.",
+    questions: [
+      "Who should be present for density rather than status?",
+      "Which invite needs a reference check first?",
+      "What context can be shared safely before RSVP?",
+    ],
+    signalIds: ["mention-david"],
+  },
+];
+
 const networkAsks = [
   {
     id: "seed-angels",
@@ -490,6 +550,9 @@ const state = {
   activeReferenceId: "priya-product",
   referenceBrief: "Can anyone vouch for Priya before I bring her into a trust-heavy product review?",
   referenceRequests: [],
+  activeBriefingId: "sequoia-pitch",
+  generatedBriefings: [],
+  sentBriefings: [],
   goalBrief:
     "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
@@ -607,6 +670,10 @@ function referenceById(id) {
   return referenceChecks.find((check) => check.id === id) ?? referenceChecks[0];
 }
 
+function briefingById(id) {
+  return meetingBriefings.find((briefing) => briefing.id === id) ?? meetingBriefings[0];
+}
+
 function referenceRequestKey(checkId, candidateName) {
   return `${checkId}:${candidateName}`;
 }
@@ -676,12 +743,19 @@ function closeShare() {
 
 function setProductView(view) {
   state.view = view;
+  let activeNavItem = null;
   document.querySelectorAll("[data-product-screen]").forEach((screen) => {
     screen.classList.toggle("is-active", screen.dataset.productScreen === view);
   });
   document.querySelectorAll(".product-nav-item").forEach((item) => {
     item.classList.toggle("is-active", item.dataset.productView === view);
+    if (item.dataset.productView === view) {
+      activeNavItem = item;
+    }
   });
+  if (activeNavItem && window.matchMedia("(max-width: 960px)").matches) {
+    activeNavItem.scrollIntoView({ block: "nearest", inline: "start" });
+  }
   const title = document.querySelector("[data-product-title]");
   if (title) {
     const titles = {
@@ -690,6 +764,7 @@ function setProductView(view) {
       signals: "Close circle signals",
       references: "Reference checks",
       context: "Context engine",
+      briefings: "Meeting briefings",
       goals: "Goals",
       asks: "Network asks",
       search: "Network search",
@@ -996,6 +1071,80 @@ function renderContext() {
           `;
         })
         .join("")}
+    </div>
+  `;
+}
+
+function renderBriefings() {
+  const agenda = document.querySelector("[data-briefing-agenda]");
+  const card = document.querySelector("[data-briefing-card]");
+  const dossier = document.querySelector("[data-briefing-dossier]");
+  if (!agenda || !card || !dossier) return;
+
+  const briefing = briefingById(state.activeBriefingId);
+  const person = personById(briefing.personId);
+  const generated = state.generatedBriefings.includes(briefing.id);
+  const sent = state.sentBriefings.includes(briefing.id);
+  const signals = briefing.signalIds
+    .map((id) => contextSignals.find((signal) => signal.id === id))
+    .filter(Boolean);
+
+  agenda.innerHTML = meetingBriefings
+    .map((item) => {
+      const itemPerson = personById(item.personId);
+      const itemGenerated = state.generatedBriefings.includes(item.id);
+      const itemSent = state.sentBriefings.includes(item.id);
+      return `
+        <button class="briefing-agenda-item ${item.id === briefing.id ? "is-selected" : ""}" type="button" data-select-briefing="${item.id}">
+          <span>${escapeHtml(item.time)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(itemSent ? "Sent" : itemGenerated ? "Generated" : itemPerson.connector)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  card.innerHTML = `
+    <span class="product-kicker">Briefing status</span>
+    <h3>${escapeHtml(sent ? "DM delivered." : generated ? "Briefing ready." : "Calendar context queued.")}</h3>
+    <p>${escapeHtml(briefing.objective)}</p>
+    <div class="goal-score">
+      <div><strong>${signals.length}</strong><span>signals</span></div>
+      <div><strong>${person.trust}%</strong><span>trust</span></div>
+      <div><strong>${sent ? "Sent" : generated ? "Ready" : "Draft"}</strong><span>DM state</span></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(person.path)}</strong>
+      <p>${escapeHtml(person.lastSignal)}. Gigi keeps the private angle local until you send it.</p>
+    </div>
+    <button type="button" data-open-briefing-person="${person.id}">Open person context</button>
+  `;
+
+  dossier.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(briefing.room)}</span>
+      <strong>${escapeHtml(sent ? "Delivered briefing" : generated ? "Ready to send" : "Not generated")}</strong>
+    </div>
+    <div class="briefing-dossier-grid">
+      <article class="briefing-dossier-card is-primary">
+        <span>Opening line</span>
+        <h4>${escapeHtml(briefing.opener)}</h4>
+        <p>${escapeHtml(generated ? "Use this in the first 60 seconds, then pivot to the ask." : "Generate the briefing to unlock the live meeting angle.")}</p>
+      </article>
+      <article class="briefing-dossier-card">
+        <span>Pitch angle</span>
+        <h4>${escapeHtml(generated ? briefing.pitchAngle : "Waiting on calendar context")}</h4>
+        <p>${escapeHtml(briefing.objective)}</p>
+      </article>
+      <article class="briefing-dossier-card">
+        <span>Common ground</span>
+        <div class="tag-row">${briefing.commonGround.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+        <p>${escapeHtml(briefing.sensitive)}</p>
+      </article>
+      <article class="briefing-dossier-card is-questions">
+        <span>Smart questions</span>
+        ${briefing.questions.map((question) => `<p>${escapeHtml(question)}</p>`).join("")}
+      </article>
     </div>
   `;
 }
@@ -1575,6 +1724,7 @@ function renderAll() {
   renderProfile();
   renderSignals();
   renderContext();
+  renderBriefings();
   renderGoals();
   renderAsks();
   renderReferences();
@@ -1874,6 +2024,60 @@ document.addEventListener("click", async (event) => {
       });
       renderAll();
     }
+    return;
+  }
+
+  const briefingButton = target.closest("[data-select-briefing]");
+  if (briefingButton) {
+    const briefing = briefingById(briefingButton.dataset.selectBriefing);
+    state.activeBriefingId = briefing.id;
+    state.selectedPersonId = briefing.personId;
+    renderBriefings();
+    return;
+  }
+
+  if (target.closest("[data-generate-briefing]")) {
+    const briefing = briefingById(state.activeBriefingId);
+    if (!state.generatedBriefings.includes(briefing.id)) {
+      state.generatedBriefings.push(briefing.id);
+    }
+    state.connected.calendar = true;
+    state.selectedPersonId = briefing.personId;
+    state.feed.unshift({
+      person: briefing.title,
+      actor: "Gigi",
+      text: `generated a pre-meeting briefing for ${personById(briefing.personId).name}, including opener, common ground, pitch angle, and smart questions.`,
+      time: "Just now",
+      capital: 5,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-send-briefing]")) {
+    const briefing = briefingById(state.activeBriefingId);
+    if (!state.generatedBriefings.includes(briefing.id)) {
+      state.generatedBriefings.push(briefing.id);
+    }
+    if (!state.sentBriefings.includes(briefing.id)) {
+      state.sentBriefings.push(briefing.id);
+      state.feed.unshift({
+        person: briefing.title,
+        actor: "You",
+        text: `sent the ${briefing.title} briefing to your private DM queue. Nothing external was sent from this local prototype.`,
+        time: "Just now",
+        capital: 4,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  const openBriefingPerson = target.closest("[data-open-briefing-person]");
+  if (openBriefingPerson) {
+    state.selectedPersonId = openBriefingPerson.dataset.openBriefingPerson;
+    state.answer = "";
+    setProductView("search");
     return;
   }
 

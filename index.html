@@ -9,11 +9,11 @@
     />
     <link
       rel="icon"
-      href="/favicon.ico?v=gigi-20260612"
+      href="/favicon.ico?v=gigi-20260612-2"
       sizes="48x48"
       type="image/x-icon"
     />
-    <link rel="shortcut icon" href="/favicon.ico?v=gigi-20260612" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico?v=gigi-20260612-2" type="image/x-icon" />
     <title>Gigi: The agentic network</title>
   </head>
   <body>
@@ -102,6 +102,7 @@
             <button class="product-nav-item" type="button" data-product-view="signals">Signals</button>
             <button class="product-nav-item" type="button" data-product-view="references">Refs</button>
             <button class="product-nav-item" type="button" data-product-view="context">Context</button>
+            <button class="product-nav-item" type="button" data-product-view="briefings">Briefs</button>
             <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
             <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
@@ -219,6 +220,22 @@
               <aside class="context-briefing" data-context-briefing></aside>
             </div>
             <div class="context-review" data-context-review></div>
+          </section>
+
+          <section class="product-screen product-screen-briefings" data-product-screen="briefings" aria-label="Meeting briefings">
+            <div class="briefing-layout">
+              <section class="briefing-command">
+                <span class="product-kicker">Pre-meeting briefing</span>
+                <h3>Walk into every room like you already know them.</h3>
+                <div class="briefing-controls">
+                  <button type="button" data-generate-briefing>Generate briefing</button>
+                  <button type="button" data-send-briefing>Send to DM</button>
+                </div>
+                <div class="briefing-agenda" data-briefing-agenda></div>
+              </section>
+              <aside class="briefing-card" data-briefing-card></aside>
+            </div>
+            <section class="briefing-dossier" data-briefing-dossier></section>
           </section>
 
           <section class="product-screen product-screen-goals" data-product-screen="goals" aria-label="Networking goals">
