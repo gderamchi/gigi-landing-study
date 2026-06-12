@@ -114,7 +114,7 @@ const smartLists = [
     colors: ["#7d43ff", "#ff6136"],
   },
   {
-    title: "VCs I like and I can intro",
+    title: "Seed investors I like and can intro",
     creator: "Clara Gold",
     count: 11,
     people: ["maya", "david", "adrian"],
@@ -147,6 +147,48 @@ const smartLists = [
   },
 ];
 
+const messageThreads = [
+  {
+    id: "andrea-seed",
+    contact: "Andrea Oro",
+    asker: "Clara",
+    incoming: "Claraaa! I'm kicking off my round, anyone I should talk to?",
+    reply: "Hey Andrea, wow super exciting! Here's my GIGI list of VCs I can intro you to",
+    reaction: "OMG, you're my saver!!!",
+    cardTitle: "Seed investors I like and can intro",
+    linkPath: "gigi.app/Clara-Gold-VCs-I-can-Intro",
+    listIndex: 1,
+    people: ["maya", "adrian", "david"],
+    context: "A fundraising ask becomes a private smart link instead of a loose text thread.",
+  },
+  {
+    id: "david-dinner",
+    contact: "David Kim",
+    asker: "Clara",
+    incoming: "Who should I put around the table Friday?",
+    reply: "I made a Gigi list of founders with enough context to make the dinner sharp.",
+    reaction: "This is exactly the room.",
+    cardTitle: "Cool kids for David's dinner!",
+    linkPath: "gigi.app/Clara-Gold-David-Dinner",
+    listIndex: 2,
+    people: ["david", "priya", "adrian"],
+    context: "A dinner host gets a scoped circle without seeing Clara's whole graph.",
+  },
+  {
+    id: "lucas-ops",
+    contact: "Lucas Moretti",
+    asker: "Clara",
+    incoming: "Can you send ex-Rappi growth people I should meet?",
+    reply: "Yes, here's a Gigi link with the operators I can actually intro.",
+    reaction: "Perfect, requesting intros now.",
+    cardTitle: "Ex-Rappi Growth / Ops people",
+    linkPath: "gigi.app/Clara-Gold-Rappi-Ops",
+    listIndex: 3,
+    people: ["lucas", "sofia", "adrian"],
+    context: "A hiring ask becomes a recipient-specific list with gated intro requests.",
+  },
+];
+
 const scoreProfiles = [
   {
     id: "clara",
@@ -165,7 +207,7 @@ const scoreProfiles = [
     ],
     signals: [
       "AI founders in SF who raised with Tier 1 VCs",
-      "VCs I like and I can intro",
+      "Seed investors I like and can intro",
       "Cool kids for David's dinner",
     ],
   },
@@ -622,6 +664,9 @@ const state = {
   activeBriefingId: "sequoia-pitch",
   generatedBriefings: [],
   sentBriefings: [],
+  activeMessageThreadId: "andrea-seed",
+  builtMessageLinks: [],
+  sentMessageLinks: [],
   goalBrief:
     "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
@@ -729,6 +774,10 @@ function personById(id) {
 
 function scoreProfileById(id) {
   return scoreProfiles.find((profile) => profile.id === id) ?? scoreProfiles[0];
+}
+
+function messageThreadById(id) {
+  return messageThreads.find((thread) => thread.id === id) ?? messageThreads[0];
 }
 
 function goalById(id) {
@@ -844,6 +893,7 @@ function setProductView(view) {
       search: "Network search",
       graph: "Trust graph",
       lists: "Smart links",
+      messages: "Message delivery",
       intros: "Warm introductions",
     };
     title.textContent = titles[view] ?? "Private circle";
@@ -1630,6 +1680,83 @@ function renderLists() {
     .join("");
 }
 
+function renderMessages() {
+  const threads = document.querySelector("[data-message-threads]");
+  const phone = document.querySelector("[data-message-phone]");
+  const status = document.querySelector("[data-message-status]");
+  if (!threads || !phone || !status) return;
+
+  const thread = messageThreadById(state.activeMessageThreadId);
+  const list = smartLists[thread.listIndex] ?? smartLists[0];
+  const built = state.builtMessageLinks.includes(thread.id);
+  const sent = state.sentMessageLinks.includes(thread.id);
+  const featuredPeople = thread.people.map(personById);
+
+  threads.innerHTML = messageThreads
+    .map((item) => {
+      const itemBuilt = state.builtMessageLinks.includes(item.id);
+      const itemSent = state.sentMessageLinks.includes(item.id);
+      return `
+        <button class="message-thread-item ${item.id === thread.id ? "is-selected" : ""}" type="button" data-select-message-thread="${item.id}">
+          <span>${escapeHtml(item.contact)}</span>
+          <strong>${escapeHtml(item.cardTitle)}</strong>
+          <small>${escapeHtml(itemSent ? "Sent" : itemBuilt ? "Link ready" : "Draft")}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  phone.innerHTML = `
+    <div class="message-phone-shell">
+      <div class="message-phone-bar">
+        <span>‹ Messages</span>
+        ${avatar(thread.contact)}
+        <strong>${escapeHtml(thread.contact)}</strong>
+      </div>
+      <div class="message-chat">
+        <p class="message-bubble is-incoming">${escapeHtml(thread.incoming)}</p>
+        <p class="message-bubble is-outgoing">${escapeHtml(built ? thread.reply : "Gigi is building the right private list before you send.")}</p>
+        <button class="message-link-card ${built ? "is-built" : ""}" type="button" data-open-message-link ${built ? "" : "disabled"} style="--list-a: ${list.colors[0]}; --list-b: ${list.colors[1]}">
+          <span>${escapeHtml(built ? thread.cardTitle : "Gigi link locked")}</span>
+          <div class="message-link-avatars">${featuredPeople.map((person) => avatar(person.name)).join("")}</div>
+          <small>Shared on Gigi</small>
+          <em>${escapeHtml(thread.linkPath)}</em>
+        </button>
+        ${sent ? `<p class="message-bubble is-incoming">${escapeHtml(thread.reaction)}</p>` : ""}
+      </div>
+      <div class="message-input-row">
+        <span></span>
+        <small>iMessage</small>
+        <span></span>
+      </div>
+    </div>
+  `;
+
+  status.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(sent ? "Message delivered" : built ? "Smart link ready" : "Waiting for Gigi")}</span>
+      <strong>${escapeHtml(sent ? "DM sent" : built ? "Private link" : "Draft")}</strong>
+    </div>
+    <div class="message-status-grid">
+      <article>
+        <span>Ask</span>
+        <h4>${escapeHtml(thread.incoming)}</h4>
+        <p>${escapeHtml(thread.context)}</p>
+      </article>
+      <article>
+        <span>List</span>
+        <h4>${escapeHtml(list.title)}</h4>
+        <p>${escapeHtml(`${list.count} people · ${list.context}`)}</p>
+      </article>
+      <article>
+        <span>Safety</span>
+        <h4>${escapeHtml(sent ? "Sent locally" : "Approval required")}</h4>
+        <p>${escapeHtml("No external message is sent from this local prototype. The link opens the gated recipient view.")}</p>
+      </article>
+    </div>
+  `;
+}
+
 function renderSourceHealth() {
   const container = document.querySelector("[data-source-health]");
   if (!container) return;
@@ -1888,6 +2015,7 @@ function renderAll() {
   renderPeople();
   renderGraph();
   renderLists();
+  renderMessages();
   renderLinkPreview();
   renderShareView();
   renderIntros();
@@ -2604,6 +2732,62 @@ document.addEventListener("click", async (event) => {
     });
     document.querySelector("[data-link-preview-modal]").hidden = true;
     setProductView("intros");
+    return;
+  }
+
+  const messageThreadButton = target.closest("[data-select-message-thread]");
+  if (messageThreadButton) {
+    const thread = messageThreadById(messageThreadButton.dataset.selectMessageThread);
+    state.activeMessageThreadId = thread.id;
+    state.previewListIndex = thread.listIndex;
+    renderMessages();
+    return;
+  }
+
+  if (target.closest("[data-build-message-link]")) {
+    const thread = messageThreadById(state.activeMessageThreadId);
+    if (!state.builtMessageLinks.includes(thread.id)) {
+      state.builtMessageLinks.push(thread.id);
+    }
+    state.previewListIndex = thread.listIndex;
+    state.shareListIndex = thread.listIndex;
+    state.feed.unshift({
+      person: thread.cardTitle,
+      actor: "Gigi",
+      text: `built a private message card for ${thread.contact} with ${thread.people.length} gated warm paths.`,
+      time: "Just now",
+      capital: 5,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-send-message-link]")) {
+    const thread = messageThreadById(state.activeMessageThreadId);
+    if (!state.builtMessageLinks.includes(thread.id)) {
+      state.builtMessageLinks.push(thread.id);
+    }
+    if (!state.sentMessageLinks.includes(thread.id)) {
+      state.sentMessageLinks.push(thread.id);
+      state.connected.gmail = true;
+      state.feed.unshift({
+        person: thread.contact,
+        actor: "You",
+        text: `sent the ${thread.cardTitle} Gigi card to a local DM preview. Nothing external was sent.`,
+        time: "Just now",
+        capital: 4,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-message-link]")) {
+    const thread = messageThreadById(state.activeMessageThreadId);
+    if (!state.builtMessageLinks.includes(thread.id)) return;
+    state.shareListIndex = thread.listIndex;
+    state.shareLens = "founder";
+    openSharedList(thread.listIndex);
     return;
   }
 

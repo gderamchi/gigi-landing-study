@@ -47,6 +47,7 @@ Implemented flows:
 - person detail view with trust path, context, and "Ask Gigi" response
 - warm-intro composer with private context, draft, save, and approve states
 - smart network lists with shareable private-link preview and recipient lens behavior
+- DM delivery flow that turns a text ask into a Gigi smart-link card and local message preview
 - `/share/:slug` private-link recipient view with gated access, dynamic profiles, and intro requests
 - local Calendar/Gmail connected-state toggles
 

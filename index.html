@@ -109,6 +109,7 @@
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
+            <button class="product-nav-item" type="button" data-product-view="messages">DMs</button>
             <button class="product-nav-item" type="button" data-product-view="intros">Intros</button>
           </nav>
           <div class="product-sidebar-card">
@@ -329,6 +330,22 @@
               <button type="button" data-create-list>Create list</button>
             </div>
             <div class="smart-list-grid" data-smart-lists></div>
+          </section>
+
+          <section class="product-screen product-screen-messages" data-product-screen="messages" aria-label="Gigi message delivery">
+            <div class="message-layout">
+              <section class="message-command">
+                <span class="product-kicker">Message delivery</span>
+                <h3>Turn a text ask into a Gigi link they can open.</h3>
+                <div class="message-actions">
+                  <button type="button" data-build-message-link>Build Gigi link</button>
+                  <button type="button" data-send-message-link>Send to DM</button>
+                </div>
+                <div class="message-thread-list" data-message-threads></div>
+              </section>
+              <aside class="message-phone" data-message-phone></aside>
+            </div>
+            <section class="message-status" data-message-status></section>
           </section>
 
           <section class="product-screen product-screen-intros" data-product-screen="intros" aria-label="Introductions">
