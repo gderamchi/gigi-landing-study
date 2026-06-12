@@ -49,6 +49,7 @@ Implemented flows:
 - smart network lists with shareable private-link preview and recipient lens behavior
 - DM delivery flow that turns a text ask into a Gigi smart-link card and local message preview
 - professional match reports with preloaded research, fit scores, compliments, and double opt-in intro handling
+- connector nudges that detect fresh meeting context and queue approved double opt-in intros locally
 - `/share/:slug` private-link recipient view with gated access, dynamic profiles, and intro requests
 - local Calendar/Gmail connected-state toggles
 

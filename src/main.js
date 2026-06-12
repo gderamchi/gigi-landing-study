@@ -273,6 +273,54 @@ const matchReports = [
   },
 ];
 
+const connectorNudges = [
+  {
+    id: "clara-scott",
+    connector: "Clara Gold",
+    seeker: "James Buckhouse",
+    target: "Scott Belsky",
+    targetRole: "Creative tech founder and product operator",
+    trigger: "Clara met Scott yesterday after a creative tech roundtable.",
+    intent: "James is exploring AI-native creative tooling with design leaders.",
+    draft:
+      "Clara, you just met Scott and Gigi thinks James has a tight reason to talk to him about AI-native creative teams. Want me to draft the double opt-in intro?",
+    response: "Yes, draft it. Keep it specific and short.",
+    confidence: 94,
+    timing: "24h after meeting",
+    signals: ["fresh meeting", "goal match", "second-degree"],
+  },
+  {
+    id: "nina-maya",
+    connector: "Nina Patel",
+    seeker: "Clara Gold",
+    target: "Maya Chen",
+    targetRole: "Investor, Northstar Seed",
+    trigger: "Nina met Maya twice in the last 30 days.",
+    intent: "Clara is raising a seed round and needs founder-friendly VCs.",
+    draft:
+      "Nina, Maya is a strong fit for Clara's seed round and you have recent context with her. Should Gigi prepare the intro?",
+    response: "Yes, but ask Clara for the tight fundraising blurb first.",
+    confidence: 91,
+    timing: "After second meeting",
+    signals: ["meeting frequency", "fundraising intent", "trusted edge"],
+  },
+  {
+    id: "david-priya",
+    connector: "David Kim",
+    seeker: "Clara Gold",
+    target: "Priya Raman",
+    targetRole: "Design systems lead",
+    trigger: "David is hosting a dinner where Priya and Clara's hiring ask overlap.",
+    intent: "Clara needs senior design systems talent for an AI product sprint.",
+    draft:
+      "David, Priya looks useful for Clara's hiring sprint and the dinner is a natural context. Want Gigi to queue the opt-in intro?",
+    response: "Queue it after dinner so the ask feels warm.",
+    confidence: 86,
+    timing: "Dinner follow-up",
+    signals: ["event context", "hiring intent", "warm room"],
+  },
+];
+
 const scoreProfiles = [
   {
     id: "clara",
@@ -751,6 +799,9 @@ const state = {
   activeMatchId: "buckhouse-belsky",
   revealedMatches: [],
   handledMatches: [],
+  activeNudgeId: "clara-scott",
+  builtNudges: [],
+  sentNudges: [],
   activeMessageThreadId: "andrea-seed",
   builtMessageLinks: [],
   sentMessageLinks: [],
@@ -871,6 +922,10 @@ function matchReportById(id) {
   return matchReports.find((report) => report.id === id) ?? matchReports[0];
 }
 
+function connectorNudgeById(id) {
+  return connectorNudges.find((nudge) => nudge.id === id) ?? connectorNudges[0];
+}
+
 function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
@@ -975,6 +1030,7 @@ function setProductView(view) {
       feed: "Private circle",
       score: "Social Capital Score",
       matches: "Match reports",
+      nudges: "Connector nudges",
       profile: "Social Capital",
       signals: "Close circle signals",
       references: "Reference checks",
@@ -1196,6 +1252,78 @@ function renderMatches() {
         <span>Next move</span>
         <h4>${escapeHtml(handled ? "Gigi is handling the double opt-in." : revealed ? report.outcome : "Reveal before asking Gigi to move.")}</h4>
         <p>${escapeHtml(handled ? `Intro queued via ${report.connector}. Nothing external was sent from this local prototype.` : "The product keeps the recommendation private until the user approves the next step.")}</p>
+      </article>
+    </div>
+  `;
+}
+
+function renderNudges() {
+  const list = document.querySelector("[data-nudge-list]");
+  const preview = document.querySelector("[data-nudge-preview]");
+  const status = document.querySelector("[data-nudge-status]");
+  if (!list || !preview || !status) return;
+
+  const nudge = connectorNudgeById(state.activeNudgeId);
+  const built = state.builtNudges.includes(nudge.id);
+  const sent = state.sentNudges.includes(nudge.id);
+
+  list.innerHTML = connectorNudges
+    .map((item) => {
+      const itemBuilt = state.builtNudges.includes(item.id);
+      const itemSent = state.sentNudges.includes(item.id);
+      return `
+        <button class="nudge-list-item ${item.id === nudge.id ? "is-selected" : ""}" type="button" data-select-nudge="${item.id}">
+          <span>${escapeHtml(item.connector)}</span>
+          <strong>${escapeHtml(`${item.seeker} -> ${item.target}`)}</strong>
+          <small>${escapeHtml(itemSent ? "Nudge sent" : itemBuilt ? "Prompt ready" : item.timing)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  preview.innerHTML = `
+    <span class="product-kicker">Gigi to connector</span>
+    <div class="nudge-preview-header">
+      ${avatar(nudge.connector)}
+      <div>
+        <h3>${escapeHtml(nudge.connector)}</h3>
+        <p>${escapeHtml(nudge.trigger)}</p>
+      </div>
+      <strong>${nudge.confidence}%</strong>
+    </div>
+    <div class="nudge-message ${sent ? "is-sent" : ""}">
+      <span>${escapeHtml(built ? "Prompt draft" : "Waiting for approval")}</span>
+      <p>${escapeHtml(built ? nudge.draft : "Gigi waits until the user approves this connector prompt.")}</p>
+    </div>
+    <div class="nudge-response">
+      <span>${escapeHtml(sent ? "Connector response" : "Response locked")}</span>
+      <p>${escapeHtml(sent ? nudge.response : "No connector sees anything in this local prototype.")}</p>
+    </div>
+    <div class="tag-row">
+      ${nudge.signals.map((signal) => `<span>${escapeHtml(signal)}</span>`).join("")}
+    </div>
+  `;
+
+  status.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(sent ? "Connector accepted" : built ? "Prompt ready" : "Meeting signal")}</span>
+      <strong>${escapeHtml(sent ? "Intro queued" : built ? "Draft" : "Detected")}</strong>
+    </div>
+    <div class="nudge-status-grid">
+      <article>
+        <span>Fresh context</span>
+        <h4>${escapeHtml(nudge.trigger)}</h4>
+        <p>${escapeHtml("Calendar-derived timing makes the ask feel natural instead of cold.")}</p>
+      </article>
+      <article>
+        <span>Intent</span>
+        <h4>${escapeHtml(nudge.intent)}</h4>
+        <p>${escapeHtml(`${nudge.target} is relevant because the ask and recent connector context overlap.`)}</p>
+      </article>
+      <article>
+        <span>Safety</span>
+        <h4>${escapeHtml(sent ? "Queued locally" : "Approval required")}</h4>
+        <p>${escapeHtml("No external message is sent. Gigi only adds a local double opt-in intro after approval.")}</p>
       </article>
     </div>
   `;
@@ -2204,6 +2332,7 @@ function renderAll() {
   renderSourceHealth();
   renderScore();
   renderMatches();
+  renderNudges();
   renderProfile();
   renderSignals();
   renderContext();
@@ -2404,6 +2533,67 @@ document.addEventListener("click", async (event) => {
   }
 
   if (target.closest("[data-open-match-intros]")) {
+    setProductView("intros");
+    return;
+  }
+
+  const nudgeButton = target.closest("[data-select-nudge]");
+  if (nudgeButton) {
+    const nudge = connectorNudgeById(nudgeButton.dataset.selectNudge);
+    state.activeNudgeId = nudge.id;
+    renderNudges();
+    return;
+  }
+
+  if (target.closest("[data-build-nudge]")) {
+    const nudge = connectorNudgeById(state.activeNudgeId);
+    if (!state.builtNudges.includes(nudge.id)) {
+      state.builtNudges.push(nudge.id);
+      state.connected.calendar = true;
+      state.feed.unshift({
+        person: nudge.connector,
+        actor: "Gigi",
+        text: `detected a fresh connector moment: ${nudge.connector} can introduce ${nudge.seeker} to ${nudge.target}.`,
+        time: "Just now",
+        capital: 6,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-send-nudge]")) {
+    const nudge = connectorNudgeById(state.activeNudgeId);
+    if (!state.builtNudges.includes(nudge.id)) {
+      state.builtNudges.push(nudge.id);
+    }
+    if (!state.sentNudges.includes(nudge.id)) {
+      state.sentNudges.push(nudge.id);
+      state.connected.gmail = true;
+      const existing = state.intros.find(
+        (intro) => intro.target === nudge.target && intro.reason === `Connector nudge for ${nudge.seeker}`,
+      );
+      if (!existing) {
+        state.intros.unshift({
+          target: nudge.target,
+          connector: nudge.connector,
+          reason: `Connector nudge for ${nudge.seeker}`,
+          status: "Waiting opt-in",
+        });
+      }
+      state.feed.unshift({
+        person: nudge.target,
+        actor: "Gigi",
+        text: `queued a local connector nudge through ${nudge.connector}. Nothing external was sent.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-nudge-intros]")) {
     setProductView("intros");
     return;
   }

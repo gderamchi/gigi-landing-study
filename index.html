@@ -100,6 +100,7 @@
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="matches">Matches</button>
+            <button class="product-nav-item" type="button" data-product-view="nudges">Nudges</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
             <button class="product-nav-item" type="button" data-product-view="signals">Signals</button>
             <button class="product-nav-item" type="button" data-product-view="references">Refs</button>
@@ -183,6 +184,23 @@
               <aside class="match-panel" data-match-panel></aside>
             </div>
             <section class="match-evidence" data-match-evidence></section>
+          </section>
+
+          <section class="product-screen product-screen-nudges" data-product-screen="nudges" aria-label="Connector prompts">
+            <div class="nudge-layout">
+              <section class="nudge-command">
+                <span class="product-kicker">Connector prompt</span>
+                <h3>Ask the friend with fresh context to open the door.</h3>
+                <div class="nudge-actions">
+                  <button type="button" data-build-nudge>Build prompt</button>
+                  <button type="button" data-send-nudge>Send local nudge</button>
+                  <button type="button" data-open-nudge-intros>Open intro queue</button>
+                </div>
+                <div class="nudge-list" data-nudge-list></div>
+              </section>
+              <aside class="nudge-preview" data-nudge-preview></aside>
+            </div>
+            <section class="nudge-status" data-nudge-status></section>
           </section>
 
           <section class="product-screen product-screen-profile" data-product-screen="profile" aria-label="Social Capital profile">
