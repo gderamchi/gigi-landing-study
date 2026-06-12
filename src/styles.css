@@ -1,4 +1,22 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@300;400;500;600;700&display=swap");
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("https://gigi.co/_next/static/media/f06bf9da926bae75-s.p.0pz0x0eczp58u.woff2?dpl=dpl_8gNPf9RKTxvQ9Gi55AZWpLz2x598")
+    format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("https://gigi.co/_next/static/media/c7f47671e39f7787-s.06cvo47x4w1en.woff2?dpl=dpl_8gNPf9RKTxvQ9Gi55AZWpLz2x598")
+    format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+}
 
 @font-face {
   font-family: "Feature Display";
@@ -41,6 +59,7 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background: #000;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
 }
@@ -101,6 +120,7 @@ a {
 }
 .top-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   pointer-events: auto;
 }
@@ -141,7 +161,9 @@ a {
 .x-link svg {
   width: 19px;
   height: 19px;
-  stroke-width: 2;
+  fill: currentColor;
+  stroke: none;
+  stroke-width: 0;
 }
 
 .icon-button:hover,
@@ -170,6 +192,7 @@ a {
 
 .email-link {
   width: 100%;
+  height: 100%;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -177,15 +200,22 @@ a {
   justify-content: flex-start;
 }
 
-.email-link svg {
+.mail-icon {
+  display: flex;
+  width: 44px;
+  height: 44px;
   flex: 0 0 44px;
-  width: 22px;
-  height: 22px;
-  padding: 0 11px;
-  box-sizing: content-box;
+  align-items: center;
+  justify-content: center;
 }
 
-.email-link span {
+.mail-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+}
+
+.email-text {
   max-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -197,8 +227,8 @@ a {
     opacity 0.3s ease;
 }
 
-.email-shell:hover .email-link span,
-.email-shell:focus-within .email-link span {
+.email-shell:hover .email-text,
+.email-shell:focus-within .email-text {
   max-width: 92px;
   opacity: 1;
 }
@@ -243,19 +273,19 @@ a {
 .hero {
   position: absolute;
   z-index: 2;
-  top: 186px;
+  top: 185.95px;
   left: clamp(48px, 12vw, 220px);
-  width: min(55.1vw, 705px);
+  width: min(55.066vw, 704.84px);
   color: #fff;
 }
 
 .hero h1 {
   margin: 0;
   font-family: "Feature Display", Georgia, "Times New Roman", serif;
-  font-size: clamp(70px, 7vw, 90px);
+  font-size: clamp(56px, 7vw, 96px);
   font-weight: 300;
   line-height: 0.95;
-  letter-spacing: -0.026em;
+  letter-spacing: -0.025em;
   text-wrap: nowrap;
   text-shadow:
     0 0 1px rgb(255 255 255 / 0.22),
@@ -272,9 +302,11 @@ a {
 }
 
 .hero p {
+  width: max-content;
+  max-width: min(100%, 980px);
   margin: 48px 0 0;
   color: var(--text-soft);
-  font-size: 16.6px;
+  font-size: clamp(16px, 1.3vw, 20px);
   font-weight: 300;
   line-height: 1.375;
   animation: landing-fade-up 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both;
@@ -362,7 +394,8 @@ a {
 }
 
 .beta-form button {
-  min-width: 123px;
+  width: 123.33px;
+  min-width: 123.33px;
   height: 41px;
   border: 0;
   border-radius: 8px;
@@ -472,7 +505,7 @@ a {
   }
 
   .topbar {
-    top: 25px;
+    top: 24px;
     left: 24px;
     right: 24px;
   }
@@ -481,7 +514,7 @@ a {
     width: 26px;
     height: 35px;
     margin-left: -1px;
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   .top-actions {
@@ -499,24 +532,29 @@ a {
     width: 44px;
   }
 
-  .email-shell:hover .email-link span,
-  .email-shell:focus-within .email-link span,
+  .email-shell:hover .email-text,
+  .email-shell:focus-within .email-text,
   .email-shell:hover .copy-button,
   .email-shell:focus-within .copy-button {
     max-width: 0;
     opacity: 0;
   }
 
+  .email-link {
+    width: 100%;
+    height: 100%;
+  }
+
   .hero {
-    top: 189px;
+    top: 188.61px;
     left: 24px;
     width: calc(100vw - 48px);
   }
 
   .hero h1 {
-    font-size: clamp(54px, 15.4vw, 60px);
-    line-height: 0.89;
-    letter-spacing: -0.03em;
+    font-size: 56px;
+    line-height: 0.95;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
 
@@ -533,8 +571,8 @@ a {
 
   .beta-form {
     height: 80px;
-    margin-top: 47px;
-    padding: 8px 8px 8px 17px;
+    margin-top: 48px;
+    padding: 8px 8px 8px 16px;
     border-radius: 16px;
   }
 
