@@ -98,6 +98,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
             <button class="product-nav-item" type="button" data-product-view="signals">Signals</button>
             <button class="product-nav-item" type="button" data-product-view="references">Refs</button>
@@ -156,6 +157,22 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-score" data-product-screen="score" aria-label="Social Capital score reveal">
+            <div class="score-layout">
+              <section class="score-reveal-card">
+                <h3>What's your Social Capital Score?</h3>
+                <p>Social Capital is the hidden currency that runs the professional world. Gigi makes it visible and puts it to work for you.</p>
+                <div class="score-search-bar">
+                  <input data-score-query type="search" placeholder="Search your name..." aria-label="Search your name" />
+                  <button type="button" data-reveal-score>Reveal your score</button>
+                </div>
+                <div class="score-suggestions" data-score-suggestions></div>
+              </section>
+              <aside class="score-meter-card" data-score-meter></aside>
+            </div>
+            <section class="score-activity" data-score-activity></section>
           </section>
 
           <section class="product-screen product-screen-profile" data-product-screen="profile" aria-label="Social Capital profile">

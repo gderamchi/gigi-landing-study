@@ -147,6 +147,72 @@ const smartLists = [
   },
 ];
 
+const scoreProfiles = [
+  {
+    id: "clara",
+    name: "Clara Gold",
+    role: "Founder @ Gigi",
+    score: 1224,
+    rank: "Top 1% network operator",
+    delta: 121,
+    addedContact: "Miriam Palomis",
+    summary:
+      "Your calendar, private lists, and trusted vouches show unusually strong founder and investor reach.",
+    breakdown: [
+      { label: "Built", value: 412, detail: "Products shipped, rooms hosted, and visible founder proof." },
+      { label: "Network", value: 506, detail: "Warm paths across founders, VCs, operators, and close friends." },
+      { label: "Reputation", value: 306, detail: "Private trust signals from people who already vouch for you." },
+    ],
+    signals: [
+      "AI founders in SF who raised with Tier 1 VCs",
+      "VCs I like and I can intro",
+      "Cool kids for David's dinner",
+    ],
+  },
+  {
+    id: "miriam",
+    name: "Miriam Palomis",
+    role: "Operator, AI community",
+    score: 986,
+    rank: "Rising connector",
+    delta: 74,
+    addedContact: "Andrea Ro",
+    summary:
+      "Gigi found a high-trust community operator whose introductions convert because they come with context.",
+    breakdown: [
+      { label: "Built", value: 278, detail: "Community launches and repeat offline events." },
+      { label: "Network", value: 451, detail: "Dense founder and operator ties across SF and Paris." },
+      { label: "Reputation", value: 257, detail: "Trusted by hosts who share private lists carefully." },
+    ],
+    signals: [
+      "Founder dinner hosts",
+      "AI operators in Paris",
+      "Warm paths to community-led sales",
+    ],
+  },
+  {
+    id: "guillaume",
+    name: "Guillaume Deramchi",
+    role: "Builder, AI products",
+    score: 814,
+    rank: "Trusted builder",
+    delta: 58,
+    addedContact: "Clara Gold",
+    summary:
+      "Your strongest capital comes from shipping fast, asking precise questions, and preserving private context.",
+    breakdown: [
+      { label: "Built", value: 348, detail: "Fast product execution and repeated applied AI work." },
+      { label: "Network", value: 247, detail: "Warm paths through founders, operators, and technical collaborators." },
+      { label: "Reputation", value: 219, detail: "Proof from people who trust you with specific asks." },
+    ],
+    signals: [
+      "AI product builders",
+      "Founder references",
+      "Trusted implementation loops",
+    ],
+  },
+];
+
 const goals = [
   {
     id: "raise-seed",
@@ -543,6 +609,9 @@ const state = {
   filter: "all",
   selectedPersonId: "adrian",
   answer: "",
+  scoreQuery: "",
+  activeScoreId: "clara",
+  scoreRevealed: false,
   activeGoalId: "raise-seed",
   activeAskId: "seed-angels",
   askBrief: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
@@ -658,6 +727,10 @@ function personById(id) {
   return people.find((person) => person.id === id) ?? people[0];
 }
 
+function scoreProfileById(id) {
+  return scoreProfiles.find((profile) => profile.id === id) ?? scoreProfiles[0];
+}
+
 function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
@@ -760,6 +833,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      score: "Social Capital Score",
       profile: "Social Capital",
       signals: "Close circle signals",
       references: "Reference checks",
@@ -795,6 +869,87 @@ function filteredPeople() {
     const matchesFilter = state.filter === "all" || person.useCase === state.filter;
     return matchesQuery && matchesFilter;
   });
+}
+
+function renderScore() {
+  const input = document.querySelector("[data-score-query]");
+  const suggestions = document.querySelector("[data-score-suggestions]");
+  const meter = document.querySelector("[data-score-meter]");
+  const activity = document.querySelector("[data-score-activity]");
+  if (!input || !suggestions || !meter || !activity) return;
+
+  input.value = state.scoreQuery;
+
+  const normalizedQuery = state.scoreQuery.trim().toLowerCase();
+  const profile =
+    scoreProfiles.find((item) => item.name.toLowerCase().includes(normalizedQuery) && normalizedQuery) ??
+    scoreProfileById(state.activeScoreId);
+  const revealed = state.scoreRevealed;
+  const meterValue = Math.min(profile.score / 1400, 1);
+  const meterDegrees = Math.round(meterValue * 360);
+
+  suggestions.innerHTML = scoreProfiles
+    .map(
+      (item) => `
+        <button class="score-suggestion ${item.id === profile.id ? "is-selected" : ""}" type="button" data-select-score-profile="${item.id}">
+          <span>${escapeHtml(item.name)}</span>
+          <strong>${escapeHtml(revealed || item.id === profile.id ? item.rank : "Hidden score")}</strong>
+        </button>
+      `,
+    )
+    .join("");
+
+  meter.innerHTML = `
+    <span class="product-kicker">Social Capital</span>
+    <div class="score-meter" style="--score-progress: ${meterDegrees}deg">
+      <div>
+        <strong>${escapeHtml(revealed ? profile.score : "???")}</strong>
+        <span>${escapeHtml(revealed ? profile.rank : "Reveal locked")}</span>
+      </div>
+    </div>
+    <h3>${escapeHtml(revealed ? profile.name : "Search the real network.")}</h3>
+    <p>${escapeHtml(revealed ? profile.summary : "Gigi uses trusted context, calendar relationships, and private reputation signals to calculate usable capital.")}</p>
+    <div class="score-mini-grid">
+      ${profile.breakdown
+        .map(
+          (item) => `
+            <article>
+              <strong>${escapeHtml(revealed ? item.value : "...")}</strong>
+              <span>${escapeHtml(item.label)}</span>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+
+  activity.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(revealed ? "Network points unlocked" : "Waiting for reveal")}</span>
+      <strong>${escapeHtml(revealed ? `+${profile.delta} points` : "Private")}</strong>
+    </div>
+    <div class="score-activity-grid">
+      <article class="score-notification">
+        <div>${avatar(profile.addedContact)}</div>
+        <div>
+          <span>${escapeHtml(revealed ? `${profile.addedContact} added to contacts` : "Connect your real graph")}</span>
+          <h4>${escapeHtml(revealed ? `+${profile.delta} network points` : "Reveal your score to see compounding context")}</h4>
+          <p>${escapeHtml(revealed ? `${profile.name}'s Social Capital score now includes this trusted edge.` : "Your score stays private until you choose to reveal it in this local prototype.")}</p>
+        </div>
+      </article>
+      ${profile.signals
+        .map(
+          (signal) => `
+            <article>
+              <span>Signal</span>
+              <strong>${escapeHtml(signal)}</strong>
+              <p>${escapeHtml(revealed ? "Usable for warm paths and smart links." : "Locked until reveal.")}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function renderProfile() {
@@ -1721,6 +1876,7 @@ function renderAll() {
   );
   renderConnectedSources();
   renderSourceHealth();
+  renderScore();
   renderProfile();
   renderSignals();
   renderContext();
@@ -1830,6 +1986,36 @@ document.addEventListener("click", async (event) => {
     renderConnectedSources();
     renderSourceHealth();
     renderFeed();
+    return;
+  }
+
+  const scoreProfileButton = target.closest("[data-select-score-profile]");
+  if (scoreProfileButton) {
+    const profile = scoreProfileById(scoreProfileButton.dataset.selectScoreProfile);
+    state.activeScoreId = profile.id;
+    state.scoreQuery = profile.name;
+    renderScore();
+    return;
+  }
+
+  if (target.closest("[data-reveal-score]")) {
+    const query = document.querySelector("[data-score-query]")?.value.trim().toLowerCase() ?? "";
+    const profile =
+      scoreProfiles.find((item) => item.name.toLowerCase().includes(query) && query) ??
+      scoreProfileById(state.activeScoreId);
+    state.activeScoreId = profile.id;
+    state.scoreQuery = profile.name;
+    state.scoreRevealed = true;
+    state.connected.calendar = true;
+    state.socialCapital = profile.score;
+    state.feed.unshift({
+      person: profile.name,
+      actor: "Gigi",
+      text: `revealed ${profile.name}'s Social Capital Score and found ${profile.addedContact} as a new trusted edge. This local prototype did not connect to a real account.`,
+      time: "Just now",
+      capital: profile.delta,
+    });
+    renderAll();
     return;
   }
 
@@ -2543,6 +2729,13 @@ document.querySelector("#network-search")?.addEventListener("keydown", (event) =
   }
 });
 
+document.querySelector("[data-score-query]")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    document.querySelector("[data-reveal-score]")?.click();
+  }
+});
+
 document.querySelector("[data-goal-brief]")?.addEventListener("input", (event) => {
   state.goalBrief = event.currentTarget.value;
 });
@@ -2557,6 +2750,10 @@ document.querySelector("[data-reference-brief]")?.addEventListener("input", (eve
 
 document.addEventListener("input", (event) => {
   const target = event.target instanceof Element ? event.target : null;
+  if (target?.matches("[data-score-query]")) {
+    state.scoreQuery = target.value;
+    return;
+  }
   if (target?.matches("[data-signal-draft]")) {
     state.signalDraft = target.value;
   }

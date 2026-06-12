@@ -35,6 +35,7 @@ You can also submit any email on the landing page to enter the product flow.
 Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
+- Social Capital Score reveal with name search, private graph signal, point unlock, and score breakdown
 - Social Capital profile with built/network/reputation breakdown and private signals
 - close-circle signal writing with reciprocal reputation requests and a living social-capital feed
 - reference-check workflow that ranks real vouch paths before requesting gated reputation proof
