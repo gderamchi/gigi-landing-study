@@ -100,6 +100,7 @@
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
             <button class="product-nav-item" type="button" data-product-view="goals">Goals</button>
+            <button class="product-nav-item" type="button" data-product-view="asks">Asks</button>
             <button class="product-nav-item" type="button" data-product-view="search">Search</button>
             <button class="product-nav-item" type="button" data-product-view="graph">Graph</button>
             <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
@@ -190,6 +191,22 @@
               <div class="goal-list" data-goal-list></div>
               <aside class="goal-plan" data-goal-plan></aside>
             </div>
+          </section>
+
+          <section class="product-screen product-screen-asks" data-product-screen="asks" aria-label="Network asks">
+            <div class="ask-layout">
+              <section class="ask-command">
+                <span class="product-kicker">Incoming ask</span>
+                <h3>Turn “do you know someone?” into a private shortlist.</h3>
+                <div>
+                  <textarea data-ask-brief aria-label="Incoming network ask">Do you know seed angels or founder-friendly VCs for an AI infra round in SF?</textarea>
+                  <button type="button" data-run-ask>Build shortlist</button>
+                </div>
+                <div class="ask-inbox" data-ask-inbox></div>
+              </section>
+              <aside class="ask-summary" data-ask-summary></aside>
+            </div>
+            <div class="ask-shortlist" data-ask-shortlist></div>
           </section>
 
           <section class="product-screen product-screen-search" data-product-screen="search" aria-label="Network search">

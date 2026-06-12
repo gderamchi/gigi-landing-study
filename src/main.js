@@ -137,6 +137,14 @@ const smartLists = [
     context: "Operators who can help launch cities and marketplaces.",
     colors: ["#f0487b", "#491d60"],
   },
+  {
+    title: "Seed angels and founder-friendly VCs",
+    creator: "Gigi",
+    count: 14,
+    people: ["maya", "adrian", "david"],
+    context: "Built from an incoming ask and filtered to paths you can actually share.",
+    colors: ["#b5ff4f", "#254f32"],
+  },
 ];
 
 const goals = [
@@ -205,6 +213,42 @@ const socialSignals = [
   },
 ];
 
+const networkAsks = [
+  {
+    id: "seed-angels",
+    from: "Claire Moreau",
+    role: "Founder, Lumen AI",
+    ask: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
+    useCase: "fundraising",
+    people: ["maya", "adrian", "david"],
+    listIndex: 4,
+    context: "Claire needs a warm investor path, not a public blast. Gigi ranks the shortlist by recent meetings, trusted connectors, and relevance to AI infra.",
+    status: "Ready to share",
+  },
+  {
+    id: "ai-operator",
+    from: "Julien Renard",
+    role: "Chief of Staff, Northstar",
+    ask: "Do you know senior AI operators who can help a marketplace team hire founding engineers?",
+    useCase: "hiring",
+    people: ["lucas", "priya", "sofia"],
+    listIndex: 3,
+    context: "This ask maps to hiring and launch context. Gigi keeps the private notes gated until Julien opens the trusted link.",
+    status: "Needs approval",
+  },
+  {
+    id: "dinner-host",
+    from: "David Kim",
+    role: "Founder dinner host",
+    ask: "Who should be on a private SF dinner list for technical founders and seed investors?",
+    useCase: "sales",
+    people: ["david", "adrian", "maya"],
+    listIndex: 2,
+    context: "Gigi turns the dinner ask into a shareable circle with opt-in intros, so David sees dynamic profiles through his own lens.",
+    status: "Draft",
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -212,6 +256,9 @@ const state = {
   selectedPersonId: "adrian",
   answer: "",
   activeGoalId: "raise-seed",
+  activeAskId: "seed-angels",
+  askBrief: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
+  sharedAsks: [],
   goalBrief:
     "I am raising a seed round for an AI infrastructure company and need warm investor paths in San Francisco.",
   connected: {
@@ -314,6 +361,10 @@ function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
 
+function askById(id) {
+  return networkAsks.find((ask) => ask.id === id) ?? networkAsks[0];
+}
+
 function listSlug(list) {
   return list.title
     .toLowerCase()
@@ -391,6 +442,7 @@ function setProductView(view) {
       feed: "Private circle",
       profile: "Social Capital",
       goals: "Goals",
+      asks: "Network asks",
       search: "Network search",
       graph: "Trust graph",
       lists: "Smart links",
@@ -542,6 +594,81 @@ function renderGoals() {
       <button type="button" data-search-goal>Search this goal</button>
       <button type="button" data-share-goal-list>Build smart link</button>
       <button type="button" data-run-goal-intros>Request top intros</button>
+    </div>
+  `;
+}
+
+function renderAsks() {
+  const inbox = document.querySelector("[data-ask-inbox]");
+  const summary = document.querySelector("[data-ask-summary]");
+  const shortlist = document.querySelector("[data-ask-shortlist]");
+  const brief = document.querySelector("[data-ask-brief]");
+  if (!inbox || !summary || !shortlist) return;
+
+  const ask = askById(state.activeAskId);
+  const rankedPeople = ask.people.map(personById);
+  const shared = state.sharedAsks.includes(ask.id);
+  if (brief && brief.value !== state.askBrief) {
+    brief.value = state.askBrief;
+  }
+
+  inbox.innerHTML = networkAsks
+    .map(
+      (item) => `
+        <button class="ask-inbox-item ${item.id === ask.id ? "is-selected" : ""}" type="button" data-select-ask="${item.id}">
+          <span>${escapeHtml(item.from)}</span>
+          <strong>${escapeHtml(item.ask)}</strong>
+          <small>${escapeHtml(item.status)}</small>
+        </button>
+      `,
+    )
+    .join("");
+
+  summary.innerHTML = `
+    <span class="product-kicker">Gigi response</span>
+    <h3>${escapeHtml(shared ? "Private link ready." : "Shortlist ready.")}</h3>
+    <p>${escapeHtml(ask.context)}</p>
+    <div class="goal-score">
+      <div><strong>${rankedPeople.length}</strong><span>ranked profiles</span></div>
+      <div><strong>${rankedPeople.reduce((sum, person) => sum + person.meetings, 0)}</strong><span>calendar signals</span></div>
+      <div><strong>${Math.round(rankedPeople.reduce((sum, person) => sum + person.trust, 0) / rankedPeople.length)}%</strong><span>avg trust</span></div>
+    </div>
+    <div class="path-box">
+      <strong>${escapeHtml(smartLists[ask.listIndex]?.title ?? "Private shortlist")}</strong>
+      <p>${shared ? "The recipient can open a gated link and request intros without seeing your whole graph." : "Share only this scoped circle, with private context still behind trusted access."}</p>
+    </div>
+    <div class="ask-actions">
+      <button type="button" data-share-ask>${shared ? "Preview shared link" : "Share private link"}</button>
+      <button type="button" data-request-ask-intros>Request warm intros</button>
+    </div>
+  `;
+
+  shortlist.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(ask.role)}</span>
+      <strong>${escapeHtml(ask.from)} asked</strong>
+    </div>
+    <div class="ask-shortlist-grid">
+      ${rankedPeople
+        .map(
+          (person, index) => `
+            <article class="ask-person-card">
+              <div class="ask-rank">0${index + 1}</div>
+              ${avatar(person.name)}
+              <div>
+                <h4>${escapeHtml(person.name)}</h4>
+                <p>${escapeHtml(person.role)} · ${escapeHtml(person.location)}</p>
+                <span>${escapeHtml(person.path)} · ${person.trust}% trust</span>
+              </div>
+              <div class="path-box">
+                <strong>${escapeHtml(person.lastSignal)}</strong>
+                <p>${escapeHtml(person.intent)}</p>
+              </div>
+              <button type="button" data-ask-intro="${person.id}">Intro</button>
+            </article>
+          `,
+        )
+        .join("")}
     </div>
   `;
 }
@@ -893,6 +1020,7 @@ function renderAll() {
   renderSourceHealth();
   renderProfile();
   renderGoals();
+  renderAsks();
   renderFeed();
   renderPeople();
   renderGraph();
@@ -1110,6 +1238,84 @@ document.addEventListener("click", async (event) => {
   const goalIntroButton = target.closest("[data-goal-intro]");
   if (goalIntroButton) {
     openComposer(goalIntroButton.dataset.goalIntro);
+    return;
+  }
+
+  const askButton = target.closest("[data-select-ask]");
+  if (askButton) {
+    const ask = askById(askButton.dataset.selectAsk);
+    state.activeAskId = ask.id;
+    state.askBrief = ask.ask;
+    state.query = ask.ask;
+    state.filter = ask.useCase;
+    state.selectedPersonId = ask.people[0];
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-run-ask]")) {
+    const brief = document.querySelector("[data-ask-brief]")?.value.trim();
+    const ask = askById(state.activeAskId);
+    if (brief) {
+      state.askBrief = brief;
+    }
+    state.connected.calendar = true;
+    state.query = state.askBrief;
+    state.filter = ask.useCase;
+    state.selectedPersonId = ask.people[0];
+    state.feed.unshift({
+      person: "Network ask",
+      actor: "Gigi",
+      text: `turned ${ask.from}'s ask into ${ask.people.length} ranked profiles, a gated smart link, and double opt-in intro options.`,
+      time: "Just now",
+      capital: 6,
+    });
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-share-ask]")) {
+    const ask = askById(state.activeAskId);
+    state.previewListIndex = ask.listIndex;
+    state.previewLens = ask.useCase === "hiring" ? "hiring" : "founder";
+    if (!state.sharedAsks.includes(ask.id)) {
+      state.sharedAsks.push(ask.id);
+      state.feed.unshift({
+        person: "Smart link",
+        actor: "Gigi",
+        text: `created a scoped private link for ${ask.from}'s network ask without exposing your whole graph.`,
+        time: "Just now",
+        capital: 5,
+      });
+    }
+    renderAll();
+    document.querySelector("[data-link-preview-modal]").hidden = false;
+    return;
+  }
+
+  if (target.closest("[data-request-ask-intros]")) {
+    const ask = askById(state.activeAskId);
+    ask.people.map(personById).forEach((person) => {
+      const existing = state.intros.find((intro) => intro.target === person.name);
+      if (existing) {
+        existing.reason = `Ask from ${ask.from}`;
+        existing.status = existing.status === "Approved" ? "Approved" : "Waiting opt-in";
+      } else {
+        state.intros.unshift({
+          target: person.name,
+          connector: person.connector,
+          reason: `Ask from ${ask.from}`,
+          status: "Waiting opt-in",
+        });
+      }
+    });
+    setProductView("intros");
+    return;
+  }
+
+  const askIntroButton = target.closest("[data-ask-intro]");
+  if (askIntroButton) {
+    openComposer(askIntroButton.dataset.askIntro);
     return;
   }
 
@@ -1349,6 +1555,10 @@ document.querySelector("#network-search")?.addEventListener("keydown", (event) =
 
 document.querySelector("[data-goal-brief]")?.addEventListener("input", (event) => {
   state.goalBrief = event.currentTarget.value;
+});
+
+document.querySelector("[data-ask-brief]")?.addEventListener("input", (event) => {
+  state.askBrief = event.currentTarget.value;
 });
 
 window.addEventListener("resize", () => {

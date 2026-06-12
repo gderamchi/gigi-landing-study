@@ -37,6 +37,7 @@ Implemented flows:
 - private-circle feed with meeting activity and Social Capital claims
 - Social Capital profile with built/network/reputation breakdown and private signals
 - goal-oriented networking agent that turns a project objective into ranked warm paths
+- incoming network asks that turn "do you know someone?" into a scoped shortlist, private link, and intro queue
 - network search with filters for fundraising, hiring, and sales
 - person detail view with trust path, context, and "Ask Gigi" response
 - warm-intro composer with private context, draft, save, and approve states
