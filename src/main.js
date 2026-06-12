@@ -189,6 +189,90 @@ const messageThreads = [
   },
 ];
 
+const matchReports = [
+  {
+    id: "buckhouse-belsky",
+    owner: "James Buckhouse",
+    ownerRole: "Design leader, Sequoia Design Lab",
+    match: "Scott Belsky",
+    matchRole: "Creative tech founder and product operator",
+    connector: "Clara Gold",
+    headline: "You two should reshape creative tech.",
+    fitLabel: "Professional match",
+    score: "9.8",
+    axes: [
+      { label: "Legit", value: "9.8", detail: "Deep craft receipts and founder adjacency." },
+      { label: "Trendy", value: "8.1", detail: "AI-native creative tooling keeps showing up." },
+      { label: "Useful", value: "9.5", detail: "High overlap, low cold-start cost." },
+    ],
+    compliments: [
+      "Your writing makes technical taste feel readable, which is rare.",
+      "You are repeatedly pulled into rooms where product, story, and creative tools overlap.",
+      "Gigi found enough public and private context to make this feel specific, not random.",
+    ],
+    research: [
+      "Shared creative technology language across design, founder advice, and AI tooling.",
+      "Multiple second-degree paths can make the intro warm instead of performative.",
+      "The strongest angle is a short conversation about how creative teams adopt new AI tools.",
+    ],
+    outcome: "Draft a double opt-in intro through Clara with a tight forwardable note.",
+  },
+  {
+    id: "valdes-bent",
+    owner: "Pamela Valdes",
+    ownerRole: "Founder, community and media operator",
+    match: "Mercedes Bent",
+    matchRole: "Investor and venture partner",
+    connector: "Clara Gold",
+    headline: "Work soulmates with founder-investor overlap.",
+    fitLabel: "Work soulmate",
+    score: "9.6",
+    axes: [
+      { label: "Legit", value: "9.4", detail: "Founder proof plus investor pattern recognition." },
+      { label: "Trendy", value: "8.8", detail: "Media, AI, and community context all compound." },
+      { label: "Useful", value: "9.7", detail: "Clear reason to meet, not just similar people." },
+    ],
+    compliments: [
+      "You both turn distribution into product intuition rather than vanity reach.",
+      "The match feels obvious once Gigi compares founder energy with investor pattern matching.",
+      "There is enough mutual context to make the first conversation warm quickly.",
+    ],
+    research: [
+      "Gigi sees founder-to-investor language overlap around new consumer behavior.",
+      "The relationship can start with a shared thesis instead of an open-ended coffee.",
+      "The intro should stay scoped to one concrete question before expanding the circle.",
+    ],
+    outcome: "Queue a warm intro draft and ask both sides to opt in before anything is sent.",
+  },
+  {
+    id: "clara-miriam",
+    owner: "Clara Gold",
+    ownerRole: "Founder, Gigi",
+    match: "Miriam Palomis",
+    matchRole: "Operator, AI community",
+    connector: "Gigi",
+    headline: "A hidden operator edge worth activating.",
+    fitLabel: "Network edge",
+    score: "9.1",
+    axes: [
+      { label: "Legit", value: "9.1", detail: "Community proof and recurring operator context." },
+      { label: "Trendy", value: "7.9", detail: "AI community signal is fresh but not noisy." },
+      { label: "Useful", value: "9.3", detail: "Can unlock founders, events, and hiring paths." },
+    ],
+    compliments: [
+      "Miriam is close enough to your active goals to be useful this week.",
+      "The signal is quieter than a public influencer graph, which is why it matters.",
+      "Gigi found a relationship that looks small until a specific ask lands.",
+    ],
+    research: [
+      "Calendar-like context points to repeated AI community overlap.",
+      "A founder dinner and hiring ask both become easier with this edge live.",
+      "The intro should stay private until the concrete ask is approved.",
+    ],
+    outcome: "Add Miriam to the active circle and let Gigi reuse the edge for future asks.",
+  },
+];
+
 const scoreProfiles = [
   {
     id: "clara",
@@ -664,6 +748,9 @@ const state = {
   activeBriefingId: "sequoia-pitch",
   generatedBriefings: [],
   sentBriefings: [],
+  activeMatchId: "buckhouse-belsky",
+  revealedMatches: [],
+  handledMatches: [],
   activeMessageThreadId: "andrea-seed",
   builtMessageLinks: [],
   sentMessageLinks: [],
@@ -780,6 +867,10 @@ function messageThreadById(id) {
   return messageThreads.find((thread) => thread.id === id) ?? messageThreads[0];
 }
 
+function matchReportById(id) {
+  return matchReports.find((report) => report.id === id) ?? matchReports[0];
+}
+
 function goalById(id) {
   return goals.find((goal) => goal.id === id) ?? goals[0];
 }
@@ -883,6 +974,7 @@ function setProductView(view) {
     const titles = {
       feed: "Private circle",
       score: "Social Capital Score",
+      matches: "Match reports",
       profile: "Social Capital",
       signals: "Close circle signals",
       references: "Reference checks",
@@ -998,6 +1090,113 @@ function renderScore() {
           `,
         )
         .join("")}
+    </div>
+  `;
+}
+
+function renderMatches() {
+  const reportContainer = document.querySelector("[data-match-report]");
+  const panel = document.querySelector("[data-match-panel]");
+  const evidence = document.querySelector("[data-match-evidence]");
+  if (!reportContainer || !panel || !evidence) return;
+
+  const report = matchReportById(state.activeMatchId);
+  const revealed = state.revealedMatches.includes(report.id);
+  const handled = state.handledMatches.includes(report.id);
+
+  panel.innerHTML = `
+    <span class="product-kicker">Pre-loaded people</span>
+    <h3>Gigi finds the match before the ask.</h3>
+    <div class="match-selector">
+      ${matchReports
+        .map((item) => {
+          const itemRevealed = state.revealedMatches.includes(item.id);
+          const itemHandled = state.handledMatches.includes(item.id);
+          return `
+            <button class="match-selector-item ${item.id === report.id ? "is-selected" : ""}" type="button" data-select-match="${item.id}">
+              <span>${escapeHtml(item.fitLabel)}</span>
+              <strong>${escapeHtml(item.owner)} + ${escapeHtml(item.match)}</strong>
+              <small>${escapeHtml(itemHandled ? "Intro queued" : itemRevealed ? "Report live" : "Research locked")}</small>
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
+    <div class="match-panel-actions">
+      <button type="button" data-reveal-match>${revealed ? "Refresh research" : "Reveal research"}</button>
+      <button type="button" data-handle-match ${handled ? "disabled" : ""}>${handled ? "Intro queued" : "Ask Gigi to handle intro"}</button>
+      <button type="button" data-open-match-intros>Open intro queue</button>
+    </div>
+  `;
+
+  reportContainer.innerHTML = `
+    <div class="match-report-header">
+      <div>
+        <span class="product-kicker">${escapeHtml(revealed ? "Deep research unlocked" : "Private match report")}</span>
+        <h3>${escapeHtml(revealed ? report.headline : "Gigi found someone you should probably meet.")}</h3>
+      </div>
+      <div class="match-score-orb">
+        <strong>${escapeHtml(revealed ? report.score : "?")}</strong>
+        <span>${escapeHtml(revealed ? "fit score" : "locked")}</span>
+      </div>
+    </div>
+    <div class="match-pair">
+      <article>
+        ${avatar(report.owner)}
+        <div>
+          <span>Profile</span>
+          <h4>${escapeHtml(report.owner)}</h4>
+          <p>${escapeHtml(report.ownerRole)}</p>
+        </div>
+      </article>
+      <i></i>
+      <article>
+        ${avatar(report.match)}
+        <div>
+          <span>Match</span>
+          <h4>${escapeHtml(revealed ? report.match : "Hidden until reveal")}</h4>
+          <p>${escapeHtml(revealed ? report.matchRole : "Gigi keeps the proposed person private until the report is opened.")}</p>
+        </div>
+      </article>
+    </div>
+    <div class="match-axis-grid">
+      ${report.axes
+        .map(
+          (axis) => `
+            <article>
+              <span>${escapeHtml(axis.label)}</span>
+              <strong>${escapeHtml(revealed ? axis.value : "--")}</strong>
+              <p>${escapeHtml(revealed ? axis.detail : "Signal locked until you reveal the report.")}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+
+  evidence.innerHTML = `
+    <div class="share-results-heading">
+      <span>${escapeHtml(handled ? "Intro handling" : revealed ? "Research report" : "Waiting for approval")}</span>
+      <strong>${escapeHtml(handled ? "Queued" : revealed ? "Unlocked" : "Locked")}</strong>
+    </div>
+    <div class="match-evidence-grid">
+      <article>
+        <span>Compliments</span>
+        ${report.compliments
+          .map((item) => `<p>${escapeHtml(revealed ? item : "Private compliment locked.")}</p>`)
+          .join("")}
+      </article>
+      <article>
+        <span>Deep research</span>
+        ${report.research
+          .map((item) => `<p>${escapeHtml(revealed ? item : "Research source locked.")}</p>`)
+          .join("")}
+      </article>
+      <article>
+        <span>Next move</span>
+        <h4>${escapeHtml(handled ? "Gigi is handling the double opt-in." : revealed ? report.outcome : "Reveal before asking Gigi to move.")}</h4>
+        <p>${escapeHtml(handled ? `Intro queued via ${report.connector}. Nothing external was sent from this local prototype.` : "The product keeps the recommendation private until the user approves the next step.")}</p>
+      </article>
     </div>
   `;
 }
@@ -2004,6 +2203,7 @@ function renderAll() {
   renderConnectedSources();
   renderSourceHealth();
   renderScore();
+  renderMatches();
   renderProfile();
   renderSignals();
   renderContext();
@@ -2144,6 +2344,67 @@ document.addEventListener("click", async (event) => {
       capital: profile.delta,
     });
     renderAll();
+    return;
+  }
+
+  const matchButton = target.closest("[data-select-match]");
+  if (matchButton) {
+    const report = matchReportById(matchButton.dataset.selectMatch);
+    state.activeMatchId = report.id;
+    renderMatches();
+    return;
+  }
+
+  if (target.closest("[data-reveal-match]")) {
+    const report = matchReportById(state.activeMatchId);
+    if (!state.revealedMatches.includes(report.id)) {
+      state.revealedMatches.push(report.id);
+      state.connected.calendar = true;
+      state.feed.unshift({
+        person: report.owner,
+        actor: "Gigi",
+        text: `opened a ${report.score} match report between ${report.owner} and ${report.match}, with private compliments and deep research.`,
+        time: "Just now",
+        capital: 8,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-handle-match]")) {
+    const report = matchReportById(state.activeMatchId);
+    if (!state.revealedMatches.includes(report.id)) {
+      state.revealedMatches.push(report.id);
+    }
+    if (!state.handledMatches.includes(report.id)) {
+      state.handledMatches.push(report.id);
+      state.connected.gmail = true;
+      const existing = state.intros.find(
+        (intro) => intro.target === report.match && intro.reason === `Professional match for ${report.owner}`,
+      );
+      if (!existing) {
+        state.intros.unshift({
+          target: report.match,
+          connector: report.connector,
+          reason: `Professional match for ${report.owner}`,
+          status: "Waiting opt-in",
+        });
+      }
+      state.feed.unshift({
+        person: report.match,
+        actor: "Gigi",
+        text: `queued a double opt-in intro for ${report.owner} and ${report.match}. Nothing external was sent from this local prototype.`,
+        time: "Just now",
+        capital: 6,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-match-intros]")) {
+    setProductView("intros");
     return;
   }
 
