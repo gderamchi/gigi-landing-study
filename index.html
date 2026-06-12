@@ -90,6 +90,139 @@
           <a href="/privacy">Privacy</a>
         </nav>
       </footer>
+
+      <section class="product-app" aria-label="Gigi product" hidden>
+        <aside class="product-sidebar" aria-label="Product navigation">
+          <button class="product-logo-button" type="button" data-close-product aria-label="Back to landing">
+            <img src="https://gigi.co/assets/gigi-logo.webp" alt="" width="26" height="26" />
+          </button>
+          <nav class="product-nav" aria-label="Gigi app sections">
+            <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="search">Search</button>
+            <button class="product-nav-item" type="button" data-product-view="lists">Lists</button>
+            <button class="product-nav-item" type="button" data-product-view="intros">Intros</button>
+          </nav>
+          <div class="product-sidebar-card">
+            <span>Social Capital</span>
+            <strong data-social-capital-score>248</strong>
+            <small>Private circle rank #7</small>
+          </div>
+        </aside>
+
+        <main class="product-workspace">
+          <header class="product-header">
+            <div>
+              <span class="product-kicker">Your network agent</span>
+              <h2 data-product-title>Private circle</h2>
+            </div>
+            <div class="integration-controls" aria-label="Connected sources">
+              <button type="button" data-connect-source="calendar">Connect Calendar</button>
+              <button type="button" data-connect-source="gmail">Connect Gmail</button>
+            </div>
+          </header>
+
+          <section class="product-screen product-screen-feed is-active" data-product-screen="feed" aria-label="Feed">
+            <div class="feed-column">
+              <div class="feed-hero-card">
+                <div>
+                  <span class="feed-label">Reviewing 1/5</span>
+                  <h3>Claim Social Capital</h3>
+                  <p>Gigi found new context from your latest meetings. Review and publish it to your private circle.</p>
+                </div>
+                <button type="button" data-open-claim>Review now</button>
+              </div>
+              <div class="feed-list" data-feed-list></div>
+            </div>
+            <aside class="agent-panel">
+              <h3>Gigi heard</h3>
+              <div class="agent-signal">
+                <span>Hiring</span>
+                <strong>3 warm paths</strong>
+                <p>Two friends met senior AI infra engineers this week.</p>
+              </div>
+              <div class="agent-signal">
+                <span>Fundraising</span>
+                <strong>5 relevant VCs</strong>
+                <p>Your calendar has second-degree context for seed funds in SF.</p>
+              </div>
+              <button type="button" data-product-view="search">Ask Gigi</button>
+            </aside>
+          </section>
+
+          <section class="product-screen product-screen-search" data-product-screen="search" aria-label="Network search">
+            <div class="search-command">
+              <label for="network-search">Ask Gigi anything about your network</label>
+              <div>
+                <input id="network-search" type="search" value="AI founders in SF who raised with Tier 1 VCs" />
+                <button type="button" data-run-search>Search</button>
+              </div>
+            </div>
+            <div class="search-filters" aria-label="Search filters">
+              <button class="is-active" type="button" data-search-filter="all">All</button>
+              <button type="button" data-search-filter="fundraising">Fundraising</button>
+              <button type="button" data-search-filter="hiring">Hiring</button>
+              <button type="button" data-search-filter="sales">Sales</button>
+            </div>
+            <div class="search-grid">
+              <div class="person-results" data-person-results></div>
+              <aside class="person-detail" data-person-detail></aside>
+            </div>
+          </section>
+
+          <section class="product-screen product-screen-lists" data-product-screen="lists" aria-label="Smart network lists">
+            <div class="section-heading">
+              <div>
+                <span class="product-kicker">Smart links</span>
+                <h3>Share trusted access without exposing the whole network.</h3>
+              </div>
+              <button type="button" data-create-list>Create list</button>
+            </div>
+            <div class="smart-list-grid" data-smart-lists></div>
+          </section>
+
+          <section class="product-screen product-screen-intros" data-product-screen="intros" aria-label="Introductions">
+            <div class="section-heading">
+              <div>
+                <span class="product-kicker">Double opt-in</span>
+                <h3>Draft and approve warm introductions.</h3>
+              </div>
+            </div>
+            <div class="intro-board" data-intro-board></div>
+          </section>
+        </main>
+
+        <div class="claim-modal" data-claim-modal hidden>
+          <div class="claim-card" role="dialog" aria-modal="true" aria-label="Claim Social Capital">
+            <button class="modal-close" type="button" data-close-claim aria-label="Close">×</button>
+            <span>Claim Social Capital</span>
+            <div class="review-progress"><i></i></div>
+            <div class="reward-badge"><small>♕</small>+15</div>
+            <article data-claim-profile></article>
+            <p>It will be displayed in the feed of your private circle.</p>
+            <button type="button" data-approve-claim>Approve and share</button>
+          </div>
+        </div>
+
+        <div class="intro-composer" data-intro-composer hidden>
+          <div class="composer-card" role="dialog" aria-modal="true" aria-label="Introduction draft">
+            <button class="modal-close" type="button" data-close-composer aria-label="Close">×</button>
+            <span class="product-kicker">Intro draft</span>
+            <h3 data-composer-title></h3>
+            <label>
+              Private context
+              <textarea data-private-context></textarea>
+            </label>
+            <label>
+              Draft
+              <textarea data-intro-draft></textarea>
+            </label>
+            <div class="composer-actions">
+              <button type="button" data-save-draft>Save draft</button>
+              <button type="button" data-send-intro>Approve send</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
