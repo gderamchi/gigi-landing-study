@@ -1504,6 +1504,7 @@ const state = {
   sentNudges: [],
   activeAccessId: "claire-maya",
   checkedAccess: [],
+  handshakenAccess: [],
   approvedAccess: [],
   activeMessageThreadId: "andrea-seed",
   builtMessageLinks: [],
@@ -3738,27 +3739,40 @@ function renderAccess() {
   const active = accessRequestById(state.activeAccessId);
   const target = personById(active.targetId);
   const checked = state.checkedAccess.includes(active.id);
+  const handshaken = state.handshakenAccess.includes(active.id);
   const approved = state.approvedAccess.includes(active.id);
   const checkButton = document.querySelector("[data-run-access-check]");
+  const handshakeButton = document.querySelector("[data-run-access-handshake]");
   const approveButton = document.querySelector("[data-approve-access-route]");
 
   if (checkButton) {
-    checkButton.textContent = checked || approved ? "Agent checked" : "Run agent check";
-    checkButton.disabled = checked || approved;
+    checkButton.textContent = checked || handshaken || approved ? "Agent checked" : "Run agent check";
+    checkButton.disabled = checked || handshaken || approved;
+  }
+  if (handshakeButton) {
+    handshakeButton.textContent = approved
+      ? "Handshake queued"
+      : handshaken
+        ? "Handshake verified"
+        : checked
+          ? "Run handshake"
+          : "Check + handshake";
+    handshakeButton.disabled = handshaken || approved;
   }
   if (approveButton) {
-    approveButton.textContent = approved ? "Open intro queue" : "Approve route";
+    approveButton.textContent = approved ? "Open intro queue" : handshaken ? "Queue opt-in" : "Approve route";
   }
 
   requests.innerHTML = accessRequests
     .map((request) => {
       const requestChecked = state.checkedAccess.includes(request.id);
+      const requestHandshaken = state.handshakenAccess.includes(request.id);
       const requestApproved = state.approvedAccess.includes(request.id);
       return `
-        <button class="access-request-card ${request.id === active.id ? "is-selected" : ""} ${requestApproved ? "is-approved" : requestChecked ? "is-checked" : ""}" type="button" data-select-access="${request.id}">
+        <button class="access-request-card ${request.id === active.id ? "is-selected" : ""} ${requestApproved ? "is-approved" : requestHandshaken ? "is-handshaken" : requestChecked ? "is-checked" : ""}" type="button" data-select-access="${request.id}">
           <span>${escapeHtml(request.asker)}</span>
           <strong>${escapeHtml(personById(request.targetId).name)}</strong>
-          <small>${escapeHtml(requestApproved ? "Route approved" : requestChecked ? "Agent checked" : request.status)}</small>
+          <small>${escapeHtml(requestApproved ? "Opt-in queued" : requestHandshaken ? "Handshake ready" : requestChecked ? "Agent checked" : request.status)}</small>
         </button>
       `;
     })
@@ -3770,7 +3784,7 @@ function renderAccess() {
     <p>${escapeHtml(active.ask)}</p>
     <div class="access-score">
       <strong>${active.score}%</strong>
-      <span>${escapeHtml(approved ? "route approved" : checked ? "safe to request" : "needs check")}</span>
+      <span>${escapeHtml(approved ? "opt-in queued" : handshaken ? "agents aligned" : checked ? "safe to request" : "needs check")}</span>
     </div>
     <div class="access-route-steps">
       ${active.route
@@ -3795,32 +3809,73 @@ function renderAccess() {
       label: "Requesting agent",
       actor: active.requesterAgent,
       detail: active.reason,
-      state: checked || approved ? "Intent verified" : "Waiting for graph scan",
+      state: handshaken || approved ? "Scope locked" : checked ? "Intent verified" : "Waiting for graph scan",
     },
     {
       label: "Connector agent",
       actor: active.connectorAgent,
       detail: `${active.connector} can approve the path without exposing unrelated private notes.`,
-      state: approved ? "Approved" : checked ? "Needs human approval" : "Permission pending",
+      state: approved ? "Consent logged" : handshaken ? "Redactions applied" : checked ? "Needs human approval" : "Permission pending",
     },
     {
       label: "Recipient agent",
       actor: active.recipientAgent,
       detail: `${target.name} receives only the scoped ask and can opt in before any intro is sent.`,
-      state: approved ? "Opt-in queued" : "Hidden until approval",
+      state: approved ? "Opt-in queued" : handshaken ? "Scoped packet ready" : "Hidden until approval",
+    },
+  ];
+
+  const handshakeRows = [
+    {
+      stage: "01",
+      label: "Intent packet",
+      actor: active.requesterAgent,
+      detail: `${active.askerRole} shares one forwardable ask, current intent, and no private inbox notes.`,
+      state: checked || handshaken || approved ? "Signed" : "Drafting",
+    },
+    {
+      stage: "02",
+      label: "Trust redaction",
+      actor: active.connectorAgent,
+      detail: `${active.connector} can reveal the route while keeping unrelated calendar and relationship context private.`,
+      state: handshaken || approved ? "Redacted" : checked ? "Awaiting handshake" : "Locked",
+    },
+    {
+      stage: "03",
+      label: "Recipient opt-in",
+      actor: active.recipientAgent,
+      detail: `${target.name} gets the scoped ask first, then decides whether the warm intro should happen.`,
+      state: approved ? "Queued" : handshaken ? "Ready" : "Hidden",
     },
   ];
 
   ledger.innerHTML = `
     <div class="share-results-heading">
-      <span>${escapeHtml(approved ? "Access coordinated" : checked ? "Agent check complete" : "Permission ledger")}</span>
-      <strong>${escapeHtml(approved ? "Route approved" : checked ? "Ready for approval" : "Private by default")}</strong>
+      <span>${escapeHtml(approved ? "Access coordinated" : handshaken ? "Agent handshake complete" : checked ? "Agent check complete" : "Permission ledger")}</span>
+      <strong>${escapeHtml(approved ? "Opt-in queued" : handshaken ? "Ready for human consent" : checked ? "Ready for handshake" : "Private by default")}</strong>
+    </div>
+    <div class="access-handshake">
+      ${handshakeRows
+        .map(
+          (row) => `
+            <article class="${approved ? "is-approved" : handshaken ? "is-handshaken" : checked ? "is-checked" : ""}">
+              <span>${escapeHtml(row.stage)}</span>
+              <div>
+                <strong>${escapeHtml(row.label)}</strong>
+                <small>${escapeHtml(row.actor)}</small>
+              </div>
+              <p>${escapeHtml(row.detail)}</p>
+              <em>${escapeHtml(row.state)}</em>
+            </article>
+          `,
+        )
+        .join("")}
     </div>
     <div class="access-ledger-grid">
       ${rows
         .map(
           (row) => `
-            <article class="${approved ? "is-approved" : checked ? "is-checked" : ""}">
+            <article class="${approved ? "is-approved" : handshaken ? "is-handshaken" : checked ? "is-checked" : ""}">
               <span>${escapeHtml(row.label)}</span>
               <h4>${escapeHtml(row.actor)}</h4>
               <p>${escapeHtml(row.detail)}</p>
@@ -5453,6 +5508,34 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (target.closest("[data-run-access-handshake]")) {
+    const request = accessRequestById(state.activeAccessId);
+    const targetPerson = personById(request.targetId);
+    const wasChecked = state.checkedAccess.includes(request.id);
+    const wasHandshaken = state.handshakenAccess.includes(request.id);
+    state.connected.calendar = true;
+    state.connected.gmail = true;
+    state.connected.contacts = true;
+    state.connected.publicProfile = true;
+    if (!wasChecked) {
+      state.checkedAccess.push(request.id);
+      state.socialCapital += request.capital;
+    }
+    if (!wasHandshaken) {
+      state.handshakenAccess.push(request.id);
+      state.socialCapital += 3;
+      state.feed.unshift({
+        person: targetPerson.name,
+        actor: "Gigi",
+        text: `ran the requester, connector, and recipient agent handshake for ${request.asker}'s warm path to ${targetPerson.name}.`,
+        time: "Just now",
+        capital: 3,
+      });
+    }
+    renderAll();
+    return;
+  }
+
   if (target.closest("[data-approve-access-route]")) {
     const request = accessRequestById(state.activeAccessId);
     const targetPerson = personById(request.targetId);
@@ -5463,18 +5546,21 @@ document.addEventListener("click", async (event) => {
     if (!state.checkedAccess.includes(request.id)) {
       state.checkedAccess.push(request.id);
     }
+    if (!state.handshakenAccess.includes(request.id)) {
+      state.handshakenAccess.push(request.id);
+    }
     if (!state.approvedAccess.includes(request.id)) {
       state.approvedAccess.push(request.id);
       state.intros.unshift({
         target: targetPerson.name,
         connector: request.connector,
-        reason: "Permissioned access route",
+        reason: "Agent handshake",
         status: "Waiting opt-in",
       });
       state.feed.unshift({
         person: targetPerson.name,
         actor: "You",
-        text: `approved the permissioned route from ${request.asker} to ${targetPerson.name}. Gigi queued the double opt-in intro locally.`,
+        text: `approved the agent handshake from ${request.asker} to ${targetPerson.name}. Gigi queued the double opt-in intro locally.`,
         time: "Just now",
         capital: 5,
       });

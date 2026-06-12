@@ -54,7 +54,7 @@ Implemented flows:
 - person detail view with trust path, context, and "Ask Gigi" response
 - relationship-strength workflow that scores whether a real connector can safely carry a scoped ask
 - reconnect workflow that plans the right revival angle for a known contact and queues a local DM draft
-- permissioned-access workflow where agents check a route, preserve private context, and queue a double opt-in intro
+- permissioned-access workflow where agents check a route, run a requester-connector-recipient handshake, preserve private context, and queue a double opt-in intro
 - warm-intro composer with private context, draft, save, and approve states
 - warm-intro email workflow that generates Gmail-style drafts, checks consent boundaries, and sends only to the local intro queue
 - smart network lists with shareable private-link preview and recipient lens behavior

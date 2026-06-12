@@ -1133,6 +1133,7 @@ body[data-share-active="true"] #app {
 .access-command,
 .access-route,
 .access-ledger,
+.access-handshake article,
 .briefing-command,
 .briefing-card,
 .briefing-dossier,
@@ -1244,6 +1245,7 @@ body[data-share-active="true"] #app {
 .context-briefing p,
 .context-signal-row p,
 .access-route p,
+.access-handshake p,
 .access-ledger-grid p,
 .briefing-command p,
 .briefing-card p,
@@ -5746,6 +5748,11 @@ body[data-share-active="true"] #app {
   border-color: rgb(92 225 255 / 0.3);
 }
 
+.access-request-card.is-handshaken {
+  border-color: rgb(198 255 91 / 0.38);
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(198 255 91 / 0.1));
+}
+
 .access-request-card.is-approved {
   border-color: rgb(198 255 91 / 0.42);
   background: rgb(198 255 91 / 0.14);
@@ -5863,6 +5870,98 @@ body[data-share-active="true"] #app {
   border-radius: 22px;
 }
 
+.access-handshake {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  background:
+    radial-gradient(circle at 12% 18%, rgb(92 225 255 / 0.12), transparent 28%),
+    radial-gradient(circle at 88% 52%, rgb(198 255 91 / 0.13), transparent 34%),
+    rgb(255 255 255 / 0.035);
+}
+
+.access-handshake article {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 184px;
+  align-content: start;
+  border-radius: 18px;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.access-handshake article.is-checked {
+  border-color: rgb(92 225 255 / 0.26);
+}
+
+.access-handshake article.is-handshaken {
+  border-color: rgb(198 255 91 / 0.28);
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(0 0 0 / 0.32));
+}
+
+.access-handshake article.is-approved {
+  border-color: rgb(198 255 91 / 0.34);
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.1), rgb(0 0 0 / 0.32));
+}
+
+.access-handshake span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.09);
+  color: #d7ff73;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.access-handshake strong,
+.access-handshake small,
+.access-handshake em {
+  display: block;
+}
+
+.access-handshake strong {
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.access-handshake small {
+  margin-top: 5px;
+  color: rgb(255 255 255 / 0.46);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.access-handshake p {
+  grid-column: 1 / -1;
+  min-height: 58px;
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.access-handshake em {
+  grid-column: 1 / -1;
+  align-self: end;
+  justify-self: start;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgb(198 255 91 / 0.12);
+  color: #d7ff73;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .access-ledger-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -5878,6 +5977,10 @@ body[data-share-active="true"] #app {
 
 .access-ledger-grid article.is-checked {
   background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.access-ledger-grid article.is-handshaken {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(198 255 91 / 0.06), rgb(5 5 5 / 0.72));
 }
 
 .access-ledger-grid article.is-approved {
@@ -7425,6 +7528,7 @@ body[data-share-active="true"] #app {
   .context-source-grid,
   .access-layout,
   .access-request-list,
+  .access-handshake,
   .access-ledger-grid,
   .briefing-layout,
   .briefing-agenda,
