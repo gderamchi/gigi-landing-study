@@ -605,6 +605,48 @@ const capitalProofs = [
   },
 ];
 
+const intentMatches = [
+  {
+    id: "seed-maya-intent",
+    label: "Seed round",
+    userIntent: "Raise a seed round for an AI infrastructure company this month.",
+    otherIntent: "Maya is actively looking for founder-led AI infra companies with credible warm context.",
+    context: "Nina met Maya twice recently and has a live fundraising path that matches the round.",
+    smallestMove: "Ask Nina to approve a scoped investor intro packet for Maya.",
+    routeView: "access",
+    routeLabel: "Open Access",
+    routeId: "claire-maya",
+    source: "Calendar + goal",
+    capital: 6,
+  },
+  {
+    id: "product-priya-intent",
+    label: "Product reviewer",
+    userIntent: "Find a trust-heavy product advisor before launch.",
+    otherIntent: "Priya is open to reviewing AI products when there is specific product proof and a trusted connector.",
+    context: "Maxime worked with Priya on launch reviews and can carry the ask without exposing private notes.",
+    smallestMove: "Generate an approval-gated Gmail draft through Maxime.",
+    routeView: "email",
+    routeLabel: "Open Email",
+    routeId: "julien-priya-email",
+    source: "Gmail + relationship strength",
+    capital: 5,
+  },
+  {
+    id: "room-adrian-intent",
+    label: "Founder room",
+    userIntent: "Get access to private founder rooms and early customer conversations.",
+    otherIntent: "Adrian wants technical founders and investor rooms before the robotics deck becomes public.",
+    context: "Clara has fresh Adrian context and David is already curating a private dinner list.",
+    smallestMove: "Create a scoped smart link that reveals only the dinner theme and opt-in path.",
+    routeView: "lists",
+    routeLabel: "Open Lists",
+    routeId: "david-adrian",
+    source: "Private list + calendar",
+    capital: 5,
+  },
+];
+
 const dynamicProfileLenses = [
   {
     id: "fundraising",
@@ -1672,6 +1714,72 @@ const accessRequests = [
   },
 ];
 
+const endToEndRunSteps = [
+  {
+    id: "source-map",
+    label: "Approve context",
+    title: "Calendar, Gmail, contacts, and profile context are mapped.",
+    detail: "Gigi can now reason over real relationships without sending, sharing, or publishing anything.",
+    proof: "Consent receipts are active and every source remains revocable.",
+    view: "setup",
+    capital: 4,
+  },
+  {
+    id: "objective",
+    label: "Set objective",
+    title: "The ask becomes a concrete networking goal.",
+    detail: "A fuzzy request turns into a seed-round objective with a narrow investor intro target.",
+    proof: "Goals, call intake, and active ask are aligned to one current intent.",
+    view: "goals",
+    capital: 3,
+  },
+  {
+    id: "graph-search",
+    label: "Search graph",
+    title: "The private graph finds Maya through Nina.",
+    detail: "Gigi ranks paths by relationship strength, recent calendar context, and fundraising relevance.",
+    proof: "Search, Radar, and relationship strength all point to the same warm path.",
+    view: "search",
+    capital: 5,
+  },
+  {
+    id: "intent-match",
+    label: "Compare intent",
+    title: "Your goal matches the counterparty's live intent.",
+    detail: "The other side is shown only after Gigi compares approved context and active goals.",
+    proof: "The intent ledger shows a matched seed-round opportunity.",
+    view: "intent",
+    capital: 4,
+  },
+  {
+    id: "permissioned-route",
+    label: "Gate access",
+    title: "Requester, connector, and recipient agents pass the route.",
+    detail: "The warm path is checked without exposing Nina's whole graph or Claire's private round details.",
+    proof: "A double opt-in intro is queued locally through Nina.",
+    view: "access",
+    capital: 5,
+  },
+  {
+    id: "gmail-draft",
+    label: "Draft intro",
+    title: "Gmail-style intro is drafted behind approval.",
+    detail: "The draft contains only the approved forwardable context and keeps private notes out.",
+    proof: "The email module has generated and approved the Claire <> Maya draft.",
+    view: "email",
+    capital: 4,
+  },
+  {
+    id: "local-delivery",
+    label: "Send locally",
+    title: "The intro is sent in the local product ledger.",
+    detail: "No external email is transmitted; the prototype records the approved local send and updates intros.",
+    proof: "The intro board, feed, and smart list all reflect the completed warm path.",
+    view: "intros",
+    capital: 4,
+  },
+];
+
 const state = {
   view: "feed",
   query: "AI founders in SF who raised with Tier 1 VCs",
@@ -1713,6 +1821,11 @@ const state = {
   reviewedProofs: [],
   assembledProofs: [],
   proofAssetApproved: false,
+  activeIntentId: "seed-maya-intent",
+  scannedIntents: [],
+  movedIntents: [],
+  runBrief: "I am raising a seed round for an AI infrastructure company and need one trusted investor intro this week.",
+  completedRunSteps: [],
   activeGoalId: "raise-seed",
   activeAskId: "seed-angels",
   askBrief: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
@@ -1927,6 +2040,10 @@ function capitalProofById(id) {
   return capitalProofs.find((proof) => proof.id === id) ?? capitalProofs[0];
 }
 
+function intentMatchById(id) {
+  return intentMatches.find((intent) => intent.id === id) ?? intentMatches[0];
+}
+
 function dynamicProfileLensById(id) {
   return dynamicProfileLenses.find((lens) => lens.id === id) ?? dynamicProfileLenses[0];
 }
@@ -2096,6 +2213,7 @@ function setProductView(view) {
   if (title) {
     const titles = {
       feed: "Private circle",
+      run: "End-to-end run",
       os: "People OS",
       radar: "Proactive radar",
       call: "Intake call",
@@ -2106,6 +2224,7 @@ function setProductView(view) {
       moves: "Opportunity moves",
       score: "Social Capital Score",
       proof: "Social Capital proof",
+      intent: "Intent engine",
       matches: "Match reports",
       nudges: "Connector nudges",
       profile: "Social Capital",
@@ -2914,6 +3033,316 @@ function renderCapitalProof() {
         <h4>${escapeHtml(noFeedState)}</h4>
         <p>${escapeHtml("The proof stays private and becomes useful only as scoped context for a profile, trust graph, or approval-gated route.")}</p>
       </article>
+    </div>
+  `;
+}
+
+function intentState(intent) {
+  if (state.movedIntents.includes(intent.id)) return "Moved";
+  if (state.scannedIntents.includes(intent.id)) return "Matched";
+  return "Unscanned";
+}
+
+function renderIntentEngine() {
+  const list = document.querySelector("[data-intent-list]");
+  const panel = document.querySelector("[data-intent-panel]");
+  const ledger = document.querySelector("[data-intent-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = intentMatchById(state.activeIntentId);
+  const scanned = state.scannedIntents.includes(active.id);
+  const moved = state.movedIntents.includes(active.id);
+  const scanButton = document.querySelector("[data-scan-intent]");
+  const moveButton = document.querySelector("[data-move-intent]");
+  const routeButton = document.querySelector("[data-open-intent-route]");
+
+  if (scanButton) {
+    scanButton.textContent = scanned || moved ? "Intent matched" : "Compare intent";
+    scanButton.disabled = scanned || moved;
+  }
+  if (moveButton) {
+    moveButton.textContent = moved ? "Opportunity moved" : "Move opportunity";
+    moveButton.disabled = !scanned || moved;
+  }
+  if (routeButton) {
+    routeButton.textContent = active.routeLabel;
+    routeButton.disabled = !moved;
+  }
+
+  list.innerHTML = intentMatches
+    .map((intent) => {
+      const status = intentState(intent);
+      return `
+        <button class="intent-card ${intent.id === active.id ? "is-selected" : ""} is-${status.toLowerCase()}" type="button" data-select-intent="${intent.id}">
+          <span>${escapeHtml(intent.label)}</span>
+          <strong>${escapeHtml(intent.source)}</strong>
+          <small>${escapeHtml(status)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Intent match</span>
+    <h3>${escapeHtml(active.label)}</h3>
+    <div class="intent-two-up">
+      <article>
+        <span>Your intent</span>
+        <p>${escapeHtml(active.userIntent)}</p>
+      </article>
+      <article>
+        <span>Other side</span>
+        <p>${escapeHtml(scanned || moved ? active.otherIntent : "Hidden until Gigi compares context and active goals.")}</p>
+      </article>
+    </div>
+    <div class="intent-fit">
+      <strong>${escapeHtml(moved ? "Moved" : scanned ? "Fit found" : "Waiting")}</strong>
+      <span>${escapeHtml(active.source)}</span>
+    </div>
+    <div class="path-box">
+      <strong>Context overlap</strong>
+      <p>${escapeHtml(scanned || moved ? active.context : "Gigi has not compared the intent graph yet.")}</p>
+    </div>
+    <div class="path-box">
+      <strong>Smallest move</strong>
+      <p>${escapeHtml(moved ? active.smallestMove : "No opportunity moves until the user approves this local route.")}</p>
+    </div>
+    <button type="button" data-open-intent-route ${moved ? "" : "disabled"}>${escapeHtml(active.routeLabel)}</button>
+  `;
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>Intent movement ledger</span>
+      <strong>${escapeHtml(`${state.movedIntents.length} moved · ${state.scannedIntents.length} matched`)}</strong>
+    </div>
+    <div class="intent-ledger-grid">
+      ${intentMatches
+        .map((intent) => {
+          const status = intentState(intent);
+          return `
+            <article class="is-${status.toLowerCase()}">
+              <span>${escapeHtml(intent.label)}</span>
+              <h4>${escapeHtml(status === "Moved" ? intent.routeLabel : status)}</h4>
+              <p>${escapeHtml(status === "Unscanned" ? intent.userIntent : status === "Matched" ? intent.context : intent.smallestMove)}</p>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function runStepState(step) {
+  if (state.completedRunSteps.includes(step.id)) return "Done";
+  const next = endToEndRunSteps.find((item) => !state.completedRunSteps.includes(item.id));
+  return next?.id === step.id ? "Ready" : "Locked";
+}
+
+function nextRunStep() {
+  return endToEndRunSteps.find((step) => !state.completedRunSteps.includes(step.id));
+}
+
+function runRouteLabel(step) {
+  const labels = {
+    setup: "Open Setup",
+    goals: "Open Goals",
+    search: "Open Search",
+    intent: "Open Intent",
+    access: "Open Access",
+    email: "Open Email",
+    intros: "Open Intros",
+  };
+  return labels[step.view] ?? `Open ${step.label}`;
+}
+
+function syncRunBrief() {
+  const input = document.querySelector("[data-run-brief]");
+  if (input?.value.trim()) {
+    state.runBrief = input.value.trim();
+  }
+}
+
+function addRunIntro(targetPerson, connector, reason, status) {
+  const existing = state.intros.find((intro) => intro.target === targetPerson && intro.reason === reason);
+  if (existing) {
+    existing.status = status;
+    return;
+  }
+  state.intros.unshift({ target: targetPerson, connector, reason, status });
+}
+
+function completeRunStep(step) {
+  if (!step || state.completedRunSteps.includes(step.id)) return;
+
+  const maya = personById("maya");
+  const accessRequest = accessRequestById("claire-maya");
+  const emailDraft = introEmailById("claire-maya-email");
+
+  if (step.id === "source-map") {
+    setupSources.forEach((source) => {
+      state.connected[source.id] = true;
+    });
+    state.betaInviteAccepted = true;
+    state.setupMapped = true;
+    state.consentReceiptExported = true;
+    state.activeSetupSourceId = "calendar";
+  }
+
+  if (step.id === "objective") {
+    state.goalBrief = state.runBrief;
+    state.askBrief = "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?";
+    state.activeGoalId = "raise-seed";
+    state.activeAskId = "seed-angels";
+    state.callStarted = true;
+    state.callExtracted = true;
+    state.callActivated = true;
+  }
+
+  if (step.id === "graph-search") {
+    state.query = "Seed investors I can reach through trusted warm paths";
+    state.filter = "fundraising";
+    state.selectedPersonId = "maya";
+    state.activeRadarId = "seed-path";
+    state.activeStrengthId = "nina-maya-strength";
+    if (!state.scannedRadar.includes("seed-path")) state.scannedRadar.push("seed-path");
+    if (!state.analyzedStrength.includes("nina-maya-strength")) {
+      state.analyzedStrength.push("nina-maya-strength");
+    }
+  }
+
+  if (step.id === "intent-match") {
+    state.activeIntentId = "seed-maya-intent";
+    if (!state.scannedIntents.includes("seed-maya-intent")) {
+      state.scannedIntents.push("seed-maya-intent");
+    }
+  }
+
+  if (step.id === "permissioned-route") {
+    state.activeAccessId = accessRequest.id;
+    if (!state.scannedIntents.includes("seed-maya-intent")) state.scannedIntents.push("seed-maya-intent");
+    if (!state.movedIntents.includes("seed-maya-intent")) state.movedIntents.push("seed-maya-intent");
+    if (!state.checkedAccess.includes(accessRequest.id)) state.checkedAccess.push(accessRequest.id);
+    if (!state.handshakenAccess.includes(accessRequest.id)) state.handshakenAccess.push(accessRequest.id);
+    if (!state.approvedAccess.includes(accessRequest.id)) state.approvedAccess.push(accessRequest.id);
+    addRunIntro(maya.name, accessRequest.connector, "End-to-end run", "Waiting opt-in");
+  }
+
+  if (step.id === "gmail-draft") {
+    state.activeEmailId = emailDraft.id;
+    if (!state.generatedEmailDrafts.includes(emailDraft.id)) state.generatedEmailDrafts.push(emailDraft.id);
+    if (!state.approvedEmailDrafts.includes(emailDraft.id)) state.approvedEmailDrafts.push(emailDraft.id);
+    if (!state.checkedAccess.includes(emailDraft.accessId)) state.checkedAccess.push(emailDraft.accessId);
+  }
+
+  if (step.id === "local-delivery") {
+    state.activeEmailId = emailDraft.id;
+    if (!state.generatedEmailDrafts.includes(emailDraft.id)) state.generatedEmailDrafts.push(emailDraft.id);
+    if (!state.approvedEmailDrafts.includes(emailDraft.id)) state.approvedEmailDrafts.push(emailDraft.id);
+    if (!state.sentEmailDrafts.includes(emailDraft.id)) state.sentEmailDrafts.push(emailDraft.id);
+    if (!state.approvedAccess.includes(emailDraft.accessId)) state.approvedAccess.push(emailDraft.accessId);
+    state.previewListIndex = 1;
+    state.shareListIndex = 1;
+    state.shareUnlocked = true;
+    if (!state.shareRequested.includes("maya")) state.shareRequested.push("maya");
+    addRunIntro(maya.name, emailDraft.connector, "End-to-end run", "Sent");
+  }
+
+  state.completedRunSteps.push(step.id);
+  state.socialCapital += step.capital;
+  state.feed.unshift({
+    person: step.label,
+    actor: "Gigi Run",
+    text: `${step.title} ${step.proof}`,
+    time: "Just now",
+    capital: step.capital,
+  });
+}
+
+function renderEndToEndRun() {
+  const steps = document.querySelector("[data-run-steps]");
+  const panel = document.querySelector("[data-run-panel]");
+  const ledger = document.querySelector("[data-run-ledger]");
+  const brief = document.querySelector("[data-run-brief]");
+  if (!steps || !panel || !ledger) return;
+
+  if (brief && brief.value !== state.runBrief) {
+    brief.value = state.runBrief;
+  }
+
+  const completed = state.completedRunSteps.length;
+  const next = nextRunStep();
+  const active = next ?? endToEndRunSteps[endToEndRunSteps.length - 1];
+  const isComplete = completed === endToEndRunSteps.length;
+  const maya = personById("maya");
+  const emailDraft = introEmailById("claire-maya-email");
+  const progress = Math.round((completed / endToEndRunSteps.length) * 100);
+  const startButton = document.querySelector("[data-start-run]");
+  const advanceButton = document.querySelector("[data-advance-run]");
+  const completeButton = document.querySelector("[data-complete-run]");
+
+  if (startButton) {
+    startButton.textContent = isComplete ? "Restart run" : completed > 0 ? "Run started" : "Start run";
+    startButton.toggleAttribute("disabled", completed > 0 && !isComplete);
+  }
+  if (advanceButton) {
+    advanceButton.textContent = isComplete ? "No next move" : "Next move";
+    advanceButton.toggleAttribute("disabled", isComplete);
+  }
+  if (completeButton) {
+    completeButton.textContent = isComplete ? "Run complete" : "Complete run";
+    completeButton.toggleAttribute("disabled", isComplete);
+  }
+
+  steps.innerHTML = endToEndRunSteps
+    .map((step, index) => {
+      const status = runStepState(step);
+      return `
+        <button class="run-step is-${status.toLowerCase()}" type="button" data-open-run-route="${step.view}" ${status === "Locked" ? "disabled" : ""}>
+          <span>${escapeHtml(`0${index + 1}`)}</span>
+          <strong>${escapeHtml(step.label)}</strong>
+          <small>${escapeHtml(status)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">${escapeHtml(isComplete ? "Run complete" : "Next move")}</span>
+    <h3>${escapeHtml(active.title)}</h3>
+    <p>${escapeHtml(active.detail)}</p>
+    <div class="run-progress">
+      <span><i style="width: ${progress}%"></i></span>
+      <strong>${escapeHtml(`${completed}/${endToEndRunSteps.length}`)}</strong>
+    </div>
+    <div class="run-proof-card">
+      <span>Proof</span>
+      <p>${escapeHtml(active.proof)}</p>
+    </div>
+    <div class="run-proof-card">
+      <span>Warm path</span>
+      <p>${escapeHtml(`Claire Moreau -> Nina Patel -> ${maya.name}. Draft: ${emailDraft.subject}.`)}</p>
+    </div>
+    <button type="button" data-open-run-route="${active.view}">${escapeHtml(runRouteLabel(active))}</button>
+  `;
+
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>End-to-end ledger</span>
+      <strong>${escapeHtml(isComplete ? "Local intro sent" : `${progress}% complete`)}</strong>
+    </div>
+    <div class="run-ledger-grid">
+      ${endToEndRunSteps
+        .map((step) => {
+          const status = runStepState(step);
+          return `
+            <article class="is-${status.toLowerCase()}">
+              <span>${escapeHtml(step.label)}</span>
+              <h4>${escapeHtml(status === "Done" ? "Verified" : status)}</h4>
+              <p>${escapeHtml(status === "Done" ? step.proof : step.detail)}</p>
+            </article>
+          `;
+        })
+        .join("")}
     </div>
   `;
 }
@@ -4776,6 +5205,7 @@ function renderAll() {
     document.createTextNode(String(state.socialCapital)),
   );
   renderConnectedSources();
+  renderEndToEndRun();
   renderSourceHealth();
   renderPeopleOs();
   renderSetup();
@@ -4785,6 +5215,7 @@ function renderAll() {
   renderMoves();
   renderScore();
   renderCapitalProof();
+  renderIntentEngine();
   renderMatches();
   renderNudges();
   renderProfile();
@@ -4874,6 +5305,13 @@ document.querySelector(".beta-form")?.addEventListener("submit", (event) => {
   }
 });
 
+document.addEventListener("input", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (target?.matches("[data-run-brief]")) {
+    state.runBrief = target.value;
+  }
+});
+
 document.addEventListener("click", async (event) => {
   const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
@@ -4886,6 +5324,40 @@ document.addEventListener("click", async (event) => {
 
   if (target.closest("[data-close-product]")) {
     closeProduct();
+    return;
+  }
+
+  if (target.closest("[data-start-run]")) {
+    syncRunBrief();
+    if (state.completedRunSteps.length === endToEndRunSteps.length) {
+      state.completedRunSteps = [];
+    }
+    completeRunStep(endToEndRunSteps[0]);
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-advance-run]")) {
+    syncRunBrief();
+    completeRunStep(nextRunStep());
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-complete-run]")) {
+    syncRunBrief();
+    let step = nextRunStep();
+    while (step) {
+      completeRunStep(step);
+      step = nextRunStep();
+    }
+    renderAll();
+    return;
+  }
+
+  const runRouteButton = target.closest("[data-open-run-route]");
+  if (runRouteButton) {
+    setProductView(runRouteButton.dataset.openRunRoute);
     return;
   }
 
@@ -5663,6 +6135,78 @@ document.addEventListener("click", async (event) => {
       if (proof.id === "trust-built") state.activeStrengthId = "maxime-priya-strength";
       if (proof.id === "who-you-know") state.selectedPersonId = "maya";
       setProductView(proof.routeView);
+    }
+    return;
+  }
+
+  const intentButton = target.closest("[data-select-intent]");
+  if (intentButton) {
+    state.activeIntentId = intentButton.dataset.selectIntent;
+    renderIntentEngine();
+    return;
+  }
+
+  if (target.closest("[data-scan-intent]")) {
+    const intent = intentMatchById(state.activeIntentId);
+    if (!state.scannedIntents.includes(intent.id)) {
+      state.scannedIntents.push(intent.id);
+      state.connected.calendar = true;
+      state.feed.unshift({
+        person: intent.label,
+        actor: "Gigi",
+        text: `matched intent across private context: ${intent.context}`,
+        time: "Just now",
+        capital: 2,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-move-intent]")) {
+    const intent = intentMatchById(state.activeIntentId);
+    if (!state.scannedIntents.includes(intent.id)) {
+      state.scannedIntents.push(intent.id);
+    }
+    if (!state.movedIntents.includes(intent.id)) {
+      state.movedIntents.push(intent.id);
+      state.socialCapital += intent.capital;
+      if (intent.id === "seed-maya-intent") {
+        state.activeAccessId = "claire-maya";
+        if (!state.checkedAccess.includes("claire-maya")) state.checkedAccess.push("claire-maya");
+      }
+      if (intent.id === "product-priya-intent") {
+        state.activeEmailId = "julien-priya-email";
+        if (!state.generatedEmailDrafts.includes("julien-priya-email")) {
+          state.generatedEmailDrafts.push("julien-priya-email");
+        }
+      }
+      if (intent.id === "room-adrian-intent") {
+        state.previewListIndex = 2;
+        state.shareListIndex = 2;
+      }
+      state.feed.unshift({
+        person: intent.label,
+        actor: "Gigi",
+        text: `moved the smallest permissioned opportunity: ${intent.smallestMove}`,
+        time: "Just now",
+        capital: intent.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-open-intent-route]")) {
+    const intent = intentMatchById(state.activeIntentId);
+    if (state.movedIntents.includes(intent.id)) {
+      if (intent.id === "seed-maya-intent") state.activeAccessId = "claire-maya";
+      if (intent.id === "product-priya-intent") state.activeEmailId = "julien-priya-email";
+      if (intent.id === "room-adrian-intent") {
+        state.previewListIndex = 2;
+        state.shareListIndex = 2;
+      }
+      setProductView(intent.routeView);
     }
     return;
   }

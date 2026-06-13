@@ -35,6 +35,7 @@ You can also submit any email on the landing page to enter the product flow.
 Implemented flows:
 
 - private-circle feed with meeting activity and Social Capital claims
+- guided end-to-end Gigi run from one objective to approved context, private graph search, intent match, permissioned route, Gmail draft, explicit approval, and local warm-intro delivery
 - invite-only beta gate that turns the landing-page email into a local invite before opening trust setup
 - People OS context-machine loop that reasons over private context, trust, reputation, intent, and approval boundaries before prompting a connector
 - trust setup workflow that connects simulated Calendar, Gmail, Contacts, and public-profile sources before agent actions unlock
@@ -47,6 +48,7 @@ Implemented flows:
 - proactive Radar workflow that surfaces a useful person before a direct search and routes the match into permissioned Access
 - Social Capital Score reveal with name search, private graph signal, point unlock, and score breakdown
 - Social Capital proof workflow that assembles who-you-know, what-people-say, and trust-built evidence into a private usable asset instead of a performative feed
+- intent engine that compares user goals with counterparty intent, then moves the smallest permissioned opportunity into Access, Email, or Smart links
 - dynamic Social Capital profile with built/network/reputation breakdown, intent-aware profile lenses, publish-to-graph state, and private signals
 - close-circle signal writing with reciprocal reputation requests and a living social-capital feed
 - reference-check workflow that ranks real vouch paths before requesting gated reputation proof

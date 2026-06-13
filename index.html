@@ -108,6 +108,7 @@
           </button>
           <nav class="product-nav" aria-label="Gigi app sections">
             <button class="product-nav-item is-active" type="button" data-product-view="feed">Feed</button>
+            <button class="product-nav-item" type="button" data-product-view="run">Run</button>
             <button class="product-nav-item" type="button" data-product-view="os">People OS</button>
             <button class="product-nav-item" type="button" data-product-view="radar">Radar</button>
             <button class="product-nav-item" type="button" data-product-view="call">Call</button>
@@ -118,6 +119,7 @@
             <button class="product-nav-item" type="button" data-product-view="moves">Moves</button>
             <button class="product-nav-item" type="button" data-product-view="score">Score</button>
             <button class="product-nav-item" type="button" data-product-view="proof">Proof</button>
+            <button class="product-nav-item" type="button" data-product-view="intent">Intent</button>
             <button class="product-nav-item" type="button" data-product-view="matches">Matches</button>
             <button class="product-nav-item" type="button" data-product-view="nudges">Nudges</button>
             <button class="product-nav-item" type="button" data-product-view="profile">Profile</button>
@@ -183,6 +185,28 @@
               <div class="source-health" data-source-health></div>
               <button type="button" data-product-view="search">Ask Gigi</button>
             </aside>
+          </section>
+
+          <section class="product-screen product-screen-run" data-product-screen="run" aria-label="End-to-end opportunity run">
+            <div class="run-layout">
+              <section class="run-command">
+                <span class="product-kicker">Gigi run</span>
+                <h3>Turn one ask into a consented warm intro.</h3>
+                <p>One guided pass through the product: approved context, searchable graph, intent match, permissioned access, Gmail draft, human approval, and local intro delivery.</p>
+                <label>
+                  Current objective
+                  <textarea data-run-brief aria-label="End-to-end networking objective">I am raising a seed round for an AI infrastructure company and need one trusted investor intro this week.</textarea>
+                </label>
+                <div class="run-actions">
+                  <button type="button" data-start-run>Start run</button>
+                  <button type="button" data-advance-run>Next move</button>
+                  <button type="button" data-complete-run>Complete run</button>
+                </div>
+                <div class="run-steps" data-run-steps></div>
+              </section>
+              <aside class="run-panel" data-run-panel></aside>
+            </div>
+            <section class="run-ledger" data-run-ledger></section>
           </section>
 
           <section class="product-screen product-screen-os" data-product-screen="os" aria-label="People OS">
@@ -357,6 +381,24 @@
               <aside class="proof-panel" data-proof-panel></aside>
             </div>
             <section class="proof-ledger" data-proof-ledger></section>
+          </section>
+
+          <section class="product-screen product-screen-intent" data-product-screen="intent" aria-label="Intent matching">
+            <div class="intent-layout">
+              <section class="intent-command">
+                <span class="product-kicker">Intent engine</span>
+                <h3>Match what everyone is trying to unlock.</h3>
+                <p>Gigi compares your objective with the live intent on the other side, then moves only the smallest permissioned opportunity.</p>
+                <div class="intent-actions">
+                  <button type="button" data-scan-intent>Compare intent</button>
+                  <button type="button" data-move-intent>Move opportunity</button>
+                  <button type="button" data-open-intent-route>Open route</button>
+                </div>
+                <div class="intent-list" data-intent-list></div>
+              </section>
+              <aside class="intent-panel" data-intent-panel></aside>
+            </div>
+            <section class="intent-ledger" data-intent-ledger></section>
           </section>
 
           <section class="product-screen product-screen-matches" data-product-screen="matches" aria-label="Professional match reports">

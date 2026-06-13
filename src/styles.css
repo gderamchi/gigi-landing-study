@@ -1010,6 +1010,9 @@ body[data-share-active="true"] #app {
 .setup-source-card,
 .setup-consent-actions button,
 .setup-consent-export,
+.run-actions button,
+.run-step,
+.run-panel button,
 .approval-actions button,
 .approval-card,
 .approval-panel button,
@@ -1022,6 +1025,9 @@ body[data-share-active="true"] #app {
 .proof-actions button,
 .proof-card,
 .proof-panel button,
+.intent-actions button,
+.intent-card,
+.intent-panel button,
 .os-actions button,
 .people-os-scenario,
 .move-actions button,
@@ -1130,6 +1136,9 @@ body[data-share-active="true"] #app {
 .setup-audit,
 .setup-results,
 .setup-consent,
+.run-command,
+.run-panel,
+.run-ledger,
 .approval-command,
 .approval-panel,
 .approval-ledger,
@@ -1142,6 +1151,9 @@ body[data-share-active="true"] #app {
 .proof-command,
 .proof-panel,
 .proof-ledger,
+.intent-command,
+.intent-panel,
+.intent-ledger,
 .move-command,
 .move-preview,
 .move-status,
@@ -1246,6 +1258,9 @@ body[data-share-active="true"] #app {
 .setup-audit p,
 .setup-results-grid p,
 .setup-consent-list p,
+.run-command p,
+.run-panel p,
+.run-ledger-grid p,
 .approval-command p,
 .approval-panel p,
 .approval-ledger-grid p,
@@ -1258,6 +1273,9 @@ body[data-share-active="true"] #app {
 .proof-command p,
 .proof-panel p,
 .proof-ledger-grid p,
+.intent-command p,
+.intent-panel p,
+.intent-ledger-grid p,
 .move-command p,
 .move-preview p,
 .move-status-grid p,
@@ -2246,6 +2264,242 @@ body[data-share-active="true"] #app {
   line-height: 1.12;
 }
 
+.run-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 18px;
+}
+
+.run-command {
+  min-height: 590px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 82% 16%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 18% 78%, rgb(92 225 255 / 0.13), transparent 34%),
+    linear-gradient(135deg, rgb(255 255 255 / 0.08), transparent 42%),
+    rgb(255 255 255 / 0.045);
+}
+
+.run-command h3 {
+  max-width: 840px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(46px, 5.5vw, 80px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.run-command p {
+  max-width: 720px;
+  margin-top: 18px;
+  font-size: 17px;
+}
+
+.run-command label {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+  margin-top: 22px;
+  color: rgb(255 255 255 / 0.54);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.run-command textarea {
+  min-height: 82px;
+  resize: vertical;
+  border: 1px solid rgb(255 255 255 / 0.11);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgb(0 0 0 / 0.32);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 1.45;
+  outline: none;
+}
+
+.run-command textarea:focus {
+  border-color: rgb(198 255 91 / 0.36);
+  box-shadow: 0 0 0 3px rgb(198 255 91 / 0.08);
+}
+
+.run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.run-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.run-actions button:first-child,
+.run-actions button:nth-child(3) {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.run-actions button[disabled],
+.run-step[disabled] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.run-steps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.run-step {
+  display: grid;
+  min-height: 138px;
+  align-content: start;
+  padding: 12px;
+  text-align: left;
+}
+
+.run-step.is-ready {
+  border-color: rgb(198 255 91 / 0.34);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.run-step.is-done {
+  border-color: rgb(92 225 255 / 0.32);
+  background: rgb(92 225 255 / 0.08);
+}
+
+.run-step span,
+.run-step strong,
+.run-step small {
+  display: block;
+}
+
+.run-step strong {
+  margin-top: 10px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.08;
+}
+
+.run-step small {
+  margin-top: 14px;
+  color: #d7ff73;
+}
+
+.run-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 72% 14%, rgb(198 255 91 / 0.14), transparent 30%),
+    rgb(255 255 255 / 0.045);
+}
+
+.run-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.run-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.run-progress span {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.run-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5ce1ff, #d7ff73);
+}
+
+.run-progress strong {
+  color: #d7ff73;
+  font-size: 13px;
+}
+
+.run-proof-card {
+  margin-top: 12px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgb(0 0 0 / 0.24);
+}
+
+.run-proof-card span {
+  display: block;
+  color: rgb(255 255 255 / 0.45);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.run-panel button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  color: #d7ff73;
+}
+
+.run-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.run-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.run-ledger-grid article {
+  min-height: 170px;
+  padding: 16px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.run-ledger-grid article.is-ready {
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.09), rgb(5 5 5 / 0.72));
+}
+
+.run-ledger-grid article.is-done {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.run-ledger-grid h4 {
+  margin: 8px 0 0;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.12;
+}
+
 .setup-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -2343,6 +2597,9 @@ body[data-share-active="true"] #app {
 .setup-results-grid span,
 .setup-consent-list span,
 .setup-consent-list small,
+.run-step span,
+.run-step small,
+.run-ledger-grid span,
 .approval-card span,
 .approval-card small,
 .approval-ledger-grid span,
@@ -2355,6 +2612,9 @@ body[data-share-active="true"] #app {
 .proof-card span,
 .proof-card small,
 .proof-ledger-grid span,
+.intent-card span,
+.intent-card small,
+.intent-ledger-grid span,
 .setup-progress span {
   color: rgb(255 255 255 / 0.5);
   font-size: 11px;
@@ -3710,6 +3970,218 @@ body[data-share-active="true"] #app {
   line-height: 1.1;
 }
 
+.intent-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 18px;
+}
+
+.intent-command {
+  min-height: 560px;
+  border-radius: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 78% 18%, rgb(198 255 91 / 0.18), transparent 30%),
+    radial-gradient(circle at 18% 82%, rgb(92 225 255 / 0.12), transparent 34%),
+    rgb(255 255 255 / 0.045);
+}
+
+.intent-command h3 {
+  max-width: 790px;
+  margin: 8px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: clamp(44px, 5vw, 74px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.intent-command p {
+  max-width: 690px;
+  margin-top: 18px;
+  font-size: 16px;
+}
+
+.intent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.intent-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.intent-actions button:first-child {
+  background: #d7ff73;
+  color: #030303;
+}
+
+.intent-actions button:not(:first-child) {
+  color: #fff;
+}
+
+.intent-actions button[disabled] {
+  cursor: default;
+  opacity: 0.52;
+}
+
+.intent-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.intent-card {
+  min-height: 154px;
+  align-content: start;
+  padding: 15px;
+  text-align: left;
+}
+
+.intent-card.is-selected {
+  border-color: rgb(198 255 91 / 0.36);
+  background: rgb(198 255 91 / 0.1);
+}
+
+.intent-card.is-moved {
+  border-color: rgb(92 225 255 / 0.32);
+}
+
+.intent-card span,
+.intent-card strong,
+.intent-card small {
+  display: block;
+}
+
+.intent-card strong {
+  margin-top: 14px;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.08;
+}
+
+.intent-card small {
+  margin-top: 20px;
+  color: #d7ff73;
+}
+
+.intent-panel {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 70% 18%, rgb(198 255 91 / 0.13), transparent 32%),
+    rgb(255 255 255 / 0.045);
+}
+
+.intent-panel h3 {
+  margin: 10px 0 0;
+  font-family: "Feature Display", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.intent-two-up {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.intent-two-up article {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgb(0 0 0 / 0.24);
+}
+
+.intent-two-up span {
+  display: block;
+  color: rgb(255 255 255 / 0.44);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.intent-fit {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  border: 1px solid rgb(198 255 91 / 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgb(198 255 91 / 0.08);
+}
+
+.intent-fit strong {
+  color: #d7ff73;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.intent-fit span {
+  color: rgb(255 255 255 / 0.54);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.intent-panel button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  color: #d7ff73;
+}
+
+.intent-panel button[disabled] {
+  color: rgb(255 255 255 / 0.4);
+  cursor: default;
+}
+
+.intent-ledger {
+  overflow: hidden;
+  margin-top: 18px;
+  border-radius: 22px;
+}
+
+.intent-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 0.07);
+}
+
+.intent-ledger-grid article {
+  min-height: 178px;
+  padding: 18px;
+  background: rgb(5 5 5 / 0.72);
+}
+
+.intent-ledger-grid article.is-matched {
+  background: linear-gradient(145deg, rgb(198 255 91 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.intent-ledger-grid article.is-moved {
+  background: linear-gradient(145deg, rgb(92 225 255 / 0.08), rgb(5 5 5 / 0.72));
+}
+
+.intent-ledger-grid h4 {
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
 .match-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -4715,6 +5187,48 @@ body[data-share-active="true"] #app {
     margin-top: 18px;
   }
 
+  .run-command {
+    min-height: 460px;
+    padding: 22px;
+  }
+
+  .run-command h3 {
+    font-size: 52px;
+  }
+
+  .run-command p {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .run-command label,
+  .run-actions,
+  .run-steps {
+    margin-top: 16px;
+  }
+
+  .run-step {
+    min-height: 108px;
+    padding: 10px;
+  }
+
+  .run-step strong {
+    font-size: 13px;
+  }
+
+  .run-panel {
+    padding: 18px;
+  }
+
+  .run-panel h3 {
+    font-size: 32px;
+  }
+
+  .run-ledger-grid article {
+    min-height: 132px;
+    padding: 12px;
+  }
+
   .setup-command {
     min-height: 430px;
     padding: 22px;
@@ -5032,6 +5546,47 @@ body[data-share-active="true"] #app {
   }
 
   .proof-ledger-grid article {
+    min-height: 134px;
+    padding: 14px;
+  }
+
+  .intent-command {
+    min-height: 430px;
+    padding: 22px;
+  }
+
+  .intent-command h3 {
+    font-size: 48px;
+  }
+
+  .intent-command p {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .intent-actions,
+  .intent-list {
+    margin-top: 18px;
+  }
+
+  .intent-card {
+    min-height: 112px;
+    padding: 12px;
+  }
+
+  .intent-card strong {
+    font-size: 16px;
+  }
+
+  .intent-panel {
+    padding: 18px;
+  }
+
+  .intent-panel h3 {
+    font-size: 32px;
+  }
+
+  .intent-ledger-grid article {
     min-height: 134px;
     padding: 14px;
   }
@@ -8549,6 +9104,9 @@ body[data-share-active="true"] #app {
   }
 
   .product-screen-feed.is-active,
+  .run-layout,
+  .run-steps,
+  .run-ledger-grid,
   .os-layout,
   .people-os-scenario-list,
   .os-reasoning-grid,
@@ -8582,6 +9140,9 @@ body[data-share-active="true"] #app {
   .proof-layout,
   .proof-list,
   .proof-ledger-grid,
+  .intent-layout,
+  .intent-list,
+  .intent-ledger-grid,
   .match-layout,
   .match-pair,
   .match-axis-grid,
@@ -8630,6 +9191,37 @@ body[data-share-active="true"] #app {
 
   .radar-prediction {
     position: static;
+  }
+
+  .run-panel {
+    position: static;
+  }
+
+  .run-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .run-command h3 {
+    font-size: 50px;
+  }
+
+  .run-command p {
+    font-size: 16px;
+  }
+
+  .run-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .run-actions button {
+    width: 100%;
+  }
+
+  .run-step,
+  .run-ledger-grid article {
+    min-height: auto;
   }
 
   .os-panel {
@@ -8970,6 +9562,37 @@ body[data-share-active="true"] #app {
   }
 
   .proof-panel {
+    position: static;
+  }
+
+  .intent-command {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .intent-command h3 {
+    font-size: 50px;
+  }
+
+  .intent-command p {
+    font-size: 16px;
+  }
+
+  .intent-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .intent-actions button {
+    width: 100%;
+  }
+
+  .intent-card,
+  .intent-ledger-grid article {
+    min-height: auto;
+  }
+
+  .intent-panel {
     position: static;
   }
 
