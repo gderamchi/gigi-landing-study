@@ -557,6 +557,54 @@ const scoreProfiles = [
   },
 ];
 
+const capitalProofs = [
+  {
+    id: "who-you-know",
+    pillar: "Who you know",
+    label: "Real relationship graph",
+    source: "Calendar + Contacts",
+    proof:
+      "Nina met Maya twice in the last 30 days, Clara has fresh Adrian context, and Maxime worked with Priya on a launch review.",
+    privateBoundary:
+      "Keep unrelated calendar notes, weak contacts, and broad second-degree graph data hidden.",
+    asset:
+      "A private relationship map that can explain why a warm path exists without exposing the whole graph.",
+    routeView: "graph",
+    routeLabel: "Open trust graph",
+    capital: 5,
+  },
+  {
+    id: "what-people-say",
+    pillar: "What people say",
+    label: "Close-circle reputation",
+    source: "Private signals",
+    proof:
+      "Clara says you ship through ambiguity, and Nina says your fundraising asks are precise enough to carry.",
+    privateBoundary:
+      "Treat this as contextual proof, not a public rating or universal reputation score.",
+    asset:
+      "A scoped Social Capital profile that can lead with reputation only when the ask needs it.",
+    routeView: "profile",
+    routeLabel: "Open profile",
+    capital: 6,
+  },
+  {
+    id: "trust-built",
+    pillar: "Trust built",
+    label: "Usable trust path",
+    source: "Relationship strength",
+    proof:
+      "Maxime and Priya have repeated work context, reply depth, and a narrow product-review ask that fits the relationship.",
+    privateBoundary:
+      "Score the relationship against one concrete ask instead of turning social proximity into a generic rank.",
+    asset:
+      "A route-ready trust proof that can move into permissioned access after user approval.",
+    routeView: "strength",
+    routeLabel: "Open strength",
+    capital: 5,
+  },
+];
+
 const dynamicProfileLenses = [
   {
     id: "fundraising",
@@ -1661,6 +1709,10 @@ const state = {
   scoreQuery: "",
   activeScoreId: "clara",
   scoreRevealed: false,
+  activeProofId: "what-people-say",
+  reviewedProofs: [],
+  assembledProofs: [],
+  proofAssetApproved: false,
   activeGoalId: "raise-seed",
   activeAskId: "seed-angels",
   askBrief: "Do you know seed angels or founder-friendly VCs for an AI infra round in SF?",
@@ -1871,6 +1923,10 @@ function scoreProfileById(id) {
   return scoreProfiles.find((profile) => profile.id === id) ?? scoreProfiles[0];
 }
 
+function capitalProofById(id) {
+  return capitalProofs.find((proof) => proof.id === id) ?? capitalProofs[0];
+}
+
 function dynamicProfileLensById(id) {
   return dynamicProfileLenses.find((lens) => lens.id === id) ?? dynamicProfileLenses[0];
 }
@@ -2049,6 +2105,7 @@ function setProductView(view) {
       boundaries: "Product boundaries",
       moves: "Opportunity moves",
       score: "Social Capital Score",
+      proof: "Social Capital proof",
       matches: "Match reports",
       nudges: "Connector nudges",
       profile: "Social Capital",
@@ -2764,6 +2821,99 @@ function renderScore() {
           `,
         )
         .join("")}
+    </div>
+  `;
+}
+
+function proofState(proof) {
+  if (state.assembledProofs.includes(proof.id)) return "Assembled";
+  if (state.reviewedProofs.includes(proof.id)) return "Reviewed";
+  return "Private";
+}
+
+function renderCapitalProof() {
+  const list = document.querySelector("[data-proof-list]");
+  const panel = document.querySelector("[data-proof-panel]");
+  const ledger = document.querySelector("[data-proof-ledger]");
+  if (!list || !panel || !ledger) return;
+
+  const active = capitalProofById(state.activeProofId);
+  const reviewed = state.reviewedProofs.includes(active.id);
+  const assembled = state.assembledProofs.includes(active.id);
+  const assembledCount = state.assembledProofs.length;
+  const reviewButton = document.querySelector("[data-review-proof]");
+  const assembleButton = document.querySelector("[data-assemble-proof]");
+  const useButton = document.querySelector("[data-use-proof]");
+
+  if (reviewButton) {
+    reviewButton.textContent = reviewed || assembled ? "Proof reviewed" : "Review proof";
+    reviewButton.disabled = reviewed || assembled;
+  }
+  if (assembleButton) {
+    assembleButton.textContent = assembled ? "Asset assembled" : "Assemble asset";
+    assembleButton.disabled = assembled;
+  }
+  if (useButton) {
+    useButton.textContent = assembled ? active.routeLabel : "Use in product";
+    useButton.disabled = !assembled;
+  }
+
+  list.innerHTML = capitalProofs
+    .map((proof) => {
+      const status = proofState(proof);
+      return `
+        <button class="proof-card ${proof.id === active.id ? "is-selected" : ""} is-${status.toLowerCase()}" type="button" data-select-proof="${proof.id}">
+          <span>${escapeHtml(proof.pillar)}</span>
+          <strong>${escapeHtml(proof.label)}</strong>
+          <small>${escapeHtml(status)}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <span class="product-kicker">Private asset</span>
+    <h3>${escapeHtml(active.label)}</h3>
+    <p>${escapeHtml(active.proof)}</p>
+    <div class="proof-score">
+      <strong>${escapeHtml(assembled ? `+${active.capital}` : "--")}</strong>
+      <span>${escapeHtml(active.source)}</span>
+    </div>
+    <div class="path-box">
+      <strong>Boundary</strong>
+      <p>${escapeHtml(active.privateBoundary)}</p>
+    </div>
+    <div class="path-box">
+      <strong>Usable asset</strong>
+      <p>${escapeHtml(assembled ? active.asset : "Review and assemble this proof before it can power a profile, graph route, or access request.")}</p>
+    </div>
+    <button type="button" data-open-proof-route ${assembled ? "" : "disabled"}>${escapeHtml(active.routeLabel)}</button>
+  `;
+
+  const noFeedState = state.proofAssetApproved ? "Asset ready" : assembledCount ? "Draft asset" : "No feed";
+  ledger.innerHTML = `
+    <div class="share-results-heading">
+      <span>Social Capital proof ledger</span>
+      <strong>${escapeHtml(`${assembledCount}/3 assembled`)}</strong>
+    </div>
+    <div class="proof-ledger-grid">
+      ${capitalProofs
+        .map((proof) => {
+          const status = proofState(proof);
+          return `
+            <article class="is-${status.toLowerCase()}">
+              <span>${escapeHtml(proof.pillar)}</span>
+              <h4>${escapeHtml(status === "Assembled" ? proof.source : proof.label)}</h4>
+              <p>${escapeHtml(status === "Assembled" ? proof.asset : proof.privateBoundary)}</p>
+            </article>
+          `;
+        })
+        .join("")}
+      <article class="${state.proofAssetApproved ? "is-assembled" : assembledCount ? "is-reviewed" : ""}">
+        <span>Product role</span>
+        <h4>${escapeHtml(noFeedState)}</h4>
+        <p>${escapeHtml("The proof stays private and becomes useful only as scoped context for a profile, trust graph, or approval-gated route.")}</p>
+      </article>
     </div>
   `;
 }
@@ -4634,6 +4784,7 @@ function renderAll() {
   renderBoundaries();
   renderMoves();
   renderScore();
+  renderCapitalProof();
   renderMatches();
   renderNudges();
   renderProfile();
@@ -5436,6 +5587,83 @@ document.addEventListener("click", async (event) => {
       capital: profile.delta,
     });
     renderAll();
+    return;
+  }
+
+  const proofButton = target.closest("[data-select-proof]");
+  if (proofButton) {
+    state.activeProofId = proofButton.dataset.selectProof;
+    renderCapitalProof();
+    return;
+  }
+
+  if (target.closest("[data-review-proof]")) {
+    const proof = capitalProofById(state.activeProofId);
+    if (!state.reviewedProofs.includes(proof.id)) {
+      state.reviewedProofs.push(proof.id);
+      state.feed.unshift({
+        person: proof.pillar,
+        actor: "Gigi",
+        text: `reviewed a private Social Capital proof from ${proof.source}: ${proof.privateBoundary}`,
+        time: "Just now",
+        capital: 1,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-assemble-proof]")) {
+    const proof = capitalProofById(state.activeProofId);
+    if (!state.reviewedProofs.includes(proof.id)) {
+      state.reviewedProofs.push(proof.id);
+    }
+    if (!state.assembledProofs.includes(proof.id)) {
+      state.assembledProofs.push(proof.id);
+      state.socialCapital += proof.capital;
+      if (proof.id === "who-you-know") {
+        state.connected.calendar = true;
+        state.connected.contacts = true;
+        state.selectedPersonId = "maya";
+      }
+      if (proof.id === "what-people-say") {
+        state.scoreRevealed = true;
+        state.activeScoreId = "guillaume";
+        state.scoreQuery = "Guillaume Deramchi";
+        ["trusted", "shipped"].forEach((id) => {
+          if (!state.profileApprovals.includes(id)) state.profileApprovals.push(id);
+        });
+        state.activeProfileLens = "fundraising";
+      }
+      if (proof.id === "trust-built") {
+        state.activeStrengthId = "maxime-priya-strength";
+        if (!state.analyzedStrength.includes("maxime-priya-strength")) {
+          state.analyzedStrength.push("maxime-priya-strength");
+        }
+      }
+      if (state.assembledProofs.length === capitalProofs.length) {
+        state.proofAssetApproved = true;
+      }
+      state.feed.unshift({
+        person: proof.label,
+        actor: "Gigi",
+        text: `assembled ${proof.pillar.toLowerCase()} into a private Social Capital asset: ${proof.asset}`,
+        time: "Just now",
+        capital: proof.capital,
+      });
+    }
+    renderAll();
+    return;
+  }
+
+  if (target.closest("[data-use-proof], [data-open-proof-route]")) {
+    const proof = capitalProofById(state.activeProofId);
+    if (state.assembledProofs.includes(proof.id)) {
+      if (proof.id === "what-people-say") state.activeProfileLens = "fundraising";
+      if (proof.id === "trust-built") state.activeStrengthId = "maxime-priya-strength";
+      if (proof.id === "who-you-know") state.selectedPersonId = "maya";
+      setProductView(proof.routeView);
+    }
     return;
   }
 
